@@ -10,6 +10,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
+  <!-- SheetJS for Excel export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <!-- Firebase COMPAT SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -18,7 +21,7 @@
 
 <body>
   <div class="wrap">
-    <header><h1>Konarak F&B — Dry Store System</h1></header>
+    <header><h1>Konarak F&B — Dry Store</h1></header>
 
     <!-- LOGIN -->
     <section id="auth-section">
@@ -37,7 +40,7 @@
     <section id="app-section" class="hidden">
       <div class="topbar">
         <div id="who">—</div>
-        <div>
+        <div class="top-actions">
           <button id="logoutBtn">Logout</button>
         </div>
       </div>
@@ -47,10 +50,7 @@
         <h2>Daily Dry Store Entry</h2>
 
         <label>Floor</label>
-        <select id="floorSelect" aria-label="Floor">
-          <option value="1st">1st Floor</option>
-          <option value="6th">6th Floor</option>
-        </select>
+        <select id="floorSelect" aria-label="Floor"></select>
 
         <label>Counter</label>
         <select id="counterSelect" aria-label="Counter"></select>
@@ -62,14 +62,15 @@
           <table id="stockTable" aria-label="Stock table">
             <thead>
               <tr>
-                <th style="min-width:120px">Item</th>
-                <th style="min-width:80px">Batch No</th>
-                <th style="min-width:90px">Receiving Date</th>
-                <th style="min-width:90px">Mfg Date</th>
+                <th style="min-width:40px">S.No</th>
+                <th style="min-width:150px">Item</th>
+                <th style="min-width:90px">Batch No</th>
+                <th style="min-width:100px">Receiving Date</th>
+                <th style="min-width:100px">Mfg Date</th>
                 <th style="min-width:90px">Expiry</th>
                 <th style="min-width:80px">Shelf Life</th>
-                <th style="min-width:70px">Qty</th>
-                <th style="min-width:100px">Remarks</th>
+                <th style="min-width:80px">Stock Qty</th>
+                <th style="min-width:140px">Remarks</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -80,6 +81,7 @@
           <button id="addRowBtn">+ Add Row</button>
           <button id="saveEntryBtn">Save Entry</button>
           <button id="pdfBtn">Download PDF</button>
+          <button id="excelBtn">Download Excel</button>
         </div>
 
         <h3>Your Previous Entries</h3>
@@ -91,22 +93,39 @@
         <h2>Manager / Admin Dashboard</h2>
 
         <div class="controls">
-          <label>View Floor</label>
+          <label>Filter Floor</label>
           <select id="viewFloor">
             <option value="all">All Floors</option>
-            <option value="1st">1st Floor</option>
-            <option value="6th">6th Floor</option>
           </select>
 
-          <label>View Counter</label>
-          <select id="viewCounter">
-            <option value="all">All Counters</option>
-          </select>
+          <label>Filter Counter</label>
+          <select id="viewCounter"><option value="all">All Counters</option></select>
+
+          <label>From</label>
+          <input id="fromDate" type="date" />
+
+          <label>To</label>
+          <input id="toDate" type="date" />
 
           <button id="refreshView">Refresh</button>
+          <button id="downloadFilteredExcel">Download Excel (Filtered)</button>
         </div>
 
         <div id="allEntries"></div>
+
+        <h3>Manage Floors & Counters</h3>
+        <div id="manageNodes" class="card">
+          <label>New Floor Name</label>
+          <input id="newFloorName" placeholder="e.g., 1st, 6th" />
+          <button id="createFloorBtn">Create Floor</button>
+
+          <label>Create Counter under Floor</label>
+          <select id="selectFloorForCounter"></select>
+          <input id="newCounterNameField" placeholder="Counter name e.g., Chana & Corn" />
+          <button id="createCounterBtn">Create Counter</button>
+
+          <p id="nodeMsg" class="error"></p>
+        </div>
 
         <h3>Create User (Admin Only)</h3>
         <div id="createUser" class="card">
@@ -124,10 +143,7 @@
           </select>
 
           <label>Assign Floor</label>
-          <select id="newFloor">
-            <option value="1st">1st Floor</option>
-            <option value="6th">6th Floor</option>
-          </select>
+          <select id="newFloor"></select>
 
           <label>Assign Counter</label>
           <select id="newAssignCounter"></select>
@@ -136,12 +152,12 @@
             <button id="createUserBtn">Create User</button>
           </div>
           <p id="createMsg" class="error"></p>
-          <p class="hint">Note: Creating a user will not sign you out. The account will be created and linked to the selected floor/counter.</p>
+          <p class="hint">Note: Creating a user will not sign you out. The new account is created and linked to selected floor/counter.</p>
         </div>
       </div>
     </section>
 
-    <footer><small>Konarak F&B — GitHub Pages + Firebase</small></footer>
+    <footer><small>&nbsp;</small></footer>
   </div>
 
   <script src="app.js"></script>
