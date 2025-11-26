@@ -6,11 +6,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="styles.css" />
 
-  <!-- jsPDF & autoTable -->
+  <!-- jsPDF + autoTable -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
-  <!-- SheetJS -->
+  <!-- SheetJS for Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Firebase compat SDK -->
@@ -18,7 +18,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-
 <body>
   <div class="wrap">
     <header><h1>Konarak F&B — Dry Store</h1></header>
@@ -45,40 +44,52 @@
         </div>
       </div>
 
-      <!-- COUNTER UI -->
+      <!-- COUNTER UI (staff) -->
       <div id="counter-ui" class="card hidden" aria-hidden="true">
-        <h2>Daily Dry Store Entry</h2>
+        <h2>Daily Dry Store Entry (Staff)</h2>
 
         <label>Floor</label>
-        <select id="floorSelect" aria-label="Floor" disabled></select>
+        <select id="floorSelect" disabled></select>
 
         <label>Counter</label>
-        <select id="counterSelect" aria-label="Counter" disabled></select>
+        <select id="counterSelect" disabled></select>
 
         <label>Date</label>
         <input id="entryDate" type="date" />
 
-        <div class="table-responsive horizontal-blocks">
-          <table id="stockTable" aria-label="Stock table">
-            <thead>
-              <tr>
-                <th>S.No</th><th>Item</th><th>Batch No</th><th>Receiving Date</th>
-                <th>Mfg Date</th><th>Expiry</th><th>Shelf Life</th><th>Stock Qty</th><th>Remarks</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+        <!-- vertical form: single item per save -->
+        <div class="form-vertical">
+          <label>Item</label>
+          <input id="item" placeholder="Item name (e.g., Milk Powder)" />
+
+          <label>Batch No</label>
+          <input id="batch" placeholder="Batch number" />
+
+          <label>Receiving Date</label>
+          <input id="receivingDate" type="date" />
+
+          <label>Mfg Date</label>
+          <input id="mfgDate" type="date" />
+
+          <label>Expiry Date</label>
+          <input id="expiryDate" type="date" />
+
+          <label>Shelf Life</label>
+          <input id="shelfLife" placeholder="e.g., 12 months" />
+
+          <label>Stock Qty</label>
+          <input id="qty" type="number" placeholder="Qty" />
+
+          <label>Remarks</label>
+          <input id="remarks" placeholder="Any remarks" />
         </div>
 
         <div class="row actions">
-          <button id="addRowBtn">+ Add Row</button>
           <button id="saveEntryBtn">Save Entry</button>
-          <button id="pdfBtn">PDF</button>
-          <button id="excelBtn">Excel</button>
         </div>
 
-        <h3>Your Saved Entries</h3>
-        <div id="history"></div>
+        <h3>Your Saved Entries (recent)</h3>
+        <div id="history" class="cards-row"></div>
       </div>
 
       <!-- ADMIN UI -->
@@ -99,44 +110,55 @@
           <input id="toDate" type="date" />
 
           <button id="refreshView">Refresh</button>
+          <button id="downloadFilteredPdf">Download PDF (Filtered)</button>
           <button id="downloadFilteredExcel">Download Excel (Filtered)</button>
         </div>
 
-        <div id="allEntries"></div>
+        <h3>Entries</h3>
+        <div id="allEntries" class="cards-column"></div>
 
-        <h3>Manage Floors & Counters</h3>
-        <div id="manageNodes" class="card">
-          <label>New Floor Name</label>
-          <input id="newFloorName" placeholder="e.g., 1st" />
-          <button id="createFloorBtn">Create Floor</button>
+        <hr/>
 
-          <label>Create Counter under Floor</label>
-          <select id="selectFloorForCounter"></select>
-          <input id="newCounterNameField" placeholder="Counter name e.g., Chana & Corn" />
-          <button id="createCounterBtn">Create Counter</button>
-
+        <h3>Manage Floors</h3>
+        <div id="manageFloors" class="card inline-management">
+          <div class="form-col">
+            <input id="newFloorName" placeholder="New floor name (e.g., 1st)" />
+            <button id="createFloorBtn">Create Floor</button>
+          </div>
+          <div class="list-col">
+            <div id="floorsList"></div>
+          </div>
           <p id="nodeMsg" class="error"></p>
         </div>
 
-        <h3>Create Counter User (Admin Only)</h3>
-        <div id="createUser" class="card">
-          <label>New User Email</label>
-          <input id="newEmail" placeholder="email (example: chana@konarak)" />
-
-          <label>New User Password</label>
-          <input id="newPassword" placeholder="password (min 6)" />
-
-          <label>Assign Floor</label>
-          <select id="newFloor"></select>
-
-          <label>Assign Counter</label>
-          <select id="newAssignCounter"></select>
-
-          <div class="row">
-            <button id="createUserBtn">Create Counter User</button>
+        <h3>Manage Counters</h3>
+        <div id="manageCounters" class="card inline-management">
+          <div class="form-col">
+            <label>Select Floor</label>
+            <select id="selectFloorForCounter"></select>
+            <input id="newCounterNameField" placeholder="Counter name e.g., Chana & Corn" />
+            <button id="createCounterBtn">Create Counter</button>
           </div>
-          <p id="createMsg" class="error"></p>
-          <p class="hint">Note: Creating a counter user will not sign you out.</p>
+          <div class="list-col">
+            <div id="countersList"></div>
+          </div>
+        </div>
+
+        <h3>Manage Staff</h3>
+        <div id="manageUsers" class="card">
+          <div class="form-row">
+            <input id="newEmail" placeholder="New user email" />
+            <input id="newPassword" placeholder="New user password" />
+            <label>Assign Floor</label>
+            <select id="newFloor"></select>
+            <label>Assign Counter</label>
+            <select id="newAssignCounter"></select>
+            <button id="createUserBtn">Create Counter User</button>
+            <p id="createMsg" class="error"></p>
+          </div>
+
+          <h4>Staff List</h4>
+          <div id="staffList" class="cards-row"></div>
         </div>
       </div>
     </section>
