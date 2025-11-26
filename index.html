@@ -50,10 +50,10 @@
         <h2>Daily Dry Store Entry</h2>
 
         <label>Floor</label>
-        <select id="floorSelect" aria-label="Floor"></select>
+        <select id="floorSelect" aria-label="Floor" disabled></select>
 
         <label>Counter</label>
-        <select id="counterSelect" aria-label="Counter"></select>
+        <select id="counterSelect" aria-label="Counter" disabled></select>
 
         <label>Date</label>
         <input id="entryDate" type="date" />
@@ -81,9 +81,9 @@
         <div id="history"></div>
       </div>
 
-      <!-- MANAGER / ADMIN UI -->
+      <!-- ADMIN UI -->
       <div id="manager-ui" class="card hidden" aria-hidden="true">
-        <h2>Manager / Admin Dashboard</h2>
+        <h2>Admin Dashboard</h2>
 
         <div class="controls">
           <label>Filter Floor</label>
@@ -118,7 +118,7 @@
           <p id="nodeMsg" class="error"></p>
         </div>
 
-        <h3>Create User (Admin Only)</h3>
+        <h3>Create Counter User (Admin Only)</h3>
         <div id="createUser" class="card">
           <label>New User Email</label>
           <input id="newEmail" placeholder="email (example: chana@konarak)" />
@@ -126,32 +126,25 @@
           <label>New User Password</label>
           <input id="newPassword" placeholder="password (min 6)" />
 
-          <label>Role</label>
-          <select id="newRole">
-            <option value="counter">Counter</option>
-            <option value="manager">Manager</option>
-            <option value="admin">Admin</option>
-          </select>
-
-          <label class="assignFloorLabel">Assign Floor</label>
+          <label>Assign Floor</label>
           <select id="newFloor"></select>
 
-          <label class="assignCounterLabel">Assign Counter</label>
+          <label>Assign Counter</label>
           <select id="newAssignCounter"></select>
 
           <div class="row">
-            <button id="createUserBtn">Create User</button>
+            <button id="createUserBtn">Create Counter User</button>
           </div>
           <p id="createMsg" class="error"></p>
-          <p class="hint">Note: Creating a user will not sign you out. The new account will be linked to selected floor/counter (only for counters).</p>
+          <p class="hint">Note: Creating a counter user will not sign you out.</p>
         </div>
       </div>
     </section>
 
-    <!-- DEBUG PANEL -->
+    <!-- Debug panel (small) -->
     <div id="debug" class="card" style="margin-top:12px;">
       <h3>Debug / Status</h3>
-      <div id="debugLog" style="white-space:pre-wrap; font-family:monospace; font-size:13px; max-height:200px; overflow:auto;"></div>
+      <div id="debugLog" style="white-space:pre-wrap; font-family:monospace; font-size:13px; max-height:220px; overflow:auto;"></div>
     </div>
 
     <footer><small>&nbsp;</small></footer>
