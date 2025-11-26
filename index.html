@@ -20,22 +20,26 @@
   <div class="wrap">
     <header><h1>Konarak F&B — Dry Store System</h1></header>
 
-    <!-- LOGIN SECTION -->
+    <!-- LOGIN -->
     <section id="auth-section">
-      <div id="login-card" class="card">
+      <div class="card" id="login-card">
         <h2>Login</h2>
-        <input id="email" placeholder="Email" type="email" />
-        <input id="password" placeholder="Password" type="password" />
-        <button id="loginBtn">Login</button>
+        <input id="email" placeholder="Email" type="email" autocomplete="username" />
+        <input id="password" placeholder="Password" type="password" autocomplete="current-password" />
+        <div class="row">
+          <button id="loginBtn">Login</button>
+        </div>
         <p id="loginError" class="error"></p>
       </div>
     </section>
 
-    <!-- APP SECTION -->
+    <!-- APP -->
     <section id="app-section" class="hidden">
       <div class="topbar">
-        <div id="who"></div>
-        <button id="logoutBtn">Logout</button>
+        <div id="who">—</div>
+        <div>
+          <button id="logoutBtn">Logout</button>
+        </div>
       </div>
 
       <!-- COUNTER UI -->
@@ -43,28 +47,36 @@
         <h2>Daily Dry Store Entry</h2>
 
         <label>Floor</label>
-        <select id="floorSelect">
+        <select id="floorSelect" aria-label="Floor">
           <option value="1st">1st Floor</option>
           <option value="6th">6th Floor</option>
         </select>
 
         <label>Counter</label>
-        <select id="counterSelect"></select>
+        <select id="counterSelect" aria-label="Counter"></select>
 
         <label>Date</label>
         <input id="entryDate" type="date" />
 
-        <table id="stockTable">
-          <thead>
-            <tr>
-              <th>Item</th><th>Batch No</th><th>Receiving Date</th><th>Mfg Date</th><th>Expiry</th>
-              <th>Shelf Life</th><th>Qty</th><th>Remarks</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div class="table-responsive">
+          <table id="stockTable" aria-label="Stock table">
+            <thead>
+              <tr>
+                <th style="min-width:120px">Item</th>
+                <th style="min-width:80px">Batch No</th>
+                <th style="min-width:90px">Receiving Date</th>
+                <th style="min-width:90px">Mfg Date</th>
+                <th style="min-width:90px">Expiry</th>
+                <th style="min-width:80px">Shelf Life</th>
+                <th style="min-width:70px">Qty</th>
+                <th style="min-width:100px">Remarks</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
 
-        <div class="row">
+        <div class="row actions">
           <button id="addRowBtn">+ Add Row</button>
           <button id="saveEntryBtn">Save Entry</button>
           <button id="pdfBtn">Download PDF</button>
@@ -87,7 +99,9 @@
           </select>
 
           <label>View Counter</label>
-          <select id="viewCounter"><option value="all">All Counters</option></select>
+          <select id="viewCounter">
+            <option value="all">All Counters</option>
+          </select>
 
           <button id="refreshView">Refresh</button>
         </div>
@@ -95,21 +109,34 @@
         <div id="allEntries"></div>
 
         <h3>Create User (Admin Only)</h3>
-        <div id="createUser">
-          <input id="newEmail" placeholder="email" />
+        <div id="createUser" class="card">
+          <label>New User Email</label>
+          <input id="newEmail" placeholder="email (example: chana@konarak)" />
+
+          <label>New User Password</label>
           <input id="newPassword" placeholder="password (min 6)" />
+
+          <label>Role</label>
           <select id="newRole">
             <option value="counter">Counter</option>
             <option value="manager">Manager</option>
             <option value="admin">Admin</option>
           </select>
+
+          <label>Assign Floor</label>
           <select id="newFloor">
-            <option value="1st">1st</option>
-            <option value="6th">6th</option>
+            <option value="1st">1st Floor</option>
+            <option value="6th">6th Floor</option>
           </select>
-          <input id="newCounterName" placeholder="Counter Name" />
-          <button id="createUserBtn">Create User</button>
-          <p id="createMsg"></p>
+
+          <label>Assign Counter</label>
+          <select id="newAssignCounter"></select>
+
+          <div class="row">
+            <button id="createUserBtn">Create User</button>
+          </div>
+          <p id="createMsg" class="error"></p>
+          <p class="hint">Note: Creating a user will not sign you out. The account will be created and linked to the selected floor/counter.</p>
         </div>
       </div>
     </section>
