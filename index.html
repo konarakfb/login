@@ -32,12 +32,12 @@
         <div class="row">
           <button id="loginBtn">Login</button>
         </div>
-        <p id="loginError" class="error"></p>
+        <p id="loginError" class="error" role="alert"></p>
       </div>
     </section>
 
     <!-- APP -->
-    <section id="app-section" class="hidden">
+    <section id="app-section" class="hidden" aria-hidden="true">
       <div class="topbar">
         <div id="who">—</div>
         <div class="top-actions">
@@ -46,7 +46,7 @@
       </div>
 
       <!-- COUNTER UI -->
-      <div id="counter-ui" class="card hidden">
+      <div id="counter-ui" class="card hidden" aria-hidden="true">
         <h2>Daily Dry Store Entry</h2>
 
         <label>Floor</label>
@@ -62,15 +62,8 @@
           <table id="stockTable" aria-label="Stock table">
             <thead>
               <tr>
-                <th style="min-width:40px">S.No</th>
-                <th style="min-width:150px">Item</th>
-                <th style="min-width:90px">Batch No</th>
-                <th style="min-width:100px">Receiving Date</th>
-                <th style="min-width:100px">Mfg Date</th>
-                <th style="min-width:90px">Expiry</th>
-                <th style="min-width:80px">Shelf Life</th>
-                <th style="min-width:80px">Stock Qty</th>
-                <th style="min-width:140px">Remarks</th>
+                <th>S.No</th><th>Item</th><th>Batch No</th><th>Receiving Date</th>
+                <th>Mfg Date</th><th>Expiry</th><th>Shelf Life</th><th>Stock Qty</th><th>Remarks</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -89,14 +82,12 @@
       </div>
 
       <!-- MANAGER / ADMIN UI -->
-      <div id="manager-ui" class="card hidden">
+      <div id="manager-ui" class="card hidden" aria-hidden="true">
         <h2>Manager / Admin Dashboard</h2>
 
         <div class="controls">
           <label>Filter Floor</label>
-          <select id="viewFloor">
-            <option value="all">All Floors</option>
-          </select>
+          <select id="viewFloor"><option value="all">All Floors</option></select>
 
           <label>Filter Counter</label>
           <select id="viewCounter"><option value="all">All Counters</option></select>
@@ -142,10 +133,10 @@
             <option value="admin">Admin</option>
           </select>
 
-          <label>Assign Floor</label>
+          <label class="assignFloorLabel">Assign Floor</label>
           <select id="newFloor"></select>
 
-          <label>Assign Counter</label>
+          <label class="assignCounterLabel">Assign Counter</label>
           <select id="newAssignCounter"></select>
 
           <div class="row">
@@ -156,6 +147,12 @@
         </div>
       </div>
     </section>
+
+    <!-- DEBUG PANEL -->
+    <div id="debug" class="card" style="margin-top:12px;">
+      <h3>Debug / Status</h3>
+      <div id="debugLog" style="white-space:pre-wrap; font-family:monospace; font-size:13px; max-height:200px; overflow:auto;"></div>
+    </div>
 
     <footer><small>&nbsp;</small></footer>
   </div>
