@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------
-   FIREBASE CONFIG  (Compat version for your website)
+   FIREBASE CONFIG  (Compat version)
 ----------------------------------------------------------- */
 const firebaseConfig = {
   apiKey: "AIzaSyDFBaRe6jDJwbSoRMpGZiQUB8PNXak0o8E",
@@ -9,87 +9,77 @@ const firebaseConfig = {
   messagingSenderId: "796844296062",
   appId: "1:796844296062:web:addf9694564505f914552f"
 };
-
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-
-// Auth & Firestore
 const auth = firebase.auth();
-const db   = firebase.firestore();
+const db = firebase.firestore();
 
 /* ----------------------------------------------------------
-   COUNTERS LIST
+   COUNTERS LIST (no "(1st Floor)" suffixes)
 ----------------------------------------------------------- */
 const COUNTERS = {
-  "1st": [
-    "Kitchen (1st Floor)",
-    "Chana & Corn",
-    "Juice",
-    "Tea (1st Floor)",
-    "Bread",
-    "Chat",
-    "Shawarma"
-  ],
-  "6th": [
-    "Kitchen (6th Floor)",
-    "Tea (6th Floor)",
-    "Muntha Masala"
-  ]
+  "1st": ["Kitchen","Chana & Corn","Juice","Tea","Bread","Chat","Shawarma"],
+  "6th": ["Kitchen","Tea","Muntha Masala"]
 };
 
 /* ----------------------------------------------------------
-   GET UI ELEMENTS
+   UI ELEMENTS
 ----------------------------------------------------------- */
 const authSection = document.getElementById('auth-section');
-const appSection  = document.getElementById('app-section');
-const loginBtn    = document.getElementById('loginBtn');
-const logoutBtn   = document.getElementById('logoutBtn');
-const loginError  = document.getElementById('loginError');
-const who         = document.getElementById('who');
+const appSection = document.getElementById('app-section');
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const loginError = document.getElementById('loginError');
+const who = document.getElementById('who');
 
 const floorSelect = document.getElementById('floorSelect');
 const counterSelect = document.getElementById('counterSelect');
-const entryDate   = document.getElementById('entryDate');
-const addRowBtn   = document.getElementById('addRowBtn');
+const entryDate = document.getElementById('entryDate');
+const addRowBtn = document.getElementById('addRowBtn');
 const saveEntryBtn = document.getElementById('saveEntryBtn');
-const pdfBtn      = document.getElementById('pdfBtn');
+const pdfBtn = document.getElementById('pdfBtn');
 const stockTableBody = document.querySelector('#stockTable tbody');
-const historyDiv  = document.getElementById('history');
+const historyDiv = document.getElementById('history');
 
-const managerUI   = document.getElementById('manager-ui');
-const counterUI   = document.getElementById('counter-ui');
+const managerUI = document.getElementById('manager-ui');
+const counterUI = document.getElementById('counter-ui');
 
-const viewFloor   = document.getElementById('viewFloor');
+const viewFloor = document.getElementById('viewFloor');
 const viewCounter = document.getElementById('viewCounter');
 const refreshView = document.getElementById('refreshView');
-const allEntries  = document.getElementById('allEntries');
+const allEntries = document.getElementById('allEntries');
 
-const newEmail     = document.getElementById('newEmail');
-const newPassword  = document.getElementById('newPassword');
-const newRole      = document.getElementById('newRole');
-const newFloor     = document.getElementById('newFloor');
-const newCounterName = document.getElementById('newCounterName');
+const newEmail = document.getElementById('newEmail');
+const newPassword = document.getElementById('newPassword');
+const newRole = document.getElementById('newRole');
+const newFloor = document.getElementById('newFloor');
+const newAssignCounter = document.getElementById('newAssignCounter');
 const createUserBtn = document.getElementById('createUserBtn');
-const createMsg     = document.getElementById('createMsg');
+const createMsg = document.getElementById('createMsg');
 
 /* ----------------------------------------------------------
-   HELPER FUNCTIONS
+   HELPERS
 ----------------------------------------------------------- */
 function populateCounterSelect() {
+  const floor = floorSelect.value;
   counterSelect.innerHTML = "";
-  COUNTERS[floorSelect.value].forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c;
-    opt.textContent = c;
+  COUNTERS[floor].forEach(c => {
+    const opt = document.createElement('option'); opt.value = c; opt.textContent = c;
     counterSelect.appendChild(opt);
+  });
+}
+
+function populateAssignCounterSelect(floor) {
+  newAssignCounter.innerHTML = "";
+  (COUNTERS[floor] || []).forEach(c => {
+    const opt = document.createElement('option'); opt.value = c; opt.textContent = c;
+    newAssignCounter.appendChild(opt);
   });
 }
 
 function addEmptyRow() {
   const tr = document.createElement('tr');
-  for (let i = 0; i < 8; i++) {
-    const td = document.createElement('td');
-    td.contentEditable = true;
+  for (let i=0;i<8;i++){
+    const td = document.createElement('td'); td.contentEditable = true; td.innerHTML = "";
     tr.appendChild(td);
   }
   stockTableBody.appendChild(tr);
@@ -99,260 +89,337 @@ function readTableRows() {
   const rows = [];
   for (const tr of stockTableBody.querySelectorAll('tr')) {
     const cells = [...tr.children].map(td => td.textContent.trim());
-    if (cells.every(val => val === "")) continue;
+    if (cells.every(v => v === "")) continue;
     rows.push({
-      item: cells[0],
-      batch: cells[1],
-      receivingDate: cells[2],
-      mfgDate: cells[3],
-      expiryDate: cells[4],
-      shelfLife: cells[5],
-      qty: cells[6],
-      remarks: cells[7]
+      item: cells[0]||"",
+      batch: cells[1]||"",
+      receivingDate: cells[2]||"",
+      mfgDate: cells[3]||"",
+      expiryDate: cells[4]||"",
+      shelfLife: cells[5]||"",
+      qty: cells[6]||"",
+      remarks: cells[7]||""
     });
   }
   return rows;
 }
 
 /* ----------------------------------------------------------
-   LOGIN / LOGOUT
+   AUTH (login/logout)
 ----------------------------------------------------------- */
-loginBtn.addEventListener('click', async () => {
+loginBtn.addEventListener('click', async ()=>{
   loginError.textContent = "";
+  const email = document.getElementById('email').value.trim();
+  const pass = document.getElementById('password').value;
   try {
-    await auth.signInWithEmailAndPassword(
-      document.getElementById('email').value.trim(),
-      document.getElementById('password').value
-    );
+    await auth.signInWithEmailAndPassword(email, pass);
   } catch (e) {
     loginError.textContent = e.message;
   }
 });
-
-logoutBtn.addEventListener('click', () => auth.signOut());
+logoutBtn.addEventListener('click', ()=>auth.signOut());
 
 /* ----------------------------------------------------------
    AUTH STATE CHANGE
 ----------------------------------------------------------- */
-auth.onAuthStateChanged(async user => {
+auth.onAuthStateChanged(async user=>{
   if (!user) {
-    authSection.classList.remove('hidden');
-    appSection.classList.add('hidden');
+    authSection.classList.remove('hidden'); appSection.classList.add('hidden');
     return;
   }
 
-  const uDoc = await db.collection('users').doc(user.uid).get();
-  const u = uDoc.data();
-
+  // fetch user metadata
+  const meta = await db.collection('users').doc(user.uid).get();
+  if (!meta.exists) {
+    who.textContent = `${user.email} (no role)`;
+    // default to counter UI so admin can create their user doc if needed
+    showManagerUI();
+    return;
+  }
+  const u = meta.data();
   who.textContent = `${u.role.toUpperCase()} — ${u.counter} (${u.floor})`;
 
-  authSection.classList.add('hidden');
-  appSection.classList.remove('hidden');
+  authSection.classList.add('hidden'); appSection.classList.remove('hidden');
 
-  if (u.role === "counter") showCounterUI(u);
-  else showManagerUI(u);
+  if (u.role === 'counter') {
+    showCounterUI(u);
+  } else {
+    showManagerUI();
+  }
 });
 
 /* ----------------------------------------------------------
-   UI SWITCHING
+   SHOW UIs
 ----------------------------------------------------------- */
 function showCounterUI(u) {
-  managerUI.classList.add('hidden');
-  counterUI.classList.remove('hidden');
+  managerUI.classList.add('hidden'); counterUI.classList.remove('hidden');
 
-  floorSelect.value = u.floor;
+  // set selects and lock them
+  floorSelect.value = u.floor || '1st';
   populateCounterSelect();
-  counterSelect.value = u.counter;
+  counterSelect.value = u.counter || COUNTERS[floorSelect.value][0];
 
-  entryDate.value = new Date().toISOString().substring(0, 10);
+  floorSelect.disabled = true;
+  counterSelect.disabled = true;
+
+  entryDate.value = new Date().toISOString().slice(0,10);
 
   stockTableBody.innerHTML = "";
-  addEmptyRow(); 
-  addEmptyRow();
+  addEmptyRow(); addEmptyRow();
 
   loadMyEntries();
 }
 
 function showManagerUI() {
-  managerUI.classList.remove('hidden');
-  counterUI.classList.add('hidden');
+  managerUI.classList.remove('hidden'); counterUI.classList.add('hidden');
 
+  // enable selects for manager/admin
+  floorSelect.disabled = false;
+  counterSelect.disabled = false;
+
+  // populate manager filter dropdowns
+  viewCounter.innerHTML = '<option value="all">All Counters</option>';
+  Object.keys(COUNTERS).forEach(f=>{
+    COUNTERS[f].forEach(c=>{
+      const o = document.createElement('option'); o.value = c; o.textContent = `${c} (${f})`;
+      viewCounter.appendChild(o);
+    });
+  });
+
+  populateAssignCounterSelect(newFloor.value);
   loadAllEntries();
 }
 
 /* ----------------------------------------------------------
-   SAVE ENTRY (COUNTER)
+   SAVE ENTRY (counter)
 ----------------------------------------------------------- */
-saveEntryBtn.addEventListener('click', async () => {
+saveEntryBtn.addEventListener('click', async ()=>{
   const user = auth.currentUser;
-  const uDoc = await db.collection('users').doc(user.uid).get();
-  const u = uDoc.data();
+  if (!user) return alert('Not signed in');
+
+  const meta = await db.collection('users').doc(user.uid).get();
+  if (!meta.exists) return alert('User metadata missing');
 
   const rows = readTableRows();
-  if (rows.length === 0) return alert("Please add at least one item row.");
+  if (rows.length === 0) return alert('Add at least one row');
 
-  await db.collection('entries').add({
+  const entry = {
     createdBy: user.uid,
     creatorEmail: user.email,
-    floor: u.floor,
-    counter: u.counter,
-    date: entryDate.value,
-    rows: rows,
+    floor: floorSelect.value,
+    counter: counterSelect.value,
+    date: entryDate.value || new Date().toISOString().slice(0,10),
+    rows,
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
+  };
 
-  alert("Saved successfully!");
+  await db.collection('entries').add(entry);
+  alert('Saved');
   loadMyEntries();
 });
 
 /* ----------------------------------------------------------
-   LOAD USER ENTRIES
+   LOAD MY ENTRIES (counter)
 ----------------------------------------------------------- */
-async function loadMyEntries() {
+async function loadMyEntries(){
   historyDiv.innerHTML = "";
   const user = auth.currentUser;
-
-  const snap = await db.collection('entries')
-    .where('createdBy', '==', user.uid)
-    .orderBy('timestamp', 'desc')
-    .limit(20)
-    .get();
-
-  snap.forEach(doc => {
+  const snap = await db.collection('entries').where('createdBy','==',user.uid)
+    .orderBy('timestamp','desc').limit(50).get();
+  snap.forEach(doc=>{
     const d = doc.data();
-    const div = document.createElement('div');
-    div.className = "entry";
-    div.innerHTML = `
-      <strong>${d.counter} (${d.floor}) — ${d.date}</strong><br/>
-      ${d.rows.length} items
-      <br><button onclick="downloadEntryPdf('${doc.id}')">Download PDF</button>
-    `;
+    const div = document.createElement('div'); div.className='entry';
+    div.innerHTML = `<strong>${d.counter} — ${d.date}</strong><br>${d.rows.length} items
+      <div style="margin-top:6px"><button onclick="downloadEntryPdf('${doc.id}')">Download PDF</button></div>`;
     historyDiv.appendChild(div);
   });
 }
 
 /* ----------------------------------------------------------
-   PDF GENERATION
+   PDF FUNCTIONS (improved formatting)
 ----------------------------------------------------------- */
 async function downloadEntryPdf(id) {
   const docRef = await db.collection('entries').doc(id).get();
+  if (!docRef.exists) return alert('Entry not found');
   generatePdfFromEntry(docRef.data());
 }
 
-pdfBtn.addEventListener('click', () => {
+pdfBtn.addEventListener('click', ()=>{
   const entry = {
     floor: floorSelect.value,
     counter: counterSelect.value,
-    date: entryDate.value,
+    date: entryDate.value || new Date().toISOString().slice(0,10),
     rows: readTableRows(),
-    creatorEmail: auth.currentUser.email
+    creatorEmail: auth.currentUser ? auth.currentUser.email : 'unknown'
   };
+  if (entry.rows.length === 0) return alert('Add at least one row to export');
   generatePdfFromEntry(entry);
 });
 
 function generatePdfFromEntry(entry) {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p', 'pt', 'a4');
+  const doc = new jsPDF('p','pt','a4');
+  const margin = 40;
 
+  // load logo (logo.png in repo root)
   const img = new Image();
-  img.src = "./logo.png";
+  img.src = './logo.png';
 
-  img.onload = function () {
-    doc.addImage(img, 'PNG', 40, 20, 120, 40);
-    createTable();
+  img.onload = function(){
+    doc.addImage(img,'PNG',margin,18,120,36);
+    addHeaderAndTable();
   };
+  img.onerror = function(){ addHeaderAndTable(); };
 
-  img.onerror = function () {
-    createTable();
-  };
-
-  function createTable() {
+  function addHeaderAndTable(){
+    // Title
     doc.setFontSize(14);
-    doc.text("Dry Store Stock Record", 220, 60);
+    doc.setFont('helvetica','bold');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    doc.text('Dry Store Stock Record', pageWidth/2, 60, { align: 'center' });
 
+    // Project / meta
     doc.setFontSize(10);
-    doc.text(`Floor: ${entry.floor}   Counter: ${entry.counter}`, 40, 100);
-    doc.text(`Date: ${entry.date}`, 40, 120);
+    doc.setFont('helvetica','normal');
+    doc.text('Project: Konarak F&B — Cognizant 12A, Mindspace, Hyderabad', margin, 90);
+    doc.text(`Floor: ${entry.floor}    Counter: ${entry.counter}    Date: ${entry.date}`, margin, 108);
 
+    // Table
     const columns = [
-      "Item","Batch No","Receiving Date","Mfg Date","Expiry","Shelf Life","Qty","Remarks"
+      { header: 'Item', dataKey: 'item' },
+      { header: 'Batch No', dataKey: 'batch' },
+      { header: 'Receiving Date', dataKey: 'receivingDate' },
+      { header: 'Mfg Date', dataKey: 'mfgDate' },
+      { header: 'Expiry', dataKey: 'expiryDate' },
+      { header: 'Shelf Life', dataKey: 'shelfLife' },
+      { header: 'Stock Qty', dataKey: 'qty' },
+      { header: 'Remarks', dataKey: 'remarks' }
     ];
 
-    const rows = entry.rows.map(r => [
-      r.item, r.batch, r.receivingDate, r.mfgDate, r.expiryDate, r.shelfLife, r.qty, r.remarks
-    ]);
+    const rows = entry.rows.map(r=>({
+      item: r.item || '',
+      batch: r.batch || '',
+      receivingDate: r.receivingDate || '',
+      mfgDate: r.mfgDate || '',
+      expiryDate: r.expiryDate || '',
+      shelfLife: r.shelfLife || '',
+      qty: r.qty || '',
+      remarks: r.remarks || ''
+    }));
 
     doc.autoTable({
-      head: [columns],
-      body: rows,
-      startY: 150,
-      styles: { fontSize: 9 }
+      startY: 130,
+      margin: { left: margin, right: margin },
+      head: [columns.map(c=>c.header)],
+      body: rows.map(rr => columns.map(c => rr[c.dataKey])),
+      styles: { fontSize: 9, cellPadding: 4 },
+      headStyles: { fillColor: [230,230,230], halign:'left' },
+      columnStyles: {
+        0: { cellWidth: 120 },
+        1: { cellWidth: 60 },
+        2: { cellWidth: 70 },
+        3: { cellWidth: 60 },
+        4: { cellWidth: 60 },
+        5: { cellWidth: 60 },
+        6: { cellWidth: 40 },
+        7: { cellWidth: 100 }
+      },
+      tableWidth: 'auto'
     });
 
-    doc.text(`Prepared by: ${entry.creatorEmail}`, 40, doc.lastAutoTable.finalY + 30);
+    const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY : 160;
+    doc.setFontSize(10);
+    doc.text(`Prepared by: ${entry.creatorEmail}`, margin, finalY + 30);
 
-    doc.save(`DryStore_${entry.counter}_${entry.date}.pdf`);
+    // save
+    const safeName = `DryStore_${entry.counter.replace(/\s+/g,'')}_${entry.date}.pdf`;
+    doc.save(safeName);
   }
 }
 
 /* ----------------------------------------------------------
-   MANAGER VIEW
+   MANAGER: load all entries
 ----------------------------------------------------------- */
 refreshView.addEventListener('click', loadAllEntries);
-
-async function loadAllEntries() {
+async function loadAllEntries(){
   allEntries.innerHTML = "";
-
-  const snap = await db.collection('entries')
-    .orderBy('timestamp', 'desc')
-    .limit(200)
-    .get();
-
-  snap.forEach(doc => {
+  let q = db.collection('entries').orderBy('timestamp','desc').limit(200);
+  if (viewFloor.value && viewFloor.value !== 'all') q = q.where('floor','==',viewFloor.value);
+  if (viewCounter.value && viewCounter.value !== 'all') {
+    q = q.where('counter','==',viewCounter.value);
+  }
+  const snap = await q.get();
+  snap.forEach(doc=>{
     const d = doc.data();
-    const div = document.createElement('div');
-    div.className = "entry";
-    div.innerHTML = `
-      <strong>${d.counter} (${d.floor}) — ${d.date}</strong>
-      <br>${d.rows.length} items
-      <br><button onclick="downloadEntryPdf('${doc.id}')">Download PDF</button>
-    `;
+    const div = document.createElement('div'); div.className='entry';
+    div.innerHTML = `<strong>${d.counter} (${d.floor}) — ${d.date}</strong><br>${d.rows.length} items
+      <div style="margin-top:6px"><button onclick="downloadEntryPdf('${doc.id}')">Download PDF</button></div>`;
     allEntries.appendChild(div);
   });
 }
 
 /* ----------------------------------------------------------
-   CREATE ROW BUTTON
+   CREATE USER (admin) -- uses Identity Toolkit REST so current session is NOT changed
+   This avoids the SDK createUserWithEmailAndPassword which signs in the created user.
 ----------------------------------------------------------- */
-addRowBtn.addEventListener('click', addEmptyRow);
+createUserBtn.addEventListener('click', async ()=>{
+  createMsg.textContent = "";
+  const email = (newEmail.value || "").trim();
+  const password = (newPassword.value || "").trim();
+  const role = newRole.value;
+  const floor = newFloor.value;
+  const counter = newAssignCounter.value;
 
-/* ----------------------------------------------------------
-   ADMIN: CREATE USER
------------------------------------------------------------ */
-createUserBtn.addEventListener('click', async () => {
+  if (!email || !password) { createMsg.textContent = "Provide email and password"; return; }
+  if (!role) { createMsg.textContent = "Select role"; return; }
+  if (role === 'counter' && (!floor || !counter)) { createMsg.textContent = "Assign floor & counter for counter role"; return; }
+
   try {
-    const cred = await auth.createUserWithEmailAndPassword(
-      newEmail.value.trim(),
-      newPassword.value.trim()
-    );
+    // call REST API to create user without modifying client auth state
+    const apiKey = firebaseConfig.apiKey;
+    const resp = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ email, password, returnSecureToken: true })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message || 'Failed to create user');
 
-    await db.collection('users').doc(cred.user.uid).set({
-      email: newEmail.value.trim(),
-      role: newRole.value,
-      floor: newFloor.value,
-      counter: newCounterName.value.trim(),
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    const uid = data.localId; // returned UID
+    // create users doc
+    await db.collection('users').doc(uid).set({
+      email, role, floor: floor || '', counter: counter || '', createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    createMsg.textContent = "User created successfully!";
+    createMsg.style.color = 'green';
+    createMsg.textContent = 'User created successfully';
+    newEmail.value = ''; newPassword.value = '';
   } catch (e) {
-    createMsg.textContent = e.message;
+    createMsg.style.color = 'red';
+    createMsg.textContent = e.message || 'Error creating user';
   }
 });
 
 /* ----------------------------------------------------------
-   INITIAL LOAD
+   INIT: populate selects, add initial rows
 ----------------------------------------------------------- */
-populateCounterSelect();
-addEmptyRow();
-addEmptyRow();
+floorSelect.addEventListener('change', populateCounterSelect);
+newFloor.addEventListener('change', ()=> populateAssignCounterSelect(newFloor.value));
+viewFloor.addEventListener('change', loadAllEntries);
+
+function init() {
+  // populate selects
+  populateCounterSelect();
+  populateAssignCounterSelect(newFloor.value);
+  // add initial editable rows
+  addEmptyRow(); addEmptyRow();
+  // set today's date default in entryDate
+  entryDate.value = new Date().toISOString().slice(0,10);
+}
+init();
+
+/* ----------------------------------------------------------
+   Expose helpers for buttons created dynamically
+----------------------------------------------------------- */
+window.downloadEntryPdf = downloadEntryPdf;
+window.generatePdfFromEntry = generatePdfFromEntry;
