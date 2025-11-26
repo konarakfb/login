@@ -10,7 +10,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
-  <!-- Excel (SheetJS) -->
+  <!-- SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <!-- Firebase compat SDK -->
@@ -21,7 +21,6 @@
 
 <body>
   <div class="wrap">
-
     <header><h1>Konarak F&B — Dry Store</h1></header>
 
     <!-- LOGIN -->
@@ -30,36 +29,40 @@
         <h2>Login</h2>
         <input id="email" placeholder="Email" type="email" />
         <input id="password" placeholder="Password" type="password" />
-        <button id="loginBtn">Login</button>
-        <p id="loginError" class="error"></p>
+        <div class="row">
+          <button id="loginBtn">Login</button>
+        </div>
+        <p id="loginError" class="error" role="alert"></p>
       </div>
     </section>
 
-    <!-- MAIN APP -->
-    <section id="app-section" class="hidden">
+    <!-- APP -->
+    <section id="app-section" class="hidden" aria-hidden="true">
       <div class="topbar">
         <div id="who">—</div>
-        <button id="logoutBtn">Logout</button>
+        <div class="top-actions">
+          <button id="logoutBtn">Logout</button>
+        </div>
       </div>
 
       <!-- COUNTER UI -->
-      <div id="counter-ui" class="card hidden">
+      <div id="counter-ui" class="card hidden" aria-hidden="true">
         <h2>Daily Dry Store Entry</h2>
 
         <label>Floor</label>
-        <select id="floorSelect" disabled></select>
+        <select id="floorSelect" aria-label="Floor" disabled></select>
 
         <label>Counter</label>
-        <select id="counterSelect" disabled></select>
+        <select id="counterSelect" aria-label="Counter" disabled></select>
 
         <label>Date</label>
         <input id="entryDate" type="date" />
 
-        <div class="table-responsive">
-          <table id="stockTable">
+        <div class="table-responsive horizontal-blocks">
+          <table id="stockTable" aria-label="Stock table">
             <thead>
               <tr>
-                <th>S.No</th><th>Item</th><th>Batch</th><th>Receiving Date</th>
+                <th>S.No</th><th>Item</th><th>Batch No</th><th>Receiving Date</th>
                 <th>Mfg Date</th><th>Expiry</th><th>Shelf Life</th><th>Stock Qty</th><th>Remarks</th>
               </tr>
             </thead>
@@ -67,27 +70,27 @@
           </table>
         </div>
 
-        <div class="actions row">
+        <div class="row actions">
           <button id="addRowBtn">+ Add Row</button>
           <button id="saveEntryBtn">Save Entry</button>
           <button id="pdfBtn">PDF</button>
           <button id="excelBtn">Excel</button>
         </div>
 
-        <h3>Your Previous Entries</h3>
+        <h3>Your Saved Entries</h3>
         <div id="history"></div>
       </div>
 
       <!-- ADMIN UI -->
-      <div id="manager-ui" class="card hidden">
+      <div id="manager-ui" class="card hidden" aria-hidden="true">
         <h2>Admin Dashboard</h2>
 
         <div class="controls">
-          <label>Floor</label>
-          <select id="viewFloor"><option value="all">All</option></select>
+          <label>Filter Floor</label>
+          <select id="viewFloor"><option value="all">All Floors</option></select>
 
-          <label>Counter</label>
-          <select id="viewCounter"><option value="all">All</option></select>
+          <label>Filter Counter</label>
+          <select id="viewCounter"><option value="all">All Counters</option></select>
 
           <label>From</label>
           <input id="fromDate" type="date" />
@@ -96,29 +99,32 @@
           <input id="toDate" type="date" />
 
           <button id="refreshView">Refresh</button>
-          <button id="downloadFilteredExcel">Download Excel</button>
+          <button id="downloadFilteredExcel">Download Excel (Filtered)</button>
         </div>
 
         <div id="allEntries"></div>
 
-        <h3>Create Floor / Counter</h3>
-        <div class="card">
-          <label>New Floor</label>
-          <input id="newFloorName" />
+        <h3>Manage Floors & Counters</h3>
+        <div id="manageNodes" class="card">
+          <label>New Floor Name</label>
+          <input id="newFloorName" placeholder="e.g., 1st" />
           <button id="createFloorBtn">Create Floor</button>
 
-          <label>Floor for Counter</label>
+          <label>Create Counter under Floor</label>
           <select id="selectFloorForCounter"></select>
-          <input id="newCounterNameField" placeholder="Counter name" />
+          <input id="newCounterNameField" placeholder="Counter name e.g., Chana & Corn" />
           <button id="createCounterBtn">Create Counter</button>
 
           <p id="nodeMsg" class="error"></p>
         </div>
 
-        <h3>Create Counter User</h3>
-        <div class="card">
-          <input id="newEmail" placeholder="Email" />
-          <input id="newPassword" placeholder="Password" />
+        <h3>Create Counter User (Admin Only)</h3>
+        <div id="createUser" class="card">
+          <label>New User Email</label>
+          <input id="newEmail" placeholder="email (example: chana@konarak)" />
+
+          <label>New User Password</label>
+          <input id="newPassword" placeholder="password (min 6)" />
 
           <label>Assign Floor</label>
           <select id="newFloor"></select>
@@ -126,20 +132,24 @@
           <label>Assign Counter</label>
           <select id="newAssignCounter"></select>
 
-          <button id="createUserBtn">Create Counter User</button>
+          <div class="row">
+            <button id="createUserBtn">Create Counter User</button>
+          </div>
           <p id="createMsg" class="error"></p>
+          <p class="hint">Note: Creating a counter user will not sign you out.</p>
         </div>
-
       </div>
     </section>
 
-    <!-- DEBUG PANEL -->
-    <section id="debug" class="card">
+    <!-- Debug panel -->
+    <div id="debug" class="card" style="margin-top:12px;">
       <h3>Debug / Status</h3>
-      <div id="debugLog"></div>
-    </section>
+      <div id="debugLog" style="white-space:pre-wrap; font-family:monospace; font-size:13px; max-height:220px; overflow:auto;"></div>
+    </div>
 
+    <footer><small>&nbsp;</small></footer>
   </div>
+
   <script src="app.js"></script>
 </body>
 </html>
