@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Konarak F&B — Dry Store System</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- jsPDF & autoTable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- Firebase COMPAT SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+  <div class="wrap">
+    <header><h1>Konarak F&B — Dry Store System</h1></header>
+
+    <!-- LOGIN SECTION -->
+    <section id="auth-section">
+      <div id="login-card" class="card">
+        <h2>Login</h2>
+        <input id="email" placeholder="Email" type="email" />
+        <input id="password" placeholder="Password" type="password" />
+        <button id="loginBtn">Login</button>
+        <p id="loginError" class="error"></p>
+      </div>
+    </section>
+
+    <!-- APP SECTION -->
+    <section id="app-section" class="hidden">
+      <div class="topbar">
+        <div id="who"></div>
+        <button id="logoutBtn">Logout</button>
+      </div>
+
+      <!-- COUNTER UI -->
+      <div id="counter-ui" class="card hidden">
+        <h2>Daily Dry Store Entry</h2>
+
+        <label>Floor</label>
+        <select id="floorSelect">
+          <option value="1st">1st Floor</option>
+          <option value="6th">6th Floor</option>
+        </select>
+
+        <label>Counter</label>
+        <select id="counterSelect"></select>
+
+        <label>Date</label>
+        <input id="entryDate" type="date" />
+
+        <table id="stockTable">
+          <thead>
+            <tr>
+              <th>Item</th><th>Batch No</th><th>Receiving Date</th><th>Mfg Date</th><th>Expiry</th>
+              <th>Shelf Life</th><th>Qty</th><th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div class="row">
+          <button id="addRowBtn">+ Add Row</button>
+          <button id="saveEntryBtn">Save Entry</button>
+          <button id="pdfBtn">Download PDF</button>
+        </div>
+
+        <h3>Your Previous Entries</h3>
+        <div id="history"></div>
+      </div>
+
+      <!-- MANAGER / ADMIN UI -->
+      <div id="manager-ui" class="card hidden">
+        <h2>Manager / Admin Dashboard</h2>
+
+        <div class="controls">
+          <label>View Floor</label>
+          <select id="viewFloor">
+            <option value="all">All Floors</option>
+            <option value="1st">1st Floor</option>
+            <option value="6th">6th Floor</option>
+          </select>
+
+          <label>View Counter</label>
+          <select id="viewCounter"><option value="all">All Counters</option></select>
+
+          <button id="refreshView">Refresh</button>
+        </div>
+
+        <div id="allEntries"></div>
+
+        <h3>Create User (Admin Only)</h3>
+        <div id="createUser">
+          <input id="newEmail" placeholder="email" />
+          <input id="newPassword" placeholder="password (min 6)" />
+          <select id="newRole">
+            <option value="counter">Counter</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+          </select>
+          <select id="newFloor">
+            <option value="1st">1st</option>
+            <option value="6th">6th</option>
+          </select>
+          <input id="newCounterName" placeholder="Counter Name" />
+          <button id="createUserBtn">Create User</button>
+          <p id="createMsg"></p>
+        </div>
+      </div>
+    </section>
+
+    <footer><small>Konarak F&B — GitHub Pages + Firebase</small></footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
