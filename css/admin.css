@@ -1,0 +1,6 @@
+/* admin-specific styles */
+.sidebar{width:220px;float:left}
+.main{margin-left:240px;padding:12px}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}

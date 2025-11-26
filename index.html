@@ -2,176 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Konarak F&B — Dry Store</title>
+  <title>Konarak F&B — Dry Store (Login)</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="site-header">
+      <img src="assets/logo.png" alt="Konarak logo" class="logo">
+      <h1>Konarak F&B — Dry Store</h1>
+    </header>
 
-  <!-- jsPDF + autoTable -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <section class="card auth-card" role="main">
+      <h2>Sign in</h2>
+      <label for="email">Email</label>
+      <input id="email" type="email" placeholder="you@company.com" />
+      <label for="password">Password</label>
+      <input id="password" type="password" placeholder="Password" />
+      <div class="row">
+        <button id="loginBtn">Login</button>
+      </div>
+      <p id="loginError" class="error" aria-live="polite"></p>
+    </section>
 
-  <!-- SheetJS for Excel -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <section id="debug" class="card small hidden" aria-hidden="true">
+      <h3>Debug</h3>
+      <pre id="debugLog" style="white-space:pre-wrap;"></pre>
+    </section>
+  </main>
 
-  <!-- Firebase compat SDK -->
+  <!-- Firebase SDK (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-</head>
-<body>
-  <div class="wrap">
-    <header><h1>Konarak F&B — Dry Store</h1></header>
 
-    <!-- LOGIN -->
-    <section id="auth-section">
-      <div class="card" id="login-card">
-        <h2>Login</h2>
-        <input id="email" placeholder="Email" type="email" />
-        <input id="password" placeholder="Password" type="password" />
-        <div class="row">
-          <button id="loginBtn">Login</button>
-        </div>
-        <p id="loginError" class="error" role="alert"></p>
-      </div>
-    </section>
-
-    <!-- APP -->
-    <section id="app-section" class="hidden" aria-hidden="true">
-      <div class="topbar">
-        <div id="who">—</div>
-        <div class="top-actions">
-          <button id="logoutBtn">Logout</button>
-        </div>
-      </div>
-
-      <!-- COUNTER UI (staff) -->
-      <div id="counter-ui" class="card hidden" aria-hidden="true">
-        <h2>Daily Dry Store Entry (Staff)</h2>
-
-        <label>Floor</label>
-        <select id="floorSelect" disabled></select>
-
-        <label>Counter</label>
-        <select id="counterSelect" disabled></select>
-
-        <label>Date</label>
-        <input id="entryDate" type="date" />
-
-        <!-- vertical form: single item per save -->
-        <div class="form-vertical">
-          <label>Item</label>
-          <input id="item" placeholder="Item name (e.g., Milk Powder)" />
-
-          <label>Batch No</label>
-          <input id="batch" placeholder="Batch number" />
-
-          <label>Receiving Date</label>
-          <input id="receivingDate" type="date" />
-
-          <label>Mfg Date</label>
-          <input id="mfgDate" type="date" />
-
-          <label>Expiry Date</label>
-          <input id="expiryDate" type="date" />
-
-          <label>Shelf Life</label>
-          <input id="shelfLife" placeholder="e.g., 12 months" />
-
-          <label>Stock Qty</label>
-          <input id="qty" type="number" placeholder="Qty" />
-
-          <label>Remarks</label>
-          <input id="remarks" placeholder="Any remarks" />
-        </div>
-
-        <div class="row actions">
-          <button id="saveEntryBtn">Save Entry</button>
-        </div>
-
-        <h3>Your Saved Entries (recent)</h3>
-        <div id="history" class="cards-row"></div>
-      </div>
-
-      <!-- ADMIN UI -->
-      <div id="manager-ui" class="card hidden" aria-hidden="true">
-        <h2>Admin Dashboard</h2>
-
-        <div class="controls">
-          <label>Filter Floor</label>
-          <select id="viewFloor"><option value="all">All Floors</option></select>
-
-          <label>Filter Counter</label>
-          <select id="viewCounter"><option value="all">All Counters</option></select>
-
-          <label>From</label>
-          <input id="fromDate" type="date" />
-
-          <label>To</label>
-          <input id="toDate" type="date" />
-
-          <button id="refreshView">Refresh</button>
-          <button id="downloadFilteredPdf">Download PDF (Filtered)</button>
-          <button id="downloadFilteredExcel">Download Excel (Filtered)</button>
-        </div>
-
-        <h3>Entries</h3>
-        <div id="allEntries" class="cards-column"></div>
-
-        <hr/>
-
-        <h3>Manage Floors</h3>
-        <div id="manageFloors" class="card inline-management">
-          <div class="form-col">
-            <input id="newFloorName" placeholder="New floor name (e.g., 1st)" />
-            <button id="createFloorBtn">Create Floor</button>
-          </div>
-          <div class="list-col">
-            <div id="floorsList"></div>
-          </div>
-          <p id="nodeMsg" class="error"></p>
-        </div>
-
-        <h3>Manage Counters</h3>
-        <div id="manageCounters" class="card inline-management">
-          <div class="form-col">
-            <label>Select Floor</label>
-            <select id="selectFloorForCounter"></select>
-            <input id="newCounterNameField" placeholder="Counter name e.g., Chana & Corn" />
-            <button id="createCounterBtn">Create Counter</button>
-          </div>
-          <div class="list-col">
-            <div id="countersList"></div>
-          </div>
-        </div>
-
-        <h3>Manage Staff</h3>
-        <div id="manageUsers" class="card">
-          <div class="form-row">
-            <input id="newEmail" placeholder="New user email" />
-            <input id="newPassword" placeholder="New user password" />
-            <label>Assign Floor</label>
-            <select id="newFloor"></select>
-            <label>Assign Counter</label>
-            <select id="newAssignCounter"></select>
-            <button id="createUserBtn">Create Counter User</button>
-            <p id="createMsg" class="error"></p>
-          </div>
-
-          <h4>Staff List</h4>
-          <div id="staffList" class="cards-row"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Debug panel -->
-    <div id="debug" class="card" style="margin-top:12px;">
-      <h3>Debug / Status</h3>
-      <div id="debugLog" style="white-space:pre-wrap; font-family:monospace; font-size:13px; max-height:220px; overflow:auto;"></div>
-    </div>
-
-    <footer><small>&nbsp;</small></footer>
-  </div>
-
-  <script src="app.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
 </body>
 </html>

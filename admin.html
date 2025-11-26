@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Admin — Konarak F&B</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+</head>
+<body>
+  <div class="container">
+    <aside class="sidebar card" aria-label="Main navigation">
+      <img src="assets/logo.png" class="logo-small" alt="logo" />
+      <nav>
+        <button id="navHome">Home</button>
+        <button id="navData">Data</button>
+        <button id="navUsers">Users</button>
+        <button id="navNodes">Buildings/Floors/Counters</button>
+        <button id="logoutBtn">Logout</button>
+      </nav>
+    </aside>
+
+    <main class="main card" id="mainContent" role="main">
+      <header class="topbar">
+        <h2>Admin Dashboard</h2>
+        <div id="who">—</div>
+      </header>
+
+      <section id="sectionHome" class="panel">
+        <h3>Home</h3>
+        <div id="homeStats">Loading stats...</div>
+      </section>
+
+      <section id="sectionData" class="panel hidden">
+        <h3>Data — Filters</h3>
+        <div class="filter-row">
+          <select id="selectBuilding"><option value="all">All buildings</option></select>
+          <select id="selectFloor"><option value="all">All floors</option></select>
+          <select id="selectCounter"><option value="all">All counters</option></select>
+          <input id="fromDate" type="date" />
+          <input id="toDate" type="date" />
+          <button id="btnFilter">Filter</button>
+          <button id="btnExportPdf">Export PDF</button>
+          <button id="btnExportXlsx">Export Excel</button>
+        </div>
+
+        <div id="dataTable" class="table-wrapper" aria-live="polite"></div>
+      </section>
+
+      <section id="sectionNodes" class="panel hidden">
+        <h3>Buildings, Floors, Counters</h3>
+        <div class="grid-2">
+          <div>
+            <h4>Create Building</h4>
+            <input id="newBuildingName" placeholder="Building name" />
+            <button id="createBuildingBtn">Create</button>
+
+            <h4>Create Floor</h4>
+            <select id="selBuildingForFloor"></select>
+            <input id="newFloorName" placeholder="Floor name" />
+            <button id="createFloorBtn">Create</button>
+          </div>
+          <div>
+            <h4>Create Counter</h4>
+            <select id="selBuildingForCounter"></select>
+            <select id="selFloorForCounter"></select>
+            <input id="newCounterName" placeholder="Counter name" />
+            <button id="createCounterBtn">Create</button>
+          </div>
+        </div>
+
+        <div id="nodesList"></div>
+      </section>
+
+      <section id="sectionUsers" class="panel hidden">
+        <h3>Users</h3>
+        <div class="form-inline">
+          <input id="newEmail" placeholder="email" />
+          <input id="newPassword" placeholder="password" />
+          <select id="newUserBuilding"></select>
+          <select id="newUserFloor"></select>
+          <select id="newUserCounter"></select>
+          <select id="newUserRole"><option value="counter">Counter</option><option value="manager">Manager</option></select>
+          <button id="createUserBtn">Create User</button>
+        </div>
+        <div id="usersList"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- libs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/pdf-export.js"></script>
+  <script src="js/excel-export.js"></script>
+  <script src="js/buildings.js"></script>
+  <script src="js/floors.js"></script>
+  <script src="js/counters.js"></script>
+  <script src="js/users.js"></script>
+  <script src="js/entries.js"></script>
+</body>
+</html>

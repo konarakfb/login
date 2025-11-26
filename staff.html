@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Staff — Konarak F&B</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/staff.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="site-header">
+      <img src="assets/logo.png" class="logo"> <h1>Staff — Dry Store Entry</h1>
+      <div style="margin-left:auto"><button id="logoutBtn">Logout</button></div>
+    </header>
+
+    <section class="card">
+      <h2>Your Counter</h2>
+      <div class="row">
+        <div style="flex:1">
+          <label>Building</label>
+          <select id="buildingSelect" disabled></select>
+        </div>
+        <div style="flex:1">
+          <label>Floor</label>
+          <select id="floorSelect" disabled></select>
+        </div>
+        <div style="flex:1">
+          <label>Counter</label>
+          <select id="counterSelect" disabled></select>
+        </div>
+      </div>
+
+      <div class="form-vertical card-lite" id="entryForm">
+        <label>Item</label><input id="item" />
+        <label>Batch No</label><input id="batch" />
+        <label>Receiving Date</label><input id="receivingDate" type="date" />
+        <label>Mfg Date</label><input id="mfgDate" type="date" />
+        <label>Expiry Date</label><input id="expiryDate" type="date" />
+        <label>Shelf Life</label><input id="shelfLife" />
+        <label>Stock Qty</label><input id="qty" type="number" />
+        <label>Remarks</label><input id="remarks" />
+        <div class="row"><button id="saveEntryBtn">Save</button></div>
+      </div>
+
+      <h3>Your Entries (last 7 days)</h3>
+      <div id="staffEntries" class="table-wrapper"></div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/staff.js"></script>
+  <script src="js/utils.js"></script>
+</body>
+</html>

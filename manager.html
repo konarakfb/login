@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Manager — Konarak F&B</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/manager.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="site-header">
+      <img src="assets/logo.png" class="logo"> <h1>Manager Dashboard</h1>
+      <div style="margin-left:auto"><button id="logoutBtn">Logout</button></div>
+    </header>
+
+    <section class="card">
+      <h2>Manager View</h2>
+      <div id="managerInfo"></div>
+      <div id="mgrData" class="table-wrapper"></div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/manager.js"></script>
+  <script src="js/utils.js"></script>
+</body>
+</html>
