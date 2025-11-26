@@ -1,6 +1,6 @@
 /* =========================================================
    KONARAK F&B — DRY STORE
-   FINAL PRODUCTION-STABLE app.js
+   FINAL UPDATED app.js (Fixed startup permissions)
    ========================================================= */
 
 /* ---------------- DEBUG LOG ---------------- */
@@ -37,34 +37,34 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 /* ---------------- DOM READY ---------------- */
-document.addEventListener("DOMContentLoaded", async () => {
-  debug("DOM ready — initializing app");
+document.addEventListener("DOMContentLoaded", () => {
+  debug("DOM ready — waiting for login");
+  wireEvents();
+
   try {
-    await ensureDefaults();
-    await loadFloorsAndCountersToUI();
-    wireEvents();
-    document.getElementById("entryDate").value = new Date().toISOString().slice(0, 10);
-  } catch (e) {
-    debug("Init error: " + e.message);
-  }
+    document.getElementById("entryDate").value =
+      new Date().toISOString().slice(0, 10);
+  } catch {}
 });
 
 /* =========================================================
-   CREATE DEFAULT FLOORS/COUNTERS IF DB IS EMPTY
+   GLOBAL FALLBACKS (used only if DB not readable)
+   ========================================================= */
+let IN_MEMORY_FLOORS = null;
+let IN_MEMORY_COUNTERS = null;
+
+/* =========================================================
+   ENSURE DEFAULTS — runs ONLY AFTER LOGIN
    ========================================================= */
 async function ensureDefaults() {
   try {
     const fSnap = await db.collection("floors").limit(1).get();
-    if (fSnap.empty) {
-      debug("Creating default floors");
-      await db.collection("floors").add({ name: "1st" });
-      await db.collection("floors").add({ name: "6th" });
-    }
-
     const cSnap = await db.collection("counters").limit(1).get();
-    if (cSnap.empty) {
-      debug("Creating default counters");
-      const defaults = [
+
+    if (fSnap.empty || cSnap.empty) {
+      debug("Firestore empty — using fallback lists");
+      IN_MEMORY_FLOORS = ["1st", "6th"];
+      IN_MEMORY_COUNTERS = [
         { name: "Kitchen", floor: "1st" },
         { name: "Chana & Corn", floor: "1st" },
         { name: "Juice", floor: "1st" },
@@ -76,17 +76,194 @@ async function ensureDefaults() {
         { name: "Tea", floor: "6th" },
         { name: "Muntha Masala", floor: "6th" }
       ];
-      for (const c of defaults) {
-        await db.collection("counters").add(c);
-      }
+    } else {
+      IN_MEMORY_FLOORS = null;
+      IN_MEMORY_COUNTERS = null;
     }
   } catch (e) {
-    debug("ensureDefaults error: " + e.message);
+    debug("ensureDefaults error — fallback mode: " + e.message);
+    IN_MEMORY_FLOORS = ["1st", "6th"];
+    IN_MEMORY_COUNTERS = [
+      { name: "Kitchen", floor: "1st" },
+      { name: "Chana & Corn", floor: "1st" },
+      { name: "Juice", floor: "1st" },
+      { name: "Tea", floor: "1st" },
+      { name: "Bread", floor: "1st" },
+      { name: "Chat", floor: "1st" },
+      { name: "Shawarma", floor: "1st" },
+      { name: "Kitchen", floor: "6th" },
+      { name: "Tea", floor: "6th" },
+      { name: "Muntha Masala", floor: "6th" }
+    ];
   }
 }
 
 /* =========================================================
-   EVENT LISTENERS
+   LOGIN AFTER-LOAD FIX — onAuthStateChanged
+   ========================================================= */
+auth.onAuthStateChanged(async (user) => {
+  debug("onAuthStateChanged → " + (user ? user.email : "null"));
+
+  document.getElementById("auth-section").classList.remove("hidden");
+  document.getElementById("app-section").classList.add("hidden");
+
+  if (!user) return; // Not logged in → stop here (NO Firestore reads)
+
+  try {
+    // ⭐ Load floors & counters ONLY AFTER user logs in
+    await ensureDefaults();
+    await loadFloorsAndCountersToUI();
+
+    const metaDoc = await db.collection("users").doc(user.uid).get();
+
+    if (!metaDoc.exists) {
+      debug("User doc missing → showing admin UI");
+      document.getElementById("auth-section").classList.add("hidden");
+      document.getElementById("app-section").classList.remove("hidden");
+      return await showManagerUI();
+    }
+
+    const meta = metaDoc.data();
+    document.getElementById("who").textContent =
+      `${meta.role.toUpperCase()} — ${meta.counter} (${meta.floor})`;
+
+    document.getElementById("auth-section").classList.add("hidden");
+    document.getElementById("app-section").classList.remove("hidden");
+
+    if (meta.role === "counter") {
+      await showCounterUI(meta, user.uid);
+    } else {
+      await showManagerUI();
+    }
+
+  } catch (e) {
+    debug("Auth error: " + e.message);
+  }
+});
+
+/* =========================================================
+   LOAD FLOORS + COUNTERS (supports fallback mode)
+   ========================================================= */
+async function loadFloorsAndCountersToUI() {
+  try {
+    debug("Loading floors & counters…");
+
+    let floors = [];
+    let counters = [];
+
+    if (IN_MEMORY_FLOORS) {
+      floors = IN_MEMORY_FLOORS;
+      counters = IN_MEMORY_COUNTERS;
+      debug("Using fallback floors/counters");
+    } else {
+      const fSnap = await db.collection("floors").orderBy("name").get();
+      floors = fSnap.docs.map(d => d.data().name);
+
+      const cSnap = await db.collection("counters")
+        .orderBy("floor")
+        .orderBy("name")
+        .get();
+
+      counters = cSnap.docs.map(d => ({
+        name: d.data().name,
+        floor: d.data().floor
+      }));
+    }
+
+    // Populate all dropdowns
+    const selectsFloors = [
+      "floorSelect",
+      "viewFloor",
+      "newFloor",
+      "selectFloorForCounter"
+    ].map(id => document.getElementById(id));
+
+    selectsFloors.forEach(sel => {
+      if (!sel) return;
+      sel.innerHTML = "";
+      if (sel.id === "viewFloor") sel.append(new Option("All", "all"));
+      floors.forEach(f => sel.append(new Option(f, f)));
+    });
+
+    // Select defaults
+    if (floors.length > 0) {
+      if (document.getElementById("floorSelect"))
+        document.getElementById("floorSelect").value = floors[0];
+      if (document.getElementById("newFloor"))
+        document.getElementById("newFloor").value = floors[0];
+      if (document.getElementById("selectFloorForCounter"))
+        document.getElementById("selectFloorForCounter").value = floors[0];
+    }
+
+    // Populate counters
+    const curFloor = document.getElementById("floorSelect").value;
+    if (IN_MEMORY_COUNTERS) {
+      const floorCounters = IN_MEMORY_COUNTERS.filter(c => c.floor === curFloor);
+      const cSel = document.getElementById("counterSelect");
+      cSel.innerHTML = "";
+      floorCounters.forEach(c => cSel.append(new Option(c.name, c.name)));
+
+      // View counters
+      const vc = document.getElementById("viewCounter");
+      vc.innerHTML = "<option value='all'>All</option>";
+      IN_MEMORY_COUNTERS.forEach(c =>
+        vc.append(new Option(`${c.name} (${c.floor})`, c.name))
+      );
+
+      // New assign counter
+      const nf = document.getElementById("newFloor").value;
+      const na = document.getElementById("newAssignCounter");
+      na.innerHTML = "";
+      IN_MEMORY_COUNTERS.filter(c => c.floor === nf)
+        .forEach(c => na.append(new Option(c.name, c.name)));
+
+    } else {
+      await populateCountersForFloor(curFloor);
+      await populateViewCounterOptions();
+      await populateAssignCounterOptions(document.getElementById("newFloor").value);
+    }
+
+  } catch (e) {
+    debug("loadFloorsAndCountersToUI error: " + e.message);
+  }
+}
+
+async function populateCountersForFloor(floor) {
+  const sel = document.getElementById("counterSelect");
+  sel.innerHTML = "";
+  const snap = await db.collection("counters")
+    .where("floor", "==", floor)
+    .orderBy("name")
+    .get();
+  snap.forEach(d => sel.append(new Option(d.data().name, d.data().name)));
+}
+
+async function populateViewCounterOptions() {
+  const sel = document.getElementById("viewCounter");
+  sel.innerHTML = "<option value='all'>All</option>";
+
+  const snap = await db.collection("counters")
+    .orderBy("floor")
+    .orderBy("name")
+    .get();
+
+  snap.forEach(d =>
+    sel.append(new Option(`${d.data().name} (${d.data().floor})`, d.data().name))
+  );
+}
+
+async function populateAssignCounterOptions(floor) {
+  const sel = document.getElementById("newAssignCounter");
+  sel.innerHTML = "";
+  const snap = await db.collection("counters")
+    .where("floor", "==", floor)
+    .orderBy("name")
+    .get();
+  snap.forEach(d => sel.append(new Option(d.data().name, d.data().name)));
+}
+
+/* =========================================================
+   EVENT HANDLERS
    ========================================================= */
 function wireEvents() {
   document.getElementById("loginBtn").addEventListener("click", loginHandler);
@@ -109,149 +286,9 @@ function wireEvents() {
   document.getElementById("refreshView").addEventListener("click", loadAllEntries);
   document.getElementById("downloadFilteredExcel").addEventListener("click", downloadFilteredExcel);
 
-  document.getElementById("newFloor").addEventListener("change", () => {
-    populateAssignCounterOptions(document.getElementById("newFloor").value);
-  });
-}
-
-/* =========================================================
-   AUTH STATE LISTENER
-   ========================================================= */
-auth.onAuthStateChanged(async (user) => {
-  debug("onAuthStateChanged → " + (user ? user.email : "null"));
-
-  document.getElementById("auth-section").classList.remove("hidden");
-  document.getElementById("app-section").classList.add("hidden");
-
-  if (!user) return;
-
-  const metaDoc = await db.collection("users").doc(user.uid).get();
-  if (!metaDoc.exists) {
-    debug("User doc missing → showing admin UI");
-    document.getElementById("auth-section").classList.add("hidden");
-    document.getElementById("app-section").classList.remove("hidden");
-    await showManagerUI();
-    return;
-  }
-
-  const meta = metaDoc.data();
-  document.getElementById("who").textContent =
-    `${meta.role.toUpperCase()} — ${meta.counter} (${meta.floor})`;
-
-  document.getElementById("auth-section").classList.add("hidden");
-  document.getElementById("app-section").classList.remove("hidden");
-
-  if (meta.role === "counter") {
-    await showCounterUI(meta, user.uid);
-  } else {
-    await showManagerUI();
-  }
-});
-
-/* =========================================================
-   LOAD FLOORS & COUNTERS
-   ========================================================= */
-async function loadFloorsAndCountersToUI() {
-  const floorsSnap = await db.collection("floors").orderBy("name").get();
-  const floors = floorsSnap.docs.map(d => d.data().name);
-
-  const floorSelect = document.getElementById("floorSelect");
-  const viewFloor = document.getElementById("viewFloor");
-  const newFloor = document.getElementById("newFloor");
-  const selectFloorForCounter = document.getElementById("selectFloorForCounter");
-
-  [floorSelect, viewFloor, newFloor, selectFloorForCounter].forEach(sel => {
-    sel.innerHTML = "";
-    if (sel.id === "viewFloor") sel.appendChild(new Option("All", "all"));
-    floors.forEach(f => sel.appendChild(new Option(f, f)));
-  });
-
-  if (floors.length) {
-    if (!floorSelect.value) floorSelect.value = floors[0];
-    if (!newFloor.value) newFloor.value = floors[0];
-    if (!selectFloorForCounter.value) selectFloorForCounter.value = floors[0];
-  }
-
-  await populateCountersForFloor(floorSelect.value);
-  await populateViewCounterOptions();
-  await populateAssignCounterOptions(newFloor.value);
-}
-
-async function populateCountersForFloor(floor) {
-  const sel = document.getElementById("counterSelect");
-  sel.innerHTML = "";
-  const snap = await db.collection("counters")
-    .where("floor", "==", floor)
-    .orderBy("name")
-    .get();
-  snap.forEach(d => sel.appendChild(new Option(d.data().name, d.data().name)));
-}
-
-async function populateViewCounterOptions() {
-  const sel = document.getElementById("viewCounter");
-  sel.innerHTML = '<option value="all">All</option>';
-  const snap = await db.collection("counters")
-    .orderBy("floor")
-    .orderBy("name")
-    .get();
-  snap.forEach(d => sel.appendChild(new Option(`${d.data().name} (${d.data().floor})`, d.data().name)));
-}
-
-async function reloadViewCounters() {
-  const vf = document.getElementById("viewFloor").value;
-  const sel = document.getElementById("viewCounter");
-  sel.innerHTML = "<option value='all'>All</option>";
-
-  if (vf === "all") return populateViewCounterOptions();
-
-  const snap = await db.collection("counters")
-    .where("floor", "==", vf)
-    .orderBy("name")
-    .get();
-  snap.forEach(d => sel.appendChild(new Option(d.data().name, d.data().name)));
-}
-
-async function populateAssignCounterOptions(floor) {
-  const sel = document.getElementById("newAssignCounter");
-  sel.innerHTML = "";
-  const snap = await db.collection("counters")
-    .where("floor", "==", floor)
-    .orderBy("name")
-    .get();
-  snap.forEach(d => sel.appendChild(new Option(d.data().name, d.data().name)));
-}
-
-/* =========================================================
-   SHOW UIs
-   ========================================================= */
-async function showManagerUI() {
-  debug("Showing admin UI");
-  document.getElementById("counter-ui").classList.add("hidden");
-  document.getElementById("manager-ui").classList.remove("hidden");
-
-  await loadFloorsAndCountersToUI();
-  await loadAllEntries();
-}
-
-async function showCounterUI(meta, uid) {
-  debug("Showing counter UI");
-
-  document.getElementById("manager-ui").classList.add("hidden");
-  document.getElementById("counter-ui").classList.remove("hidden");
-
-  await loadFloorsAndCountersToUI();
-  document.getElementById("floorSelect").value = meta.floor;
-  await populateCountersForFloor(meta.floor);
-  document.getElementById("counterSelect").value = meta.counter;
-
-  document.getElementById("floorSelect").disabled = true;
-  document.getElementById("counterSelect").disabled = true;
-
-  document.querySelector("#stockTable tbody").innerHTML = "";
-  addEmptyRow();
-  addEmptyRow();
-
-  await loadMyEntries(uid);
+  document.getElementById("newFloor").addEventListener("change", () =>
+    populateAssignCounterOptions(document.getElementById("newFloor").value)
+  );
 }
 
 /* =========================================================
@@ -267,12 +304,43 @@ async function loginHandler() {
     debug("Login success");
   } catch (e) {
     setText("loginError", e.message);
-    debug("Login error: " + e.message);
   }
 }
 
 /* =========================================================
-   TABLE HANDLING
+   COUNTER UI
+   ========================================================= */
+async function showCounterUI(meta, uid) {
+  document.getElementById("manager-ui").classList.add("hidden");
+  document.getElementById("counter-ui").classList.remove("hidden");
+
+  document.getElementById("floorSelect").value = meta.floor;
+  await populateCountersForFloor(meta.floor);
+  document.getElementById("counterSelect").value = meta.counter;
+
+  document.getElementById("floorSelect").disabled = true;
+  document.getElementById("counterSelect").disabled = true;
+
+  document.querySelector("#stockTable tbody").innerHTML = "";
+  addEmptyRow();
+  addEmptyRow();
+
+  await loadMyEntries(uid);
+}
+
+/* =========================================================
+   ADMIN UI
+   ========================================================= */
+async function showManagerUI() {
+  document.getElementById("counter-ui").classList.add("hidden");
+  document.getElementById("manager-ui").classList.remove("hidden");
+
+  await loadFloorsAndCountersToUI();
+  await loadAllEntries();
+}
+
+/* =========================================================
+   TABLE
    ========================================================= */
 function addEmptyRow() {
   const tbody = document.querySelector("#stockTable tbody");
@@ -316,13 +384,13 @@ function readTableRows() {
    ========================================================= */
 async function saveEntryHandler() {
   const user = auth.currentUser;
-  if (!user) return alert("Not signed in");
+  if (!user) return alert("Not logged in");
 
   const metaDoc = await db.collection("users").doc(user.uid).get();
   const meta = metaDoc.data();
 
   const rows = readTableRows();
-  if (rows.length === 0) return alert("Add at least one row");
+  if (!rows.length) return alert("Add at least one row");
 
   const floor = document.getElementById("floorSelect").value;
   const counter = document.getElementById("counterSelect").value;
@@ -343,7 +411,7 @@ async function saveEntryHandler() {
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   });
 
-  alert("Saved successfully");
+  alert("Saved");
   await loadMyEntries(user.uid);
 }
 
@@ -380,21 +448,23 @@ async function loadAllEntries() {
 
   let q = db.collection("entries").orderBy("timestamp", "desc");
 
-  const floor = document.getElementById("viewFloor").value;
-  const counter = document.getElementById("viewCounter").value;
+  const f = document.getElementById("viewFloor").value;
+  const c = document.getElementById("viewCounter").value;
 
-  if (floor !== "all") q = q.where("floor", "==", floor);
-  if (counter !== "all") q = q.where("counter", "==", counter);
+  if (f !== "all") q = q.where("floor", "==", f);
+  if (c !== "all") q = q.where("counter", "==", c);
 
   const snap = await q.get();
 
   snap.forEach(doc => {
     const d = doc.data();
+
     const e = document.createElement("div");
     e.className = "entry";
 
     e.innerHTML = `
-      <strong>${d.counter} (${d.floor}) — ${d.date}</strong><br>${d.rows.length} items
+      <strong>${d.counter} (${d.floor}) — ${d.date}</strong>
+      <br>${d.rows.length} items
       <br><button onclick="downloadEntryPdf('${doc.id}')">PDF</button>
       <button onclick="downloadEntryExcel('${doc.id}')">Excel</button>
     `;
@@ -430,10 +500,8 @@ function generatePdfFromEntry(entry) {
     ];
 
     const body = entry.rows.map((r, i) => [
-      i + 1,
-      r.item, r.batch, r.receivingDate,
-      r.mfgDate, r.expiryDate, r.shelfLife,
-      r.qty, r.remarks
+      i + 1, r.item, r.batch, r.receivingDate,
+      r.mfgDate, r.expiryDate, r.shelfLife, r.qty, r.remarks
     ]);
 
     doc.autoTable({
@@ -453,14 +521,12 @@ async function downloadEntryPdf(id) {
   generatePdfFromEntry(docSnap.data());
 }
 
-/* PDF from UI table */
 function exportPdfFromUI() {
   const rows = readTableRows();
   if (!rows.length) return alert("Add at least one row");
 
   const entry = {
     date: document.getElementById("entryDate").value,
-    floor: document.getElementById("floorSelect").value,
     counter: document.getElementById("counterSelect").value,
     rows
   };
@@ -488,7 +554,7 @@ async function downloadEntryExcel(id) {
     "Batch": r.batch,
     "Receiving Date": r.receivingDate,
     "Mfg Date": r.mfgDate,
-    "Expiry Date": r.expiryDate,
+    "Expiry": r.expiryDate,
     "Shelf Life": r.shelfLife,
     "Qty": r.qty,
     "Remarks": r.remarks
@@ -497,7 +563,6 @@ async function downloadEntryExcel(id) {
   exportJsonToExcel(rows, `DryStore_${d.counter}_${d.date}.xlsx`);
 }
 
-/* Excel export from UI table */
 function exportExcelFromUI() {
   const rows = readTableRows();
   if (!rows.length) return alert("Add at least one row");
@@ -508,7 +573,7 @@ function exportExcelFromUI() {
     "Batch": r.batch,
     "Receiving Date": r.receivingDate,
     "Mfg Date": r.mfgDate,
-    "Expiry Date": r.expiryDate,
+    "Expiry": r.expiryDate,
     "Shelf Life": r.shelfLife,
     "Qty": r.qty,
     "Remarks": r.remarks
@@ -517,19 +582,19 @@ function exportExcelFromUI() {
   exportJsonToExcel(mapped, "DryStore_Table.xlsx");
 }
 
-/* Manager Export */
 async function downloadFilteredExcel() {
-  const floor = document.getElementById("viewFloor").value;
-  const counter = document.getElementById("viewCounter").value;
+  const f = document.getElementById("viewFloor").value;
+  const c = document.getElementById("viewCounter").value;
   const from = document.getElementById("fromDate").value;
   const to = document.getElementById("toDate").value;
 
   let q = db.collection("entries").orderBy("timestamp", "desc");
-  if (floor !== "all") q = q.where("floor", "==", floor);
-  if (counter !== "all") q = q.where("counter", "==", counter);
+
+  if (f !== "all") q = q.where("floor", "==", f);
+  if (c !== "all") q = q.where("counter", "==", c);
 
   const snap = await q.get();
-  const output = [];
+  const out = [];
 
   snap.forEach(doc => {
     const d = doc.data();
@@ -537,7 +602,7 @@ async function downloadFilteredExcel() {
     if (to && d.date > to) return;
 
     d.rows.forEach((r, i) =>
-      output.push({
+      out.push({
         "Date": d.date,
         "Floor": d.floor,
         "Counter": d.counter,
@@ -546,7 +611,7 @@ async function downloadFilteredExcel() {
         "Batch": r.batch,
         "Receiving Date": r.receivingDate,
         "Mfg Date": r.mfgDate,
-        "Expiry Date": r.expiryDate,
+        "Expiry": r.expiryDate,
         "Shelf Life": r.shelfLife,
         "Qty": r.qty,
         "Remarks": r.remarks,
@@ -555,20 +620,20 @@ async function downloadFilteredExcel() {
     );
   });
 
-  if (!output.length) return alert("No entries found");
+  if (!out.length) return alert("No matching entries found");
 
-  exportJsonToExcel(output, "DryStore_Filtered.xlsx");
+  exportJsonToExcel(out, "DryStore_Filtered.xlsx");
 }
 
 /* =========================================================
-   ADMIN — CREATE FLOOR & COUNTER
+   ADMIN — CREATE FLOOR
    ========================================================= */
 async function createFloorHandler() {
   const name = document.getElementById("newFloorName").value.trim();
   if (!name) return setText("nodeMsg", "Enter floor name");
 
-  const exist = await db.collection("floors").where("name", "==", name).get();
-  if (!exist.empty) return setText("nodeMsg", "Floor already exists");
+  const exists = await db.collection("floors").where("name", "==", name).get();
+  if (!exists.empty) return setText("nodeMsg", "Floor already exists");
 
   await db.collection("floors").add({ name });
   setText("nodeMsg", "Floor created", "green");
@@ -577,17 +642,20 @@ async function createFloorHandler() {
   await loadFloorsAndCountersToUI();
 }
 
+/* =========================================================
+   ADMIN — CREATE COUNTER
+   ========================================================= */
 async function createCounterHandler() {
   const floor = document.getElementById("selectFloorForCounter").value;
   const name = document.getElementById("newCounterNameField").value.trim();
   if (!name) return setText("nodeMsg", "Enter counter name");
 
-  const exist = await db.collection("counters")
+  const exists = await db.collection("counters")
     .where("floor", "==", floor)
     .where("name", "==", name)
     .get();
 
-  if (!exist.empty) return setText("nodeMsg", "Counter already exists for that floor");
+  if (!exists.empty) return setText("nodeMsg", "Counter already exists");
 
   await db.collection("counters").add({ floor, name });
   setText("nodeMsg", "Counter created", "green");
@@ -597,7 +665,7 @@ async function createCounterHandler() {
 }
 
 /* =========================================================
-   ADMIN — CREATE COUNTER USER (WITHOUT SIGN OUT)
+   ADMIN — CREATE COUNTER USER (REST API)
    ========================================================= */
 async function createCounterUserHandler() {
   setText("createMsg", "");
@@ -607,8 +675,8 @@ async function createCounterUserHandler() {
   const floor = document.getElementById("newFloor").value;
   const counter = document.getElementById("newAssignCounter").value;
 
-  if (!email || !password) return setText("createMsg", "Provide email & password");
-  if (!floor || !counter) return setText("createMsg", "Select floor & counter");
+  if (!email || !password)
+    return setText("createMsg", "Email & password required");
 
   const apiKey = firebaseConfig.apiKey;
 
@@ -639,7 +707,9 @@ async function createCounterUserHandler() {
   document.getElementById("newPassword").value = "";
 }
 
-/* expose pdf/excel functions */
+/* =========================================================
+   EXPORT FUNCTIONS (public)
+   ========================================================= */
 window.downloadEntryPdf = downloadEntryPdf;
 window.downloadEntryExcel = downloadEntryExcel;
 
