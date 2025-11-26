@@ -2,89 +2,163 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <title>Konarak F&B — Dry Store</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Cafeteria Admin</title>
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- jsPDF & autoTable -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- SheetJS for Excel export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Firebase COMPAT SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
+
 <body>
-  <header>
-    <img src="logo.png" alt="Logo" id="logo" />
-    <h1>Cafeteria Admin Dashboard</h1>
-  </header>
+  <div class="wrap">
+    <header><h1>Konarak F&B — Dry Store</h1></header>
 
-  <main>
-    <section class="card">
-      <h2>Site / Admin Selection</h2>
-      <label for="adminSelect">Select Admin (Site):</label>
-      <select id="adminSelect"></select>
-      <button id="addAdminBtn" class="small">Add Admin</button>
-    </section>
-
-    <section class="card">
-      <h2>Floors & Counters</h2>
-
-      <div class="row">
-        <div>
-          <label for="floorSelect">Select Floor:</label>
-          <select id="floorSelect"></select>
+    <!-- LOGIN -->
+    <section id="auth-section">
+      <div class="card" id="login-card">
+        <h2>Login</h2>
+        <input id="email" placeholder="Email" type="email" autocomplete="username" />
+        <input id="password" placeholder="Password" type="password" autocomplete="current-password" />
+        <div class="row">
+          <button id="loginBtn">Login</button>
         </div>
-        <div>
-          <label for="counterSelect">Select Counter:</label>
-          <select id="counterSelect"></select>
-        </div>
-      </div>
-
-      <div class="row small-forms">
-        <input id="newFloorName" placeholder="New floor name" />
-        <button id="createFloorBtn">Create Floor</button>
-      </div>
-
-      <div class="row small-forms">
-        <input id="newCounterName" placeholder="New counter name" />
-        <button id="createCounterBtn">Create Counter</button>
+        <p id="loginError" class="error"></p>
       </div>
     </section>
 
-    <section class="card">
-      <h2>Create User</h2>
-      <form id="createUserForm">
-        <div class="row">
-          <input id="userName" placeholder="User full name" required />
-          <input id="userEmail" placeholder="User email" required />
+    <!-- APP -->
+    <section id="app-section" class="hidden">
+      <div class="topbar">
+        <div id="who">—</div>
+        <div class="top-actions">
+          <button id="logoutBtn">Logout</button>
         </div>
-        <div class="row">
-          <label for="roleSelect">Role</label>
-          <select id="roleSelect">
-            <option value="Staff">Staff</option>
-            <option value="Manager">Manager</option>
-            <option value="Admin">Admin</option>
+      </div>
+
+      <!-- COUNTER UI -->
+      <div id="counter-ui" class="card hidden">
+        <h2>Daily Dry Store Entry</h2>
+
+        <label>Floor</label>
+        <select id="floorSelect" aria-label="Floor"></select>
+
+        <label>Counter</label>
+        <select id="counterSelect" aria-label="Counter"></select>
+
+        <label>Date</label>
+        <input id="entryDate" type="date" />
+
+        <div class="table-responsive">
+          <table id="stockTable" aria-label="Stock table">
+            <thead>
+              <tr>
+                <th style="min-width:40px">S.No</th>
+                <th style="min-width:150px">Item</th>
+                <th style="min-width:90px">Batch No</th>
+                <th style="min-width:100px">Receiving Date</th>
+                <th style="min-width:100px">Mfg Date</th>
+                <th style="min-width:90px">Expiry</th>
+                <th style="min-width:80px">Shelf Life</th>
+                <th style="min-width:80px">Stock Qty</th>
+                <th style="min-width:140px">Remarks</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="row actions">
+          <button id="addRowBtn">+ Add Row</button>
+          <button id="saveEntryBtn">Save Entry</button>
+          <button id="pdfBtn">Download PDF</button>
+          <button id="excelBtn">Download Excel</button>
+        </div>
+
+        <h3>Your Previous Entries</h3>
+        <div id="history"></div>
+      </div>
+
+      <!-- MANAGER / ADMIN UI -->
+      <div id="manager-ui" class="card hidden">
+        <h2>Manager / Admin Dashboard</h2>
+
+        <div class="controls">
+          <label>Filter Floor</label>
+          <select id="viewFloor">
+            <option value="all">All Floors</option>
           </select>
+
+          <label>Filter Counter</label>
+          <select id="viewCounter"><option value="all">All Counters</option></select>
+
+          <label>From</label>
+          <input id="fromDate" type="date" />
+
+          <label>To</label>
+          <input id="toDate" type="date" />
+
+          <button id="refreshView">Refresh</button>
+          <button id="downloadFilteredExcel">Download Excel (Filtered)</button>
         </div>
 
-        <div id="managerAssignment" class="hidden">
-          <p>Assign Manager to:</p>
+        <div id="allEntries"></div>
+
+        <h3>Manage Floors & Counters</h3>
+        <div id="manageNodes" class="card">
+          <label>New Floor Name</label>
+          <input id="newFloorName" placeholder="e.g., 1st" />
+          <button id="createFloorBtn">Create Floor</button>
+
+          <label>Create Counter under Floor</label>
+          <select id="selectFloorForCounter"></select>
+          <input id="newCounterNameField" placeholder="Counter name e.g., Chana & Corn" />
+          <button id="createCounterBtn">Create Counter</button>
+
+          <p id="nodeMsg" class="error"></p>
+        </div>
+
+        <h3>Create User (Admin Only)</h3>
+        <div id="createUser" class="card">
+          <label>New User Email</label>
+          <input id="newEmail" placeholder="email (example: chana@konarak)" />
+
+          <label>New User Password</label>
+          <input id="newPassword" placeholder="password (min 6)" />
+
+          <label>Role</label>
+          <select id="newRole">
+            <option value="counter">Counter</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Admin</option>
+          </select>
+
+          <label>Assign Floor</label>
+          <select id="newFloor"></select>
+
+          <label>Assign Counter</label>
+          <select id="newAssignCounter"></select>
+
           <div class="row">
-            <select id="mgrFloorSelect"></select>
-            <select id="mgrCounterSelect"></select>
+            <button id="createUserBtn">Create User</button>
           </div>
+          <p id="createMsg" class="error"></p>
+          <p class="hint">Note: Creating a user will not sign you out. The new account will be linked to selected floor/counter (only for counters).</p>
         </div>
-
-        <div class="row">
-          <button type="submit">Create User</button>
-        </div>
-      </form>
+      </div>
     </section>
 
-    <section class="card">
-      <h2>Debug / Data (local)</h2>
-      <button id="dumpDataBtn">Show Data (console)</button>
-      <button id="resetDataBtn">Reset to Seed Data</button>
-    </section>
-  </main>
-
-  <footer>
-    <small>Built for cafeteria management — local demo. Plug backend where indicated in app.js.</small>
-  </footer>
+    <footer><small>&nbsp;</small></footer>
+  </div>
 
   <script src="app.js"></script>
 </body>
