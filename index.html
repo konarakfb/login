@@ -10,10 +10,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
-  <!-- SheetJS for Excel export -->
+  <!-- Excel (SheetJS) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <!-- Firebase COMPAT SDK -->
+  <!-- Firebase compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -21,48 +21,45 @@
 
 <body>
   <div class="wrap">
+
     <header><h1>Konarak F&B — Dry Store</h1></header>
 
     <!-- LOGIN -->
     <section id="auth-section">
       <div class="card" id="login-card">
         <h2>Login</h2>
-        <input id="email" placeholder="Email" type="email" autocomplete="username" />
-        <input id="password" placeholder="Password" type="password" autocomplete="current-password" />
-        <div class="row">
-          <button id="loginBtn">Login</button>
-        </div>
-        <p id="loginError" class="error" role="alert"></p>
+        <input id="email" placeholder="Email" type="email" />
+        <input id="password" placeholder="Password" type="password" />
+        <button id="loginBtn">Login</button>
+        <p id="loginError" class="error"></p>
       </div>
     </section>
 
-    <!-- APP -->
-    <section id="app-section" class="hidden" aria-hidden="true">
+    <!-- MAIN APP -->
+    <section id="app-section" class="hidden">
       <div class="topbar">
         <div id="who">—</div>
-        <div class="top-actions">
-          <button id="logoutBtn">Logout</button>
-        </div>
+        <button id="logoutBtn">Logout</button>
       </div>
 
       <!-- COUNTER UI -->
-      <div id="counter-ui" class="card hidden" aria-hidden="true">
+      <div id="counter-ui" class="card hidden">
         <h2>Daily Dry Store Entry</h2>
 
         <label>Floor</label>
-        <select id="floorSelect" aria-label="Floor" disabled></select>
+        <select id="floorSelect" disabled></select>
 
         <label>Counter</label>
-        <select id="counterSelect" aria-label="Counter" disabled></select>
+        <select id="counterSelect" disabled></select>
 
         <label>Date</label>
         <input id="entryDate" type="date" />
 
         <div class="table-responsive">
-          <table id="stockTable" aria-label="Stock table">
+          <table id="stockTable">
             <thead>
               <tr>
-                <th>S.No</th><th>Item</th><th>Batch No</th><th>Receiving Date</th>
+                <th>S.No</th><th>Item</th><th>Batch</th><th>Receiving Date</th>
                 <th>Mfg Date</th><th>Expiry</th><th>Shelf Life</th><th>Stock Qty</th><th>Remarks</th>
               </tr>
             </thead>
@@ -70,11 +67,11 @@
           </table>
         </div>
 
-        <div class="row actions">
+        <div class="actions row">
           <button id="addRowBtn">+ Add Row</button>
           <button id="saveEntryBtn">Save Entry</button>
-          <button id="pdfBtn">Download PDF</button>
-          <button id="excelBtn">Download Excel</button>
+          <button id="pdfBtn">PDF</button>
+          <button id="excelBtn">Excel</button>
         </div>
 
         <h3>Your Previous Entries</h3>
@@ -82,15 +79,15 @@
       </div>
 
       <!-- ADMIN UI -->
-      <div id="manager-ui" class="card hidden" aria-hidden="true">
+      <div id="manager-ui" class="card hidden">
         <h2>Admin Dashboard</h2>
 
         <div class="controls">
-          <label>Filter Floor</label>
-          <select id="viewFloor"><option value="all">All Floors</option></select>
+          <label>Floor</label>
+          <select id="viewFloor"><option value="all">All</option></select>
 
-          <label>Filter Counter</label>
-          <select id="viewCounter"><option value="all">All Counters</option></select>
+          <label>Counter</label>
+          <select id="viewCounter"><option value="all">All</option></select>
 
           <label>From</label>
           <input id="fromDate" type="date" />
@@ -99,32 +96,29 @@
           <input id="toDate" type="date" />
 
           <button id="refreshView">Refresh</button>
-          <button id="downloadFilteredExcel">Download Excel (Filtered)</button>
+          <button id="downloadFilteredExcel">Download Excel</button>
         </div>
 
         <div id="allEntries"></div>
 
-        <h3>Manage Floors & Counters</h3>
-        <div id="manageNodes" class="card">
-          <label>New Floor Name</label>
-          <input id="newFloorName" placeholder="e.g., 1st" />
+        <h3>Create Floor / Counter</h3>
+        <div class="card">
+          <label>New Floor</label>
+          <input id="newFloorName" />
           <button id="createFloorBtn">Create Floor</button>
 
-          <label>Create Counter under Floor</label>
+          <label>Floor for Counter</label>
           <select id="selectFloorForCounter"></select>
-          <input id="newCounterNameField" placeholder="Counter name e.g., Chana & Corn" />
+          <input id="newCounterNameField" placeholder="Counter name" />
           <button id="createCounterBtn">Create Counter</button>
 
           <p id="nodeMsg" class="error"></p>
         </div>
 
-        <h3>Create Counter User (Admin Only)</h3>
-        <div id="createUser" class="card">
-          <label>New User Email</label>
-          <input id="newEmail" placeholder="email (example: chana@konarak)" />
-
-          <label>New User Password</label>
-          <input id="newPassword" placeholder="password (min 6)" />
+        <h3>Create Counter User</h3>
+        <div class="card">
+          <input id="newEmail" placeholder="Email" />
+          <input id="newPassword" placeholder="Password" />
 
           <label>Assign Floor</label>
           <select id="newFloor"></select>
@@ -132,24 +126,20 @@
           <label>Assign Counter</label>
           <select id="newAssignCounter"></select>
 
-          <div class="row">
-            <button id="createUserBtn">Create Counter User</button>
-          </div>
+          <button id="createUserBtn">Create Counter User</button>
           <p id="createMsg" class="error"></p>
-          <p class="hint">Note: Creating a counter user will not sign you out.</p>
         </div>
+
       </div>
     </section>
 
-    <!-- Debug panel (small) -->
-    <div id="debug" class="card" style="margin-top:12px;">
+    <!-- DEBUG PANEL -->
+    <section id="debug" class="card">
       <h3>Debug / Status</h3>
-      <div id="debugLog" style="white-space:pre-wrap; font-family:monospace; font-size:13px; max-height:220px; overflow:auto;"></div>
-    </div>
+      <div id="debugLog"></div>
+    </section>
 
-    <footer><small>&nbsp;</small></footer>
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>
