@@ -209,9 +209,7 @@ function calcRow(tr){
 function calcMeal(meal){
  let rows=[...document.querySelectorAll(`#${meal}-body tr`)];
  let total = rows.reduce((a,r)=> a + +(r.querySelector(".sl").value||0), 0);
-
  document.getElementById(meal+"-total").textContent = total.toFixed(2);
-
  return total;
 }
 
@@ -332,6 +330,88 @@ function deleteSaved(name){
  localStorage.removeItem("sales_"+name);
  loadSavedList();
 }
+
+/* -------------------------
+   FIXED PDF DOWNLOAD (WORKS 100%)
+------------------------- */
+
+document.getElementById("pdfBtn").onclick = async function () {
+
+    const { jsPDF } = window.jspdf;
+    const sheet = document.getElementById("sheet");
+
+    const clone = sheet.cloneNode(true);
+
+    clone.querySelectorAll("input,button,select").forEach(el => {
+        if (el.tagName === "BUTTON") { el.remove(); return; }
+        const div = document.createElement("div");
+        div.textContent = el.value || el.textContent;
+        div.style.padding = "2px 4px";
+        div.style.fontSize = "12px";
+        el.parentNode.replaceChild(div, el);
+    });
+
+    const container = document.createElement("div");
+    container.style.position = "fixed";
+    container.style.left = "-9999px"; 
+    container.style.top = "0";
+    container.style.width = "1500px"; 
+    container.style.background = "#fff";
+    container.appendChild(clone);
+
+    document.body.appendChild(container);
+
+    await Promise.all(
+        [...clone.querySelectorAll("img")].map(img => new Promise(res => {
+            if (img.complete) return res();
+            img.onload = img.onerror = res;
+        }))
+    );
+
+    const canvas = await html2canvas(clone, {
+        scale: 1,
+        backgroundColor: "#fff",
+        useCORS: true
+    });
+
+    const imgData = canvas.toDataURL("image/jpeg", 0.72);
+    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+    const pageWidth = 297;
+    const pageHeight = 210;
+    const pxPerMm = canvas.width / pageWidth;
+    const imgHeightMm = canvas.height / pxPerMm;
+
+    if (imgHeightMm <= pageHeight) {
+        pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, imgHeightMm);
+    } else {
+        let y = 0;
+        const slicePx = pageHeight * pxPerMm;
+
+        while (y < canvas.height) {
+            const sliceCanvas = document.createElement("canvas");
+            sliceCanvas.width = canvas.width;
+            sliceCanvas.height = Math.min(slicePx, canvas.height - y);
+
+            sliceCanvas.getContext("2d").drawImage(
+                canvas, 0, y, canvas.width, sliceCanvas.height,
+                0, 0, canvas.width, sliceCanvas.height
+            );
+
+            const sliceImg = sliceCanvas.toDataURL("image/jpeg", 0.72);
+            const sliceHeightMm = sliceCanvas.height / pxPerMm;
+
+            if (y > 0) pdf.addPage("a4", "landscape");
+            pdf.addImage(sliceImg, "JPEG", 0, 0, pageWidth, sliceHeightMm);
+
+            y += slicePx;
+        }
+    }
+
+    container.remove();
+    pdf.save("DailyFoodSales.pdf");
+};
+
 </script>
 
 </body>
