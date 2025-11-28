@@ -67,6 +67,8 @@ td input {
 
 .saved-box {margin-top:15px;}
 .saved-list {border:1px dashed #aaa;padding:8px;background:#fafcff;border-radius:6px;max-height:140px;overflow:auto;font-size:14px;}
+
+.grand-green {font-weight:bold;color:#0a6;font-size:16px;margin-top:-5px;margin-bottom:12px;}
 </style>
 </head>
 
@@ -93,15 +95,19 @@ td input {
 <!-- MEALS -->
 <div id="meals"></div>
 
-<!-- GRAND TOTAL -->
+<!-- GRAND SUMMARY -->
 <div class="meal">
     <div class="meal-title">Grand Summary</div>
+
     <div class="top-grid">
         <div class="box"><label>Breakfast Total (₹)</label><input id="tbreak" readonly></div>
         <div class="box"><label>Lunch Total (₹)</label><input id="tlunch" readonly></div>
         <div class="box"><label>Dinner Total (₹)</label><input id="tdinner" readonly></div>
-        <div class="box"><label><b>Grand Total (₹)</b></label><input id="tgrand" readonly style="font-weight:bold;color:#056c26;"></div>
+        <div class="box"><label><b>Grand Total (₹)</b></label><input id="tgrand" readonly></div>
     </div>
+
+    <!-- NEW GREEN GRAND TOTAL BELOW SUMMARY -->
+    <div class="grand-green">Grand Total: ₹ <span id="grand-green-value">0.00</span></div>
 </div>
 
 <!-- ACTION BUTTONS -->
@@ -113,7 +119,7 @@ td input {
 </div>
 
 <!-- SAVED LIST -->
-<div class="saved-box">
+<div class="saved-box" id="saved-box">
     <label>Saved Reports</label>
     <div class="saved-list" id="savedList">— none —</div>
 </div>
@@ -133,7 +139,6 @@ const meals=[
 
 const mealsDiv=document.getElementById("meals");
 
-/* ADD SECTION TOTAL + TABLE */
 meals.forEach(m=>{
  mealsDiv.innerHTML+=`
 <div class="meal" id="${m.key}">
@@ -157,9 +162,7 @@ meals.forEach(m=>{
 </div>`;
 });
 
-/* -------------------------
-   ADD ROW
-------------------------- */
+/* ADD ROW */
 function addRow(meal){
  let tbody=document.getElementById(meal+"-body");
  let tr=document.createElement("tr");
@@ -189,9 +192,7 @@ function bindRow(tr){
  });
 }
 
-/* -------------------------
-   ROW CALC
-------------------------- */
+/* ROW CALC */
 function calcRow(tr){
  let op=+tr.querySelector(".op").value||0;
  let pd=+tr.querySelector(".pd").value||0;
@@ -203,9 +204,7 @@ function calcRow(tr){
  tr.querySelector(".sl").value=(sd*rt).toFixed(2);
 }
 
-/* -------------------------
-   MEAL TOTALS
-------------------------- */
+/* MEAL TOTAL */
 function calcMeal(meal){
  let rows=[...document.querySelectorAll(`#${meal}-body tr`)];
  let total = rows.reduce((a,r)=> a + +(r.querySelector(".sl").value||0), 0);
@@ -213,9 +212,7 @@ function calcMeal(meal){
  return total;
 }
 
-/* -------------------------
-   GRAND TOTAL
-------------------------- */
+/* GRAND TOTAL */
 function calcAll(){
  let b=calcMeal("breakfast");
  let l=calcMeal("lunch");
@@ -224,18 +221,18 @@ function calcAll(){
  document.getElementById("tbreak").value=b.toFixed(2);
  document.getElementById("tlunch").value=l.toFixed(2);
  document.getElementById("tdinner").value=d.toFixed(2);
- document.getElementById("tgrand").value=(b+l+d).toFixed(2);
+
+ let g=(b+l+d).toFixed(2);
+ document.getElementById("tgrand").value=g;
+
+ /* UPDATE GREEN GRAND TOTAL */
+ document.getElementById("grand-green-value").textContent = g;
 }
 
-/* -------------------------
-   RESET
-------------------------- */
+/* RESET */
 document.getElementById("reset").onclick=()=>location.reload();
 
-/* --------------------------------------------------------------
-   SAVE ALL + LOAD ALL + DELETE OPTION (FULL FUNCTIONAL)
---------------------------------------------------------------- */
-
+/* SAVE ALL */
 document.getElementById("saveAll").onclick=function(){
  let name=document.getElementById("savename").value.trim();
  if(!name){alert("Enter a name");return;}
@@ -264,9 +261,7 @@ function getMeal(m){
  }));
 }
 
-/* -------------------------
-   LOAD + DELETE SAVED REPORTS
-------------------------- */
+/* SAVED LIST */
 function loadSavedList(){
  let div=document.getElementById("savedList");
  let keys=Object.keys(localStorage).filter(k=>k.startsWith("sales_"));
@@ -296,7 +291,6 @@ function loadSaved(name){
  let d=JSON.parse(localStorage.getItem("sales_"+name));
  if(!d){alert("Not found");return;}
 
- /* LOAD META */
  date.value=d.meta.date;
  bld.value=d.meta.bld;
  flr.value=d.meta.flr;
@@ -304,7 +298,6 @@ function loadSaved(name){
  prep.value=d.meta.prep;
  ver.value=d.meta.ver;
 
- /* LOAD TABLES */
  ["breakfast","lunch","dinner"].forEach(m=>{
   let tbody=document.getElementById(m+"-body");
   tbody.innerHTML="";
@@ -332,7 +325,8 @@ function deleteSaved(name){
 }
 
 /* -------------------------
-   FIXED PDF DOWNLOAD (WORKS 100%)
+   FIXED PDF DOWNLOAD + 
+   REMOVE SAVED REPORTS FROM PDF
 ------------------------- */
 
 document.getElementById("pdfBtn").onclick = async function () {
@@ -341,6 +335,10 @@ document.getElementById("pdfBtn").onclick = async function () {
     const sheet = document.getElementById("sheet");
 
     const clone = sheet.cloneNode(true);
+
+    /* REMOVE SAVED REPORTS FROM PDF */
+    const savedBox = clone.querySelector("#saved-box");
+    if(savedBox) savedBox.remove();
 
     clone.querySelectorAll("input,button,select").forEach(el => {
         if (el.tagName === "BUTTON") { el.remove(); return; }
