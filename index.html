@@ -5,70 +5,67 @@
 <title>Daily Food Sales Report</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- PDF Libraries -->
+<!-- PDF LIBS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body{font-family:Arial;background:#f4f4f4;margin:0;padding:12px;}
-.container{max-width:1100px;margin:auto;}
-.sheet{background:#fff;border:1px solid #000;padding:15px;border-radius:6px;}
-.header{display:flex;align-items:center;border-bottom:1px solid #000;padding-bottom:12px;margin-bottom:15px;}
-.header img{width:120px;margin-right:10px;}
-.header h1{margin:0;font-size:20px;text-align:center;width:100%;}
-.top-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
-.top-grid .box{flex:1 1 180px;}
-label{font-size:13px;color:#555;margin-bottom:4px;display:block;}
-input{width:100%;padding:8px;font-size:14px;border:1px solid #aaa;border-radius:4px;}
+body {font-family: Arial;background:#f4f4f4;margin:0;padding:12px;}
+.container {max-width:1100px;margin:auto;}
+.sheet {background:#fff;border:1px solid #000;padding:15px;border-radius:6px;}
 
-.meal{border:1px solid #000;margin-bottom:18px;padding:12px;border-radius:6px;}
-.meal-title{font-size:18px;font-weight:bold;margin-bottom:4px;}
-.sub{font-size:13px;color:#777;margin-bottom:12px;}
+.header {display:flex;align-items:center;border-bottom:1px solid #000;padding-bottom:12px;margin-bottom:15px;}
+.header img {width:120px;margin-right:10px;}
+.header h1 {flex:1;text-align:center;margin:0;font-size:20px;}
 
-.table-wrap{overflow:auto;}
+.top-grid {display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+.top-grid .box {flex:1 1 180px;}
+label {font-size:13px;color:#555;margin-bottom:4px;display:block;}
+input {width:100%;padding:7px;font-size:14px;border:1px solid #aaa;border-radius:4px;box-sizing:border-box;}
+
+.meal {border:1px solid #000;margin-bottom:18px;padding:12px;border-radius:6px;}
+.meal-title {font-size:18px;font-weight:bold;margin-bottom:6px;}
+
+.table-wrap {overflow-x:auto;}
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    font-size: 13px;
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+    font-size:13px;
+    min-width:900px;
 }
 
 th, td {
-    border: 1px solid #000;
-    padding: 6px;
-    text-align: center;
-    vertical-align: middle;
-    word-wrap: break-word;
+    border:1px solid #000;
+    padding:6px;
+    vertical-align:middle;
+    word-break:break-word;
+    text-align:center;
 }
 
+/* FIX INPUT OVERLAP */
 td input {
-    width: 100%;
-    max-width: 100%;
-    padding: 4px 5px !important;
-    font-size: 13px !important;
-    border: 1px solid #aaa;
-    border-radius: 3px;
-    box-sizing: border-box;
+    width:100%;
+    max-width:100%;
+    padding:4px 5px!important;
+    height:32px!important;
+    font-size:13px!important;
+    border:1px solid #aaa;
+    border-radius:3px;
+    box-sizing:border-box!important;
+    overflow:hidden;
 }
 
-.btn{padding:8px 14px;border-radius:6px;font-weight:bold;color:#fff;border:0;cursor:pointer;}
-.add{background:#0b63c6;}
-.lock{background:#28a745;}
-.reset{background:#dc3545;}
-.pdf{background:#6f42c1;}
-.ghost{background:#fff;color:#0b63c6;border:1px solid #0b63c6;}
-.small{padding:6px 8px;font-size:13px;}
+.btn {padding:8px 12px;border-radius:6px;font-weight:bold;color:#fff;border:0;cursor:pointer;}
+.add {background:#0b63c6;}
+.lock {background:#28a745;}
+.reset {background:#dc3545;}
+.pdf {background:#6f42c1;}
+.ghost {background:#fff;color:#0b63c6;border:1px solid #0b63c6;}
 
-.locked input{background:#f0f0f0;border:0;color:#000;}
-
-.totals{display:flex;flex-wrap:wrap;gap:10px;}
-.totals .box{flex:1 1 200px;}
-
-.saved-box{margin-top:15px;}
-.saved-list{border:1px dashed #aaa;padding:8px;border-radius:6px;max-height:140px;overflow:auto;font-size:14px;background:#fafcff;}
-
-@media(max-width:700px){table{min-width:1000px;}}
+.saved-box {margin-top:15px;}
+.saved-list {border:1px dashed #aaa;padding:8px;background:#fafcff;border-radius:6px;max-height:140px;overflow:auto;font-size:14px;}
 </style>
 </head>
 
@@ -92,13 +89,13 @@ td input {
     <div class="box"><label>Verified By</label><input id="ver"></div>
 </div>
 
-<!-- MEAL SECTIONS -->
+<!-- MEALS -->
 <div id="meals"></div>
 
 <!-- GRAND TOTAL -->
 <div class="meal">
     <div class="meal-title">Grand Summary</div>
-    <div class="totals">
+    <div class="top-grid">
         <div class="box"><label>Breakfast Total (₹)</label><input id="tbreak" readonly></div>
         <div class="box"><label>Lunch Total (₹)</label><input id="tlunch" readonly></div>
         <div class="box"><label>Dinner Total (₹)</label><input id="tdinner" readonly></div>
@@ -125,312 +122,240 @@ td input {
 
 <script>
 /* -------------------------
-   Create the 3 meal sections
-   ------------------------- */
-const meals = [
-    {key:"breakfast", title:"Breakfast"},
-    {key:"lunch", title:"Lunch"},
-    {key:"dinner", title:"Dinner"}
+   CREATE MEAL SECTIONS
+------------------------- */
+const meals=[
+ {key:"breakfast",title:"Breakfast"},
+ {key:"lunch",title:"Lunch"},
+ {key:"dinner",title:"Dinner"}
 ];
-
-const mealsDiv = document.getElementById("meals");
+const mealsDiv=document.getElementById("meals");
 
 meals.forEach(m=>{
-    mealsDiv.innerHTML += mealSectionHTML(m.key, m.title);
+ mealsDiv.innerHTML+=`
+<div class="meal" id="${m.key}">
+ <div class="meal-title">${m.title}</div>
+ <div class="table-wrap">
+ <table>
+  <thead>
+   <tr>
+    <th>S.No</th><th style="width:250px">Item Name</th>
+    <th>Opening</th><th>Produced</th><th>Total</th>
+    <th>Sold</th><th>Closing</th><th>Rate</th><th>Sales</th>
+    <th>Action</th>
+   </tr>
+  </thead>
+  <tbody id="${m.key}-body"></tbody>
+ </table>
+ </div>
+ <button class="btn add" onclick="addRow('${m.key}')">+ Add Row</button>
+</div>`;
 });
 
-function mealSectionHTML(key,title){
-return `
-<div class="meal" id="${key}">
-    <div class="meal-title">${title}</div>
-    <div class="sub">Enter all food items clearly with quantities</div>
-    
-    <div class="table-wrap">
-    <table>
-        <thead>
-            <tr>
-                <th>S.No</th>
-                <th style="width:260px">Item Name</th>
-                <th>Opening</th>
-                <th>Produced</th>
-                <th>Total</th>
-                <th>Sold</th>
-                <th>Closing</th>
-                <th>Rate</th>
-                <th>Sales</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="${key}-body"></tbody>
-    </table>
-    </div>
-
-    <button class="btn add small" onclick="addRow('${key}')">+ Add Row</button>
-</div>
-`;
-}
-
 function addRow(meal){
-    let tbody=document.getElementById(meal+"-body");
-    let tr=document.createElement("tr");
-    tr.innerHTML=`
-        <td class="idx"></td>
-        <td><input class="item"></td>
-        <td><input type="number" class="op" value="0"></td>
-        <td><input type="number" class="pd" value="0"></td>
-        <td><input class="av" readonly></td>
-        <td><input type="number" class="sd" value="0"></td>
-        <td><input class="cl" readonly></td>
-        <td><input type="number" class="rt" value="0"></td>
-        <td><input class="sl" readonly></td>
-        <td><button class="btn ghost small" onclick="this.closest('tr').remove(); calcAll();">Del</button></td>
-    `;
-    tbody.appendChild(tr);
-    numberRows(tbody);
-    bindRowEvents(tr);
+ let tbody=document.getElementById(meal+"-body");
+ let tr=document.createElement("tr");
+ tr.innerHTML=`
+ <td class="idx"></td>
+ <td><input class="item"></td>
+ <td><input type="number" class="op" value="0"></td>
+ <td><input type="number" class="pd" value="0"></td>
+ <td><input class="av" readonly></td>
+ <td><input type="number" class="sd" value="0"></td>
+ <td><input class="cl" readonly></td>
+ <td><input type="number" class="rt" value="0"></td>
+ <td><input class="sl" readonly></td>
+ <td><button class="btn ghost" onclick="this.closest('tr').remove();calcAll();">Del</button></td>`;
+ tbody.appendChild(tr);
+ updateIndex(tbody);
+ bindRow(tr);
 }
 
-function numberRows(tbody){
-    [...tbody.children].forEach((r,i)=>r.querySelector(".idx").textContent=i+1);
+function updateIndex(tbody){
+ [...tbody.children].forEach((tr,i)=> tr.querySelector(".idx").textContent=i+1);
 }
 
-/* -------------------------
-   Row calculation
-   ------------------------- */
-function bindRowEvents(tr){
-    tr.querySelectorAll("input").forEach(inp=>{
-        inp.addEventListener("input",()=>{calcRow(tr);calcAll();});
-    });
+function bindRow(tr){
+ tr.querySelectorAll("input").forEach(inp=>{
+   inp.addEventListener("input",()=>{calcRow(tr);calcAll();});
+ });
 }
 
 function calcRow(tr){
-    let op=+tr.querySelector(".op").value||0;
-    let pd=+tr.querySelector(".pd").value||0;
-    let av=op+pd;
-    tr.querySelector(".av").value=av;
-
-    let sd=+tr.querySelector(".sd").value||0;
-    if(sd>av){ sd=av; tr.querySelector(".sd").value=av; }
-
-    tr.querySelector(".cl").value=av-sd;
-
-    let rt=+tr.querySelector(".rt").value||0;
-    tr.querySelector(".sl").value=(sd*rt).toFixed(2);
+ let op=+tr.querySelector(".op").value||0;
+ let pd=+tr.querySelector(".pd").value||0;
+ let av=op+pd; tr.querySelector(".av").value=av;
+ let sd=+tr.querySelector(".sd").value||0;
+ if(sd>av){ sd=av; tr.querySelector(".sd").value=sd; }
+ tr.querySelector(".cl").value=av-sd;
+ let rt=+tr.querySelector(".rt").value||0;
+ tr.querySelector(".sl").value=(sd*rt).toFixed(2);
 }
 
-function calcMeal(meal){
-    let rows=[...document.querySelectorAll(`#${meal}-body tr`)];
-    let sum=0;
-    rows.forEach(r=>{
-        calcRow(r);
-        sum+=+(r.querySelector(".sl").value||0);
-    });
-    return sum;
+function calcMeal(m){
+ let rows=[...document.querySelectorAll(`#${m}-body tr`)];
+ return rows.reduce((a,r)=> a + +(r.querySelector(".sl").value||0), 0);
 }
 
 function calcAll(){
-    let b=calcMeal("breakfast");
-    let l=calcMeal("lunch");
-    let d=calcMeal("dinner");
-
-    document.getElementById("tbreak").value=b.toFixed(2);
-    document.getElementById("tlunch").value=l.toFixed(2);
-    document.getElementById("tdinner").value=d.toFixed(2);
-    document.getElementById("tgrand").value=(b+l+d).toFixed(2);
+ let b=calcMeal("breakfast");
+ let l=calcMeal("lunch");
+ let d=calcMeal("dinner");
+ document.getElementById("tbreak").value=b.toFixed(2);
+ document.getElementById("tlunch").value=l.toFixed(2);
+ document.getElementById("tdinner").value=d.toFixed(2);
+ document.getElementById("tgrand").value=(b+l+d).toFixed(2);
 }
 
 /* -------------------------
-   Reset All
-   ------------------------- */
-document.getElementById("reset").onclick=function(){
-    if(!confirm("Reset everything?"))return;
-    location.reload();
-};
+   RESET
+------------------------- */
+document.getElementById("reset").onclick=()=>location.reload();
+
 
 /* -------------------------
-   LANDSCAPE PDF DOWNLOAD FIX
-   ------------------------- */
-document.getElementById("pdfBtn").onclick = async function () {
+   LANDSCAPE PDF EXPORT (WORKING FIX)
+------------------------- */
+document.getElementById("pdfBtn").onclick = async function(){
 
-    const { jsPDF } = window.jspdf;
+ const {jsPDF}=window.jspdf;
+ const sheet=document.getElementById("sheet");
 
-    // Clone sheet
-    const sheet = document.getElementById("sheet");
-    const clone = sheet.cloneNode(true);
+ // clone
+ const clone=sheet.cloneNode(true);
 
-    // Replace inputs/selects buttons with plain text for PDF
-    clone.querySelectorAll("input, select, button").forEach(el => {
-        if (el.tagName === "BUTTON") { el.remove(); return; }
+ // replace inputs with text
+ clone.querySelectorAll("input,button,select").forEach(el=>{
+  if(el.tagName==="BUTTON"){el.remove();return;}
+  const div=document.createElement("div");
+  div.textContent=el.value||el.textContent;
+  div.style.padding="2px 4px";
+  div.style.fontSize="12px";
+  el.parentNode.replaceChild(div,el);
+ });
 
-        const span = document.createElement("div");
-        span.textContent = el.value || el.textContent;
-        span.style.padding = "2px 4px";
-        span.style.fontSize = "12px";
-        span.style.boxSizing = "border-box";
-        el.parentNode.replaceChild(span, el);
-    });
+ // WRAPPER
+ const wrap=document.createElement("div");
+ wrap.style.width="1500px";   // landscape width
+ wrap.style.background="#fff";
+ wrap.style.padding="10px";
+ wrap.appendChild(clone);
+ document.body.appendChild(wrap); // IMPORTANT: must be in DOM
 
-    // Wrapper for wide PDF output
-    const wrapper = document.createElement("div");
-    wrapper.style.width = "1450px";   // landscape width
-    wrapper.style.padding = "10px";
-    wrapper.style.background = "#fff";
-    wrapper.appendChild(clone);
+ // wait images
+ await Promise.all([...wrap.querySelectorAll("img")].map(img=>new Promise(res=>{
+  if(img.complete)res(); img.onload=img.onerror=res;
+ })));
 
-    // Wait for logo loading
-    await Promise.all(
-        [...wrapper.querySelectorAll("img")].map(img => new Promise(res => {
-            if (img.complete) res();
-            img.onload = img.onerror = res;
-        }))
-    );
+ const canvas=await html2canvas(wrap,{scale:1.0,backgroundColor:"#fff"});
+ const imgData=canvas.toDataURL("image/jpeg",0.72);
 
-    // Render canvas
-    const canvas = await html2canvas(wrapper, {
-        scale: 1.1,
-        backgroundColor: "#fff"
-    });
+ const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
+ let pw=297, ph=210;
+ let h=(canvas.height * pw)/canvas.width;
 
-    const imgData = canvas.toDataURL("image/jpeg", 0.72); // reduced size (<2 MB)
+ if(h<=ph){
+  pdf.addImage(imgData,"JPEG",0,0,pw,h);
+ } else {
+  let y=0;
+  const pxPerMm=canvas.width/pw;
+  const slicePx=ph*pxPerMm;
 
-    const pdf = new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-        format: "a4"
-    });
+  while(y<canvas.height){
+   let slice=document.createElement("canvas");
+   slice.width=canvas.width;
+   slice.height=slicePx;
 
-    const pageW = 297;
-    const pageH = 210;
-    const imgW = pageW;
-    const imgH = (canvas.height * pageW) / canvas.width;
+   slice.getContext("2d").drawImage(canvas,0,y,canvas.width,slicePx,0,0,canvas.width,slicePx);
+   let sliceImg=slice.toDataURL("image/jpeg",0.72);
+   let mm=slicePx/pxPerMm;
+   if(y>0) pdf.addPage("a4","landscape");
+   pdf.addImage(sliceImg,"JPEG",0,0,pw,mm);
+   y+=slicePx;
+  }
+ }
 
-    if (imgH <= pageH) {
-        pdf.addImage(imgData, "JPEG", 0, 0, imgW, imgH);
-    } else {
-        let y = 0;
-        const pxPerMm = canvas.width / pageW;
-        const slicePx = pageH * pxPerMm;
-
-        while (y < canvas.height) {
-            const sliceCanvas = document.createElement("canvas");
-            sliceCanvas.width = canvas.width;
-            sliceCanvas.height = slicePx;
-
-            sliceCanvas.getContext("2d")
-                .drawImage(canvas, 0, y, canvas.width, slicePx, 0, 0, canvas.width, slicePx);
-
-            const sliceImg = sliceCanvas.toDataURL("image/jpeg", 0.72);
-            const sliceMm = slicePx / pxPerMm;
-
-            if (y > 0) pdf.addPage("a4", "landscape");
-            pdf.addImage(sliceImg, "JPEG", 0, 0, pageW, sliceMm);
-
-            y += slicePx;
-        }
-    }
-
-    pdf.save("DailyFoodSales.pdf");
+ pdf.save("DailyFoodSales.pdf");
+ wrap.remove(); // cleanup
 };
 
+
 /* -------------------------
-   Save All (LocalStorage)
-   ------------------------- */
+   SAVE FUNCTIONS
+------------------------- */
 document.getElementById("saveAll").onclick=function(){
-    let name=document.getElementById("savename").value.trim();
-    if(!name){alert("Enter Save Name");return;}
-
-    let data={
-        meta:{
-            date:date.value,bld:bld.value,flr:flr.value,
-            ctr:ctr.value,prep:prep.value,ver:ver.value
-        },
-        meals:{
-            breakfast:getMeal("breakfast"),
-            lunch:getMeal("lunch"),
-            dinner:getMeal("dinner")
-        },
-        totals:{
-            breakfast: tbreak.value,
-            lunch: tlunch.value,
-            dinner: tdinner.value,
-            grand: tgrand.value
-        }
-    };
-
-    localStorage.setItem("sales_"+name, JSON.stringify(data));
-    loadSavedList();
-    alert("Saved");
-};
+ let name=document.getElementById("savename").value.trim();
+ if(!name){alert("Enter name");return;}
+ let data={
+  meta:{date:date.value,bld:bld.value,flr:flr.value,ctr:ctr.value,prep:prep.value,ver:ver.value},
+  meals:{
+   breakfast:getMeal("breakfast"),
+   lunch:getMeal("lunch"),
+   dinner:getMeal("dinner")
+  }
+ };
+ localStorage.setItem("sales_"+name,JSON.stringify(data));
+ loadSavedList();
+ alert("Saved");
+}
 
 function getMeal(m){
-    return [...document.querySelectorAll(`#${m}-body tr`)].map(r=>({
-        item:r.querySelector(".item").value,
-        op:r.querySelector(".op").value,
-        pd:r.querySelector(".pd").value,
-        sd:r.querySelector(".sd").value,
-        rt:r.querySelector(".rt").value
-    }));
+ return [...document.querySelectorAll(`#${m}-body tr`)].map(r=>({
+  item:r.querySelector(".item").value,
+  op:r.querySelector(".op").value,
+  pd:r.querySelector(".pd").value,
+  sd:r.querySelector(".sd").value,
+  rt:r.querySelector(".rt").value
+ }));
 }
 
-/* -------------------------
-   Load saved list
-   ------------------------- */
+/* SAVED LIST */
 function loadSavedList(){
-    let div=document.getElementById("savedList");
-    let keys=Object.keys(localStorage).filter(k=>k.startsWith("sales_"));
-    if(!keys.length){div.innerHTML="— none —";return;}
-    div.innerHTML="";
-    keys.forEach(k=>{
-        let name=k.replace("sales_","");
-        let row=document.createElement("div");
-        row.style.cssText="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #ccc;";
-        row.innerHTML=`
-            <div><b>${name}</b></div>
-            <div>
-                <button class='btn ghost small' onclick="loadSaved('${name}')">Load</button>
-                <button class='btn reset small' onclick="delSaved('${name}')">Del</button>
-            </div>
-        `;
-        div.appendChild(row);
-    });
+ let div=document.getElementById("savedList");
+ let keys=Object.keys(localStorage).filter(k=>k.startsWith("sales_"));
+ if(!keys.length){div.innerHTML="— none —";return;}
+ div.innerHTML="";
+ keys.forEach(k=>{
+  let name=k.replace("sales_","");
+  let row=document.createElement("div");
+  row.style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #ccc";
+  row.innerHTML=`
+    <b>${name}</b>
+    <button class="btn ghost" onclick="loadSaved('${name}')">Load</button>
+  `;
+  div.appendChild(row);
+ });
 }
 loadSavedList();
 
 function loadSaved(name){
-    let data=JSON.parse(localStorage.getItem("sales_"+name));
-    if(!data)return;
+ let d=JSON.parse(localStorage.getItem("sales_"+name));
+ if(!d)return;
 
-    date.value=data.meta.date;
-    bld.value=data.meta.bld;
-    flr.value=data.meta.flr;
-    ctr.value=data.meta.ctr;
-    prep.value=data.meta.prep;
-    ver.value=data.meta.ver;
+ date.value=d.meta.date;
+ bld.value=d.meta.bld;
+ flr.value=d.meta.flr;
+ ctr.value=d.meta.ctr;
+ prep.value=d.meta.prep;
+ ver.value=d.meta.ver;
 
-    ["breakfast","lunch","dinner"].forEach(m=>{
-        let tbody=document.getElementById(m+"-body");
-        tbody.innerHTML="";
-        data.meals[m].forEach(r=>{
-            addRow(m);
-            let last=tbody.lastChild;
-            last.querySelector(".item").value=r.item;
-            last.querySelector(".op").value=r.op;
-            last.querySelector(".pd").value=r.pd;
-            last.querySelector(".sd").value=r.sd;
-            last.querySelector(".rt").value=r.rt;
-        });
-    });
+ ["breakfast","lunch","dinner"].forEach(m=>{
+  let tbody=document.getElementById(m+"-body");
+  tbody.innerHTML="";
+  d.meals[m].forEach(r=>{
+   addRow(m);
+   let tr=tbody.lastChild;
+   tr.querySelector(".item").value=r.item;
+   tr.querySelector(".op").value=r.op;
+   tr.querySelector(".pd").value=r.pd;
+   tr.querySelector(".sd").value=r.sd;
+   tr.querySelector(".rt").value=r.rt;
+  });
+ });
 
-    calcAll();
-    alert("Loaded");
+ calcAll();
+ alert("Loaded");
 }
-
-function delSaved(name){
-    if(!confirm("Delete "+name+"?"))return;
-    localStorage.removeItem("sales_"+name);
-    loadSavedList();
-}
-
 </script>
 
 </body>
