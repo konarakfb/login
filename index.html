@@ -1,653 +1,338 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Daily Food Sales Report — Final</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
+<title>Daily Food Sales Report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- PDF libraries -->
+<!-- PDF LIBS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-  :root{
-    --accent:#0b63c6;
-    --muted:#666;
-    --border:#d9dbe0;
-  }
-  html,body{height:100%;margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#222;}
-  .wrap{max-width:1100px;margin:14px auto;padding:12px;}
-  .sheet{background:#fff;border:1px solid #000;padding:14px;border-radius:6px;box-sizing:border-box;}
+body {font-family: Arial;background:#f4f4f4;margin:0;padding:12px;}
+.container {max-width:1100px;margin:auto;}
+.sheet {background:#fff;border:1px solid #000;padding:15px;border-radius:6px;}
 
-  /* header */
-  .header{display:flex;align-items:center;gap:12px;border-bottom:1px solid #000;padding-bottom:10px;margin-bottom:12px;}
-  .header img{width:110px;height:auto;object-fit:contain;}
-  .title{flex:1;text-align:center;}
-  .title h1{margin:0;font-size:20px;}
-  .meta-right{width:140px;text-align:right;}
+.header {display:flex;align-items:center;border-bottom:1px solid #000;padding-bottom:12px;margin-bottom:15px;}
+.header img {width:120px;margin-right:10px;}
+.header h1 {flex:1;text-align:center;margin:0;font-size:20px;}
 
-  /* top meta */
-  .meta-grid{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;}
-  .meta-item{flex:1 1 180px;min-width:140px;}
-  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;}
-  input, select, textarea{width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;box-sizing:border-box;font-size:14px;background:#fff;}
+.top-grid {display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+.top-grid .box {flex:1 1 180px;}
+label {font-size:13px;color:#555;margin-bottom:4px;display:block;}
+input {width:100%;padding:7px;font-size:14px;border:1px solid #aaa;border-radius:4px;box-sizing:border-box;}
 
-  /* meal */
-  .meal{border:1px solid #000;border-radius:6px;padding:10px;margin-bottom:14px;background:#fff;}
-  .meal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-  .meal-title{font-weight:700;font-size:16px;}
-  .meal-total{font-weight:700;color:#0a6;}
+.meal {border:1px solid #000;margin-bottom:18px;padding:12px;border-radius:6px;}
+.meal-title {font-size:18px;font-weight:bold;margin-bottom:6px;}
+.section-total {font-weight:bold;color:#0a6;margin-bottom:8px;}
 
-  .table-wrap{overflow:auto;}
-  table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:860px;font-size:13px;}
-  th,td{border:1px solid #000;padding:6px;text-align:center;vertical-align:middle;word-break:break-word;}
-  thead th{background:#f3f7fb;font-weight:700;}
+.table-wrap {overflow-x:auto;}
 
-  /* fixed input style to avoid overflow */
-  td input{width:100%;max-width:100%;padding:5px;font-size:13px;border:1px solid #bbb;border-radius:4px;box-sizing:border-box;height:32px;overflow:hidden;}
+table {
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+    font-size:13px;
+    min-width:900px;
+}
 
-  /* controls */
-  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center;}
-  .btn{padding:8px 12px;border-radius:6px;border:0;color:#fff;font-weight:700;cursor:pointer;}
-  .btn.add{background:var(--accent);}
-  .btn.lock{background:#28a745;}
-  .btn.pdf{background:#6f42c1;}
-  .btn.reset{background:#dc3545;}
-  .btn.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);}
+th, td {
+    border:1px solid #000;
+    padding:6px;
+    vertical-align:middle;
+    word-break:break-word;
+    text-align:center;
+}
 
-  .saved-list{margin-top:10px;border:1px dashed var(--border);padding:8px;border-radius:6px;background:#fcfdff;max-height:160px;overflow:auto;font-size:14px;}
+/* FIX INPUT OVERLAP */
+td input {
+    width:100%;
+    max-width:100%;
+    padding:4px 5px!important;
+    height:32px!important;
+    font-size:13px!important;
+    border:1px solid #aaa;
+    border-radius:3px;
+    box-sizing:border-box!important;
+    overflow:hidden;
+}
 
-  /* totals layout */
-  .totals{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;}
-  .totals .box{flex:1 1 200px;min-width:150px;}
+.btn {padding:8px 12px;border-radius:6px;font-weight:bold;color:#fff;border:0;cursor:pointer;}
+.add {background:#0b63c6;}
+.lock {background:#28a745;}
+.reset {background:#dc3545;}
+.pdf {background:#6f42c1;}
+.ghost {background:#fff;color:#0b63c6;border:1px solid #0b63c6;}
 
-  @media (max-width:720px){
-    table{min-width:900px;} /* allow horizontal scroll for very small screens */
-    .meta-item{flex:1 1 46%;}
-  }
+.saved-box {margin-top:15px;}
+.saved-list {border:1px dashed #aaa;padding:8px;background:#fafcff;border-radius:6px;max-height:140px;overflow:auto;font-size:14px;}
 </style>
 </head>
+
 <body>
-<div class="wrap">
-  <div class="sheet" id="report-sheet">
-    <!-- header -->
-    <div class="header">
-      <img src="logo.png" alt="logo">
-      <div class="title">
-        <h1>Daily Food Sales Report</h1>
-        <div style="font-size:13px;color:var(--muted)">Konarak F&B — Kitchen / Counter sales</div>
-      </div>
-      <div class="meta-right">
-        <label style="font-size:13px;color:var(--muted);margin-bottom:6px">Date</label>
-        <input id="r-date" type="date">
-      </div>
-    </div>
+<div class="container">
+<div class="sheet" id="sheet">
 
-    <!-- meta -->
-    <div class="meta-grid">
-      <div class="meta-item"><label>Building</label><input id="r-building" type="text"></div>
-      <div class="meta-item"><label>Floor</label><input id="r-floor" type="text"></div>
-      <div class="meta-item"><label>Counter / Kitchen</label><input id="r-counter" type="text"></div>
-      <div class="meta-item"><label>Prepared By</label><input id="r-prepared" type="text"></div>
-      <div class="meta-item"><label>Verified By</label><input id="r-verified" type="text"></div>
-    </div>
-
-    <!-- meals container -->
-    <div id="meals-container"></div>
-
-    <!-- grand summary -->
-    <div class="meal" aria-label="Grand Summary">
-      <div class="meal-head"><div style="font-weight:700">Grand Summary</div><div class="meal-sub muted">Combined totals</div></div>
-      <div class="totals">
-        <div class="box"><label>Breakfast Sales (₹)</label><input id="sum-breakfast" readonly></div>
-        <div class="box"><label>Lunch Sales (₹)</label><input id="sum-lunch" readonly></div>
-        <div class="box"><label>Dinner Sales (₹)</label><input id="sum-dinner" readonly></div>
-        <div class="box"><label><strong>GRAND TOTAL (₹)</strong></label><input id="sum-grand" readonly style="font-weight:700;color:#0a6"></div>
-      </div>
-    </div>
-
-    <!-- bottom controls (left saved-list visible in UI only) -->
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-top:12px;flex-wrap:wrap">
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <input id="save-name" placeholder="Save name (e.g. 2025-11-28 Counter A)" style="padding:8px;border:1px solid var(--border);border-radius:6px;">
-        <button id="save-all" class="btn lock">Save All</button>
-        <button id="download-pdf" class="btn pdf">Download PDF</button>
-        <button id="reset-all" class="btn reset">Reset All</button>
-      </div>
-
-      <div style="min-width:220px">
-        <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Saved Reports</div>
-        <div class="saved-list" id="saved-list">— none —</div>
-      </div>
-    </div>
-
-    <div style="margin-top:8px;font-size:13px;color:var(--muted)">Tip: Add rows in each section. Use Save All to store & lock. Use Download PDF for landscape export.</div>
-  </div>
+<!-- HEADER -->
+<div class="header">
+    <img src="logo.png">
+    <h1>Daily Food Sales Report</h1>
 </div>
 
-<!-- meal row template hidden -->
-<template id="meal-template">
-  <div class="meal meal-section" data-key="">
-    <div class="meal-head">
-      <div>
-        <div class="meal-title"></div>
-        <div style="font-size:13px;color:var(--muted)" data-time></div>
-      </div>
-      <div class="meal-total">Section Sales: ₹ <span class="meal-sales">0.00</span></div>
-    </div>
+<!-- TOP FIELDS -->
+<div class="top-grid">
+    <div class="box"><label>Date</label><input id="date" type="date"></div>
+    <div class="box"><label>Building</label><input id="bld"></div>
+    <div class="box"><label>Floor</label><input id="flr"></div>
+    <div class="box"><label>Counter</label><input id="ctr"></div>
+    <div class="box"><label>Prepared By</label><input id="prep"></div>
+    <div class="box"><label>Verified By</label><input id="ver"></div>
+</div>
 
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:42px">S.No</th>
-            <th style="width:300px">Item Name</th>
-            <th style="width:90px">Opening Qty</th>
-            <th style="width:90px">Produced Qty</th>
-            <th style="width:90px">Total Avl.</th>
-            <th style="width:90px">Sold Qty</th>
-            <th style="width:90px">Closing Qty</th>
-            <th style="width:90px">Rate (₹)</th>
-            <th style="width:120px">Total Sales (₹)</th>
-            <th style="width:90px">Action</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+<!-- MEALS -->
+<div id="meals"></div>
 
-    <div class="controls" style="margin-top:8px">
-      <button class="btn add">+ Add Row</button>
-      <button class="btn ghost save-section">Save Section</button>
-      <button class="btn ghost reset-section">Reset Section</button>
-      <div style="flex:1"></div>
-      <div style="font-size:13px;color:var(--muted)">Totals update automatically.</div>
+<!-- GRAND TOTAL -->
+<div class="meal">
+    <div class="meal-title">Grand Summary</div>
+    <div class="top-grid">
+        <div class="box"><label>Breakfast Total (₹)</label><input id="tbreak" readonly></div>
+        <div class="box"><label>Lunch Total (₹)</label><input id="tlunch" readonly></div>
+        <div class="box"><label>Dinner Total (₹)</label><input id="tdinner" readonly></div>
+        <div class="box"><label><b>Grand Total (₹)</b></label><input id="tgrand" readonly style="font-weight:bold;color:#056c26;"></div>
     </div>
-  </div>
-</template>
+</div>
+
+<!-- ACTION BUTTONS -->
+<div style="margin-top:15px;display:flex;flex-wrap:wrap;gap:10px;">
+    <input id="savename" placeholder="Save name" style="padding:8px;border:1px solid #aaa;border-radius:6px;">
+    <button class="btn lock" id="saveAll">Save All</button>
+    <button class="btn pdf" id="pdfBtn">Download PDF</button>
+    <button class="btn reset" id="reset">Reset</button>
+</div>
+
+<!-- SAVED LIST -->
+<div class="saved-box">
+    <label>Saved Reports</label>
+    <div class="saved-list" id="savedList">— none —</div>
+</div>
+
+</div>
+</div>
 
 <script>
-(function(){
-  // Meals configuration
-  const MEALS = [
-    { key:'breakfast', title:'Breakfast', time:'08:00 - 10:30' },
-    { key:'lunch', title:'Lunch', time:'12:00 - 15:00' },
-    { key:'dinner', title:'Dinner', time:'19:00 - 22:00' }
-  ];
-  const STORAGE_PREFIX = 'dailyfood_v2:';
+/* -------------------------
+   CREATE MEAL SECTIONS
+------------------------- */
+const meals=[
+ {key:"breakfast",title:"Breakfast"},
+ {key:"lunch",title:"Lunch"},
+ {key:"dinner",title:"Dinner"}
+];
 
-  // DOM refs
-  const mealsContainer = document.getElementById('meals-container');
-  const mealTmpl = document.getElementById('meal-template').content;
-  const savedListEl = document.getElementById('saved-list');
+const mealsDiv=document.getElementById("meals");
 
-  // create sections
-  MEALS.forEach(m=>{
-    const node = mealTmpl.cloneNode(true);
-    const section = node.querySelector('.meal-section');
-    section.dataset.key = m.key;
-    section.querySelector('.meal-title').textContent = m.title;
-    section.querySelector('[data-time]').textContent = m.time;
-    mealsContainer.appendChild(node);
-    // add initial blank row
-    const tbody = mealsContainer.querySelector('.meal-section[data-key="'+m.key+'"] tbody');
-    addRowTo(tbody);
-    recalcSection(mealsContainer.querySelector('.meal-section[data-key="'+m.key+'"]'));
+/* ADD SECTION TOTAL + TABLE */
+meals.forEach(m=>{
+ mealsDiv.innerHTML+=`
+<div class="meal" id="${m.key}">
+ <div class="meal-title">${m.title}</div>
+ <div class="section-total">Section Total: ₹ <span id="${m.key}-total">0.00</span></div>
+
+ <div class="table-wrap">
+ <table>
+  <thead>
+   <tr>
+    <th>S.No</th><th style="width:250px">Item Name</th>
+    <th>Opening</th><th>Produced</th><th>Total</th>
+    <th>Sold</th><th>Closing</th><th>Rate</th><th>Sales</th>
+    <th>Action</th>
+   </tr>
+  </thead>
+  <tbody id="${m.key}-body"></tbody>
+ </table>
+ </div>
+ <button class="btn add" onclick="addRow('${m.key}')">+ Add Row</button>
+</div>`;
+});
+
+/* -------------------------
+   ADD ROW
+------------------------- */
+function addRow(meal){
+ let tbody=document.getElementById(meal+"-body");
+ let tr=document.createElement("tr");
+ tr.innerHTML=`
+ <td class="idx"></td>
+ <td><input class="item"></td>
+ <td><input type="number" class="op" value="0"></td>
+ <td><input type="number" class="pd" value="0"></td>
+ <td><input class="av" readonly></td>
+ <td><input type="number" class="sd" value="0"></td>
+ <td><input class="cl" readonly></td>
+ <td><input type="number" class="rt" value="0"></td>
+ <td><input class="sl" readonly></td>
+ <td><button class="btn ghost" onclick="this.closest('tr').remove(); calcAll();">Del</button></td>`;
+ tbody.appendChild(tr);
+ updateIndex(tbody);
+ bindRow(tr);
+}
+
+function updateIndex(tbody){
+ [...tbody.children].forEach((tr,i)=> tr.querySelector(".idx").textContent=i+1);
+}
+
+function bindRow(tr){
+ tr.querySelectorAll("input").forEach(inp=>{
+   inp.addEventListener("input",()=>{calcRow(tr);calcAll();});
+ });
+}
+
+/* -------------------------
+   ROW CALC
+------------------------- */
+function calcRow(tr){
+ let op=+tr.querySelector(".op").value||0;
+ let pd=+tr.querySelector(".pd").value||0;
+ let av=op+pd; tr.querySelector(".av").value=av;
+ let sd=+tr.querySelector(".sd").value||0;
+ if(sd>av){ sd=av; tr.querySelector(".sd").value=sd; }
+ tr.querySelector(".cl").value=av-sd;
+ let rt=+tr.querySelector(".rt").value||0;
+ tr.querySelector(".sl").value=(sd*rt).toFixed(2);
+}
+
+/* -------------------------
+   MEAL TOTALS
+------------------------- */
+function calcMeal(meal){
+ let rows=[...document.querySelectorAll(`#${meal}-body tr`)];
+ let total = rows.reduce((a,r)=> a + +(r.querySelector(".sl").value||0), 0);
+
+ document.getElementById(meal+"-total").textContent = total.toFixed(2);
+
+ return total;
+}
+
+/* -------------------------
+   GRAND TOTAL
+------------------------- */
+function calcAll(){
+ let b=calcMeal("breakfast");
+ let l=calcMeal("lunch");
+ let d=calcMeal("dinner");
+
+ document.getElementById("tbreak").value=b.toFixed(2);
+ document.getElementById("tlunch").value=l.toFixed(2);
+ document.getElementById("tdinner").value=d.toFixed(2);
+ document.getElementById("tgrand").value=(b+l+d).toFixed(2);
+}
+
+/* -------------------------
+   RESET
+------------------------- */
+document.getElementById("reset").onclick=()=>location.reload();
+
+/* --------------------------------------------------------------
+   SAVE ALL + LOAD ALL + DELETE OPTION (FULL FUNCTIONAL)
+--------------------------------------------------------------- */
+
+document.getElementById("saveAll").onclick=function(){
+ let name=document.getElementById("savename").value.trim();
+ if(!name){alert("Enter a name");return;}
+
+ let data={
+  meta:{date:date.value,bld:bld.value,flr:flr.value,ctr:ctr.value,prep:prep.value,ver:ver.value},
+  meals:{
+   breakfast:getMeal("breakfast"),
+   lunch:getMeal("lunch"),
+   dinner:getMeal("dinner")
+  }
+ };
+
+ localStorage.setItem("sales_"+name, JSON.stringify(data));
+ loadSavedList();
+ alert("Saved");
+};
+
+function getMeal(m){
+ return [...document.querySelectorAll(`#${m}-body tr`)].map(r=>({
+  item:r.querySelector(".item").value,
+  op:r.querySelector(".op").value,
+  pd:r.querySelector(".pd").value,
+  sd:r.querySelector(".sd").value,
+  rt:r.querySelector(".rt").value
+ }));
+}
+
+/* -------------------------
+   LOAD + DELETE SAVED REPORTS
+------------------------- */
+function loadSavedList(){
+ let div=document.getElementById("savedList");
+ let keys=Object.keys(localStorage).filter(k=>k.startsWith("sales_"));
+
+ if(!keys.length){div.innerHTML="— none —";return;}
+
+ div.innerHTML="";
+ keys.forEach(k=>{
+  const name=k.replace("sales_","");
+
+  let row=document.createElement("div");
+  row.style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #ccc";
+
+  row.innerHTML=`
+    <b>${name}</b>
+    <div style="display:flex;gap:6px">
+       <button class="btn ghost" onclick="loadSaved('${name}')">Load</button>
+       <button class="btn reset" onclick="deleteSaved('${name}')">Del</button>
+    </div>
+  `;
+  div.appendChild(row);
+ });
+}
+loadSavedList();
+
+function loadSaved(name){
+ let d=JSON.parse(localStorage.getItem("sales_"+name));
+ if(!d){alert("Not found");return;}
+
+ /* LOAD META */
+ date.value=d.meta.date;
+ bld.value=d.meta.bld;
+ flr.value=d.meta.flr;
+ ctr.value=d.meta.ctr;
+ prep.value=d.meta.prep;
+ ver.value=d.meta.ver;
+
+ /* LOAD TABLES */
+ ["breakfast","lunch","dinner"].forEach(m=>{
+  let tbody=document.getElementById(m+"-body");
+  tbody.innerHTML="";
+  d.meals[m].forEach(r=>{
+   addRow(m);
+   let tr=tbody.lastChild;
+   tr.querySelector(".item").value=r.item;
+   tr.querySelector(".op").value=r.op;
+   tr.querySelector(".pd").value=r.pd;
+   tr.querySelector(".sd").value=r.sd;
+   tr.querySelector(".rt").value=r.rt;
+   calcRow(tr);
   });
+ });
 
-  // utility
-  function toNum(v){ v = (v==null || v===''|| v===undefined) ? 0 : Number(v); return Number.isFinite(v) ? v : 0; }
-  function fm(v){ return Number(v||0).toFixed(2); }
-  function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
-  function defaultSaveName(){ const d=new Date(); return d.toISOString().slice(0,10) + ' ' + (document.getElementById('r-counter').value || 'Counter'); }
+ calcAll();
+ alert("Loaded");
+}
 
-  // add row
-  function addRowTo(tbody, data = {}){
-    const d = Object.assign({ item:'', opening:0, produced:0, sold:0, rate:0 }, data);
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="idx"></td>
-      <td><input class="item" type="text" value="${escapeHtml(d.item)}" placeholder="Item name"></td>
-      <td><input class="opening" type="number" min="0" step="1" value="${d.opening}"></td>
-      <td><input class="produced" type="number" min="0" step="1" value="${d.produced}"></td>
-      <td><input class="available" type="number" readonly value="${toNum(d.opening)+toNum(d.produced)}"></td>
-      <td><input class="sold" type="number" min="0" step="1" value="${d.sold}"></td>
-      <td><input class="closing" type="number" readonly value="${toNum(d.opening)+toNum(d.produced)-toNum(d.sold)}"></td>
-      <td><input class="rate" type="number" min="0" step="0.01" value="${fm(d.rate)}"></td>
-      <td><input class="total" type="number" readonly value="${fm(toNum(d.sold)*toNum(d.rate))}"></td>
-      <td><button class="btn ghost del-row">Del</button></td>
-    `;
-    tbody.appendChild(tr);
-    renumber(tbody);
-    bindRow(tr);
-  }
+function deleteSaved(name){
+ if(!confirm("Delete saved report?"))return;
 
-  function renumber(tbody){
-    Array.from(tbody.querySelectorAll('tr')).forEach((tr,i)=> {
-      const idx = tr.querySelector('.idx'); if(idx) idx.textContent = i+1;
-    });
-  }
-
-  function bindRow(tr){
-    tr.querySelectorAll('input').forEach(inp=>{
-      inp.addEventListener('input', ()=>{
-        recalcRow(tr);
-        recalcSection(tr.closest('.meal-section'));
-      });
-    });
-    tr.querySelector('.del-row').addEventListener('click', ()=>{
-      const tbody = tr.parentElement;
-      tr.remove();
-      renumber(tbody);
-      recalcSection(tbody.closest('.meal-section'));
-    });
-  }
-
-  function recalcRow(tr){
-    const opening = toNum(tr.querySelector('.opening').value);
-    const produced = toNum(tr.querySelector('.produced').value);
-    const available = opening + produced;
-    tr.querySelector('.available').value = available;
-
-    let sold = toNum(tr.querySelector('.sold').value);
-    if(sold > available){ sold = available; tr.querySelector('.sold').value = sold; }
-    tr.querySelector('.closing').value = available - sold;
-
-    const rate = toNum(tr.querySelector('.rate').value);
-    tr.querySelector('.total').value = fm(sold * rate);
-  }
-
-  function recalcSection(section){
-    const tbody = section.querySelector('tbody');
-    let sum = 0;
-    Array.from(tbody.querySelectorAll('tr')).forEach(tr=>{
-      recalcRow(tr);
-      sum += toNum(tr.querySelector('.total').value);
-    });
-    section.querySelector('.meal-sales').textContent = fm(sum);
-    updateGrand();
-  }
-
-  function updateGrand(){
-    const b = toNum(document.querySelector('.meal-section[data-key="breakfast"] .meal-sales').textContent);
-    const l = toNum(document.querySelector('.meal-section[data-key="lunch"] .meal-sales').textContent);
-    const d = toNum(document.querySelector('.meal-section[data-key="dinner"] .meal-sales').textContent);
-    document.getElementById('sum-breakfast').value = fm(b);
-    document.getElementById('sum-lunch').value = fm(l);
-    document.getElementById('sum-dinner').value = fm(d);
-    document.getElementById('sum-grand').value = fm(b + l + d);
-  }
-
-  // delegated UI: add/save/reset section buttons
-  document.addEventListener('click', function(e){
-    const tgt = e.target;
-    if(tgt.classList.contains('add')){
-      const sec = tgt.closest('.meal-section'); addRowTo(sec.querySelector('tbody')); recalcSection(sec);
-    }
-    if(tgt.classList.contains('save-section')){
-      const sec = tgt.closest('.meal-section'); saveSection(sec);
-    }
-    if(tgt.classList.contains('reset-section')){
-      if(!confirm('Clear this section?')) return;
-      const sec = tgt.closest('.meal-section'); const tbody = sec.querySelector('tbody'); tbody.innerHTML=''; addRowTo(tbody); recalcSection(sec);
-    }
-  });
-
-  // save individual section
-  function saveSection(section){
-    const rows = [];
-    section.querySelectorAll('tbody tr').forEach(tr=>{
-      rows.push({
-        item: tr.querySelector('.item').value,
-        opening: toNum(tr.querySelector('.opening').value),
-        produced: toNum(tr.querySelector('.produced').value),
-        sold: toNum(tr.querySelector('.sold').value),
-        rate: toNum(tr.querySelector('.rate').value),
-        total: toNum(tr.querySelector('.total').value)
-      });
-      tr.querySelectorAll('input').forEach(i=>i.disabled=true);
-    });
-
-    const nameBase = (document.getElementById('save-name').value || defaultSaveName()).trim();
-    const key = STORAGE_PREFIX + nameBase + ':' + section.dataset.key;
-    const payload = { meta:collectMeta(), rows:rows, totals:{ breakfast: document.getElementById('sum-breakfast').value, lunch: document.getElementById('sum-lunch').value, dinner: document.getElementById('sum-dinner').value, grand: document.getElementById('sum-grand').value }, savedAt: new Date().toISOString() };
-    localStorage.setItem(key, JSON.stringify(payload));
-    refreshSavedList();
-    alert('Section saved & locked under "' + nameBase + '"');
-  }
-
-  // Save All
-  document.getElementById('save-all').addEventListener('click', function(){
-    let saveName = (document.getElementById('save-name').value || '').trim();
-    if(!saveName){ if(!confirm('No save name provided. Use default name?')) return; saveName = defaultSaveName(); }
-    document.querySelectorAll('.meal-section').forEach(sec=>{
-      const rows = [];
-      sec.querySelectorAll('tbody tr').forEach(tr=>{
-        rows.push({
-          item: tr.querySelector('.item').value,
-          opening: toNum(tr.querySelector('.opening').value),
-          produced: toNum(tr.querySelector('.produced').value),
-          sold: toNum(tr.querySelector('.sold').value),
-          rate: toNum(tr.querySelector('.rate').value),
-          total: toNum(tr.querySelector('.total').value)
-        });
-        tr.querySelectorAll('input').forEach(i=>i.disabled=true);
-      });
-      const key = STORAGE_PREFIX + saveName + ':' + sec.dataset.key;
-      const payload = { meta:collectMeta(), rows:rows, totals:{ breakfast: document.getElementById('sum-breakfast').value, lunch: document.getElementById('sum-lunch').value, dinner: document.getElementById('sum-dinner').value, grand: document.getElementById('sum-grand').value }, savedAt: new Date().toISOString() };
-      localStorage.setItem(key, JSON.stringify(payload));
-    });
-    refreshSavedList();
-    alert('All sections saved & locked as "' + saveName + '"');
-  });
-
-  // collect meta
-  function collectMeta(){ return { date: document.getElementById('r-date').value, building: document.getElementById('r-building').value, floor: document.getElementById('r-floor').value, counter: document.getElementById('r-counter').value, preparedBy: document.getElementById('r-prepared').value, verifiedBy: document.getElementById('r-verified').value }; }
-
-  // Reset All
-  document.getElementById('reset-all').addEventListener('click', function(){
-    if(!confirm('Reset entire report? This will clear unsaved data.')) return;
-    const saveName = document.getElementById('save-name').value || null;
-    if(saveName){ ['breakfast','lunch','dinner'].forEach(k=> localStorage.removeItem(STORAGE_PREFIX + saveName + ':' + k)); }
-    document.getElementById('r-building').value=''; document.getElementById('r-floor').value=''; document.getElementById('r-counter').value=''; document.getElementById('r-prepared').value=''; document.getElementById('r-verified').value='';
-    document.querySelectorAll('.meal-section tbody').forEach(tb=>{ tb.innerHTML=''; addRowTo(tb); });
-    updateGrand();
-    refreshSavedList();
-  });
-
-  // Saved list UI: load & delete
-  function refreshSavedList(){
-    const keys = Object.keys(localStorage).filter(k=>k.startsWith(STORAGE_PREFIX));
-    if(keys.length===0){ savedListEl.innerHTML = '— none —'; return; }
-    // group by name
-    const groups = {};
-    keys.forEach(k=>{
-      const rest = k.replace(STORAGE_PREFIX,''); const [name, sec] = rest.split(':');
-      if(!groups[name]) groups[name]=[];
-      groups[name].push({ key:k, section:sec });
-    });
-    savedListEl.innerHTML = '';
-    Object.keys(groups).sort().reverse().forEach(name=>{
-      const wrap = document.createElement('div');
-      wrap.style.display='flex'; wrap.style.justifyContent='space-between'; wrap.style.alignItems='center'; wrap.style.padding='6px 4px';
-      wrap.style.borderBottom='1px dashed var(--border)';
-      wrap.innerHTML = `<div style="font-weight:700">${name}</div>
-        <div style="display:flex;gap:6px">
-          <button class="btn ghost" data-load="${name}">Load</button>
-          <button class="btn reset" data-del="${name}">Del</button>
-        </div>`;
-      savedListEl.appendChild(wrap);
-    });
-  }
-  refreshSavedList();
-
-  // saved-list click handler (load / delete)
-  savedListEl.addEventListener('click', function(e){
-    const load = e.target.dataset.load;
-    const del = e.target.dataset.del;
-    if(load){
-      loadSavedGroup(load);
-    } else if(del){
-      if(!confirm('Delete saved report "'+del+'"?')) return;
-      ['breakfast','lunch','dinner'].forEach(k=> localStorage.removeItem(STORAGE_PREFIX + del + ':' + k));
-      refreshSavedList();
-    }
-  });
-
-  // load saved group (loads all sections)
-  function loadSavedGroup(name){
-    ['breakfast','lunch','dinner'].forEach(k=>{
-      const key = STORAGE_PREFIX + name + ':' + k;
-      const raw = localStorage.getItem(key);
-      const section = document.querySelector('.meal-section[data-key="'+k+'"]');
-      const tbody = section.querySelector('tbody');
-      tbody.innerHTML = '';
-      if(raw){
-        try{
-          const payload = JSON.parse(raw);
-          (payload.rows || []).forEach(r => addRowTo(tbody, r));
-          // lock inputs (saved state)
-          tbody.querySelectorAll('input').forEach(i=>i.disabled=true);
-          tbody.querySelectorAll('tr').forEach(tr=>tr.classList.add('locked-row'));
-        }catch(err){ console.error(err); }
-      } else {
-        // if missing, leave one blank row
-        addRowTo(tbody);
-      }
-    });
-
-    // populate meta if available
-    const any = localStorage.getItem(STORAGE_PREFIX + name + ':breakfast') || localStorage.getItem(STORAGE_PREFIX + name + ':lunch') || localStorage.getItem(STORAGE_PREFIX + name + ':dinner');
-    if(any){
-      try{
-        const meta = JSON.parse(any).meta || {};
-        setMeta(meta);
-      }catch(e){}
-    }
-    document.getElementById('save-name').value = name;
-    // recalc totals
-    setTimeout(()=>{ document.querySelectorAll('.meal-section').forEach(s=>recalcSection(s)); updateGrand(); }, 50);
-    alert('Loaded saved report: ' + name);
-  }
-
-  function setMeta(m){
-    if(!m) return;
-    document.getElementById('r-date').value = m.date || document.getElementById('r-date').value;
-    document.getElementById('r-building').value = m.building || '';
-    document.getElementById('r-floor').value = m.floor || '';
-    document.getElementById('r-counter').value = m.counter || '';
-    document.getElementById('r-prepared').value = m.preparedBy || '';
-    document.getElementById('r-verified').value = m.verifiedBy || '';
-  }
-
-  // PDF export (landscape) - remove saved-list from clone so it doesn't appear
-  document.getElementById('download-pdf').addEventListener('click', async function(){
-    // ensure recalculation
-    document.querySelectorAll('.meal-section').forEach(s=>recalcSection(s));
-
-    const { jsPDF } = window.jspdf;
-    const sheet = document.getElementById('report-sheet');
-    const clone = sheet.cloneNode(true);
-
-    // Remove saved-list area entirely from clone so it doesn't appear in PDF
-    const savedArea = clone.querySelector('.saved-list');
-    if(savedArea) savedArea.remove();
-    const saveControls = clone.querySelector('#save-name');
-    if(saveControls) saveControls.remove();
-
-    // Replace inputs/selects/buttons with plain text
-    clone.querySelectorAll('input, select, button').forEach(el=>{
-      if(el.tagName === 'BUTTON'){ el.remove(); return; }
-      const span = document.createElement('div');
-      span.textContent = el.value || el.textContent || '';
-      span.style.fontSize = '12px';
-      span.style.padding = '2px 4px';
-      span.style.boxSizing = 'border-box';
-      el.parentNode.replaceChild(span, el);
-    });
-
-    // wrapper large width for landscape rendering
-    const wrapper = document.createElement('div');
-    wrapper.style.width = '1500px';
-    wrapper.style.background = '#fff';
-    wrapper.style.padding = '12px';
-    wrapper.appendChild(clone);
-    document.body.appendChild(wrapper); // must be in DOM for html2canvas
-
-    // wait images load
-    await Promise.all([...wrapper.querySelectorAll('img')].map(img => new Promise(res => {
-      if(img.complete) return res(); img.onload = img.onerror = res;
-    })));
-
-    // render
-    const canvas = await html2canvas(wrapper, { scale: 1.0, useCORS:true, backgroundColor: '#ffffff' });
-
-    // compress to jpeg at moderate quality to keep <2MB
-    const imgData = canvas.toDataURL('image/jpeg', 0.72);
-
-    const pdf = new jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
-    const pageW = 297;
-    const pageH = 210;
-    const pxPerMm = canvas.width / pageW;
-    const imgHeightMm = canvas.height / pxPerMm;
-
-    if(imgHeightMm <= pageH){
-      pdf.addImage(imgData, 'JPEG', 0, 0, pageW, imgHeightMm);
-    } else {
-      // slice vertically
-      let y = 0;
-      const slicePx = Math.round(pageH * pxPerMm);
-      while(y < canvas.height){
-        const tmp = document.createElement('canvas');
-        tmp.width = canvas.width;
-        const sliceH = Math.min(slicePx, canvas.height - y);
-        tmp.height = sliceH;
-        tmp.getContext('2d').drawImage(canvas, 0, y, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-        const data = tmp.toDataURL('image/jpeg', 0.72);
-        const sliceMm = sliceH / pxPerMm;
-        if(y > 0) pdf.addPage('a4', 'landscape');
-        pdf.addImage(data, 'JPEG', 0, 0, pageW, sliceMm);
-        y += sliceH;
-      }
-    }
-
-    // cleanup wrapper
-    wrapper.remove();
-
-    // save file
-    const fileName = (document.getElementById('r-counter').value || 'DailyFoodSales') + '_' + (document.getElementById('r-date').value || new Date().toISOString().slice(0,10)) + '.pdf';
-    pdf.save(fileName);
-  });
-
-  // initial saved list refresh
-  function loadSavedListOnStart(){ refreshSavedList(); }
-  loadSavedListOnStart();
-
-  // helper: addRowTo for public usage
-  window.__addRowTo = addRowTo;
-
-  // expose method to add a new row via user action from outside area
-  document.addEventListener('click', function(e){
-    if(e.target && e.matches && e.matches('.btn.add')){
-      // handled above by delegated listener
-    }
-  });
-
-  // small init: set date to today if empty
-  if(!document.getElementById('r-date').value) document.getElementById('r-date').value = new Date().toISOString().slice(0,10);
-
-  // expose recalcAll for debugging
-  window.recalcAll = function(){ document.querySelectorAll('.meal-section').forEach(s=>recalcSection(s)); updateGrand(); }
-
-  // Expose functions used by saved load to get meal arrays
-  function getSectionData(section){
-    const rows = [];
-    section.querySelectorAll('tbody tr').forEach(tr=>{
-      rows.push({
-        item: tr.querySelector('.item') ? tr.querySelector('.item').value : '',
-        opening: toNum(tr.querySelector('.opening') ? tr.querySelector('.opening').value : 0),
-        produced: toNum(tr.querySelector('.produced') ? tr.querySelector('.produced').value : 0),
-        sold: toNum(tr.querySelector('.sold') ? tr.querySelector('.sold').value : 0),
-        rate: toNum(tr.querySelector('.rate') ? tr.querySelector('.rate').value : 0),
-        total: toNum(tr.querySelector('.total') ? tr.querySelector('.total').value : 0)
-      });
-    });
-    return rows;
-  }
-
-  // Save all (alternative to Save All button above) - already wired
-
-  // Refresh saved list grouping
-  function refreshSavedList(){
-    const keys = Object.keys(localStorage).filter(k=>k.startsWith(STORAGE_PREFIX));
-    if(keys.length === 0){ savedListEl.innerHTML = '— none —'; return; }
-    const groups = {};
-    keys.forEach(k=>{
-      const rest = k.replace(STORAGE_PREFIX,'');
-      const [name, section] = rest.split(':');
-      if(!groups[name]) groups[name] = [];
-      groups[name].push(section);
-    });
-    savedListEl.innerHTML = '';
-    Object.keys(groups).sort().reverse().forEach(name=>{
-      const div = document.createElement('div');
-      div.style.display = 'flex'; div.style.justifyContent = 'space-between'; div.style.alignItems = 'center';
-      div.style.padding = '6px 4px'; div.style.borderBottom = '1px dashed var(--border)';
-      div.innerHTML = `<div style="font-weight:700">${name}</div>
-        <div style="display:flex;gap:6px">
-          <button class="btn ghost" data-load="${name}">Load</button>
-          <button class="btn reset" data-delete="${name}">Delete</button>
-        </div>`;
-      savedListEl.appendChild(div);
-    });
-  }
-
-  // saved list click (load/delete)
-  savedListEl.addEventListener('click', function(e){
-    const loadName = e.target.dataset.load;
-    const delName = e.target.dataset.delete;
-    if(loadName){
-      // load every section
-      ['breakfast','lunch','dinner'].forEach(k=>{
-        const key = STORAGE_PREFIX + loadName + ':' + k;
-        const raw = localStorage.getItem(key);
-        const section = document.querySelector('.meal-section[data-key="'+k+'"]');
-        const tbody = section.querySelector('tbody');
-        tbody.innerHTML = '';
-        if(raw){
-          try{
-            const payload = JSON.parse(raw);
-            (payload.rows || []).forEach(r => addRowTo(tbody, r));
-            // lock inputs visually
-            tbody.querySelectorAll('input').forEach(i=>i.disabled = true);
-            tbody.querySelectorAll('tr').forEach(tr=>tr.classList.add('locked-row'));
-          } catch(e){ console.error('parse error', e); addRowTo(tbody); }
-        } else {
-          addRowTo(tbody);
-        }
-      });
-      // populate meta if available
-      const any = localStorage.getItem(STORAGE_PREFIX + loadName + ':breakfast') || localStorage.getItem(STORAGE_PREFIX + loadName + ':lunch') || localStorage.getItem(STORAGE_PREFIX + loadName + ':dinner');
-      if(any){
-        try{
-          const payload = JSON.parse(any);
-          setMeta(payload.meta || {});
-        } catch(e){}
-      }
-      document.getElementById('save-name').value = loadName;
-      // recalc totals
-      setTimeout(()=>{ document.querySelectorAll('.meal-section').forEach(s=>recalcSection(s)); updateGrand(); }, 60);
-    } else if(delName){
-      if(!confirm('Delete saved report "' + delName + '"?')) return;
-      ['breakfast','lunch','dinner'].forEach(k=> localStorage.removeItem(STORAGE_PREFIX + delName + ':' + k));
-      refreshSavedList();
-    }
-  });
-
-  // get meal data used by Save All button
-  function getMealRows(k){
-    const section = document.querySelector('.meal-section[data-key="'+k+'"]');
-    const rows = [];
-    section.querySelectorAll('tbody tr').forEach(tr=>{
-      rows.push({
-        item: tr.querySelector('.item') ? tr.querySelector('.item').value : '',
-        opening: toNum(tr.querySelector('.opening') ? tr.querySelector('.opening').value : 0),
-        produced: toNum(tr.querySelector('.produced') ? tr.querySelector('.produced').value : 0),
-        sold: toNum(tr.querySelector('.sold') ? tr.querySelector('.sold').value : 0),
-        rate: toNum(tr.querySelector('.rate') ? tr.querySelector('.rate').value : 0),
-        total: toNum(tr.querySelector('.total') ? tr.querySelector('.total').value : 0)
-      });
-    });
-    return rows;
-  }
-
-  // Save All (improved) - already defined earlier but ensure uses consistent keys
-  // (hook up to existing save-all button)
-  // (already wired to save all via id save-all earlier)
-
-  // ensure initial UI has one row per section (already done earlier)
-
-})(); // end IIFE
+ localStorage.removeItem("sales_"+name);
+ loadSavedList();
+}
 </script>
+
 </body>
 </html>
