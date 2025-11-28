@@ -1,345 +1,437 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Daily Food Sales Report — PDF Fix</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<!-- libs -->
+<meta charset="UTF-8">
+<title>Daily Food Sales Report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- PDF Libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
-  :root{--accent:#0b63c6;--muted:#666;--border:#d9dbe0;}
-  body{font-family:Arial,Helvetica,sans-serif;background:#f4f4f4;margin:0;padding:12px;}
-  .wrap{max-width:1200px;margin:12px auto;}
-  .sheet{background:#fff;border:1px solid #000;padding:12px;border-radius:6px;}
-  /* Header like your Dry Store sample */
-  .header{display:flex;align-items:center;gap:12px;border-bottom:1px solid #000;padding-bottom:8px;margin-bottom:12px}
-  .logo{width:120px}
-  .title{flex:1;text-align:center}
-  .title h1{margin:0;font-size:22px}
-  .title .sub{font-size:12px;color:var(--muted);margin-top:4px}
-  .meta{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-  .meta .m{flex:1 1 160px}
-  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-  input{width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;box-sizing:border-box;font-size:14px}
-  .meal{margin-bottom:12px}
-  .table-wrap{overflow:auto}
-  table{width:100%;border-collapse:collapse;font-size:13px;min-width:1200px}
-  th,td{border:1px solid #000;padding:8px;text-align:center}
-  th{background:#f3f6fb;font-weight:700}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-  .btn{padding:8px 12px;border-radius:6px;border:0;color:#fff;background:var(--accent);cursor:pointer;font-weight:700}
-  .btn.pdf{background:#6f42c1}
-  .btn.reset{background:#dc3545}
-  .btn.lock{background:#28a745}
-  .ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
-  /* ensure printable look */
-  @media print{ .controls{display:none} .wrap{margin:0} }
+body{font-family:Arial;background:#f4f4f4;margin:0;padding:12px;}
+.container{max-width:1100px;margin:auto;}
+.sheet{background:#fff;border:1px solid #000;padding:15px;border-radius:6px;}
+.header{display:flex;align-items:center;border-bottom:1px solid #000;padding-bottom:12px;margin-bottom:15px;}
+.header img{width:120px;margin-right:10px;}
+.header h1{margin:0;font-size:20px;text-align:center;width:100%;}
+.top-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
+.top-grid .box{flex:1 1 180px;}
+label{font-size:13px;color:#555;margin-bottom:4px;display:block;}
+input{width:100%;padding:8px;font-size:14px;border:1px solid #aaa;border-radius:4px;}
+
+.meal{border:1px solid #000;margin-bottom:18px;padding:12px;border-radius:6px;}
+.meal-title{font-size:18px;font-weight:bold;margin-bottom:4px;}
+.sub{font-size:13px;color:#777;margin-bottom:12px;}
+
+.table-wrap{overflow:auto;}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 13px;
+}
+
+th, td {
+    border: 1px solid #000;
+    padding: 6px;
+    text-align: center;
+    vertical-align: middle;
+    word-wrap: break-word;
+}
+
+td input {
+    width: 100%;
+    max-width: 100%;
+    padding: 4px 5px !important;
+    font-size: 13px !important;
+    border: 1px solid #aaa;
+    border-radius: 3px;
+    box-sizing: border-box;
+}
+
+.btn{padding:8px 14px;border-radius:6px;font-weight:bold;color:#fff;border:0;cursor:pointer;}
+.add{background:#0b63c6;}
+.lock{background:#28a745;}
+.reset{background:#dc3545;}
+.pdf{background:#6f42c1;}
+.ghost{background:#fff;color:#0b63c6;border:1px solid #0b63c6;}
+.small{padding:6px 8px;font-size:13px;}
+
+.locked input{background:#f0f0f0;border:0;color:#000;}
+
+.totals{display:flex;flex-wrap:wrap;gap:10px;}
+.totals .box{flex:1 1 200px;}
+
+.saved-box{margin-top:15px;}
+.saved-list{border:1px dashed #aaa;padding:8px;border-radius:6px;max-height:140px;overflow:auto;font-size:14px;background:#fafcff;}
+
+@media(max-width:700px){table{min-width:1000px;}}
 </style>
 </head>
+
 <body>
-<div class="wrap">
-  <div class="sheet" id="report-sheet">
-    <div class="header">
-      <img class="logo" src="logo.png" alt="logo">
-      <div class="title">
-        <h1>Daily Food Sales Report</h1>
-        <div class="sub">Konarak F&B — Kitchen / Counter sales</div>
-      </div>
-      <div style="width:160px">
-        <label>Date</label><input id="rdate" type="date" />
-      </div>
-    </div>
+<div class="container">
+<div class="sheet" id="sheet">
 
-    <div class="meta">
-      <div class="m"><label>Building</label><input id="building"></div>
-      <div class="m"><label>Floor</label><input id="floor"></div>
-      <div class="m"><label>Counter</label><input id="counter"></div>
-      <div class="m"><label>Prepared By</label><input id="prepared"></div>
-      <div class="m"><label>Verified By</label><input id="verified"></div>
-    </div>
+<!-- HEADER -->
+<div class="header">
+    <img src="logo.png">
+    <h1>Daily Food Sales Report</h1>
+</div>
 
-    <!-- Full wide table same structure as Dry Store but for sales -->
-    <div class="table-wrap">
-      <table id="mainTable">
-        <thead>
-          <tr>
-            <th style="width:48px">S.No</th>
-            <th style="width:320px">Item / Meal (Breakfast / Lunch / Dinner)</th>
-            <th>Opening Qty</th>
-            <th>Produced Qty</th>
-            <th>Total Avl.</th>
-            <th>Sold Qty</th>
-            <th>Closing Qty</th>
-            <th>Rate (₹)</th>
-            <th>Total Sales (₹)</th>
-            <th style="width:140px">Meal</th>
-          </tr>
-        </thead>
-        <tbody id="tbody">
-          <!-- initial empty rows -->
-        </tbody>
-      </table>
-    </div>
+<!-- TOP FIELDS -->
+<div class="top-grid">
+    <div class="box"><label>Date</label><input id="date" type="date"></div>
+    <div class="box"><label>Building</label><input id="bld"></div>
+    <div class="box"><label>Floor</label><input id="flr"></div>
+    <div class="box"><label>Counter</label><input id="ctr"></div>
+    <div class="box"><label>Prepared By</label><input id="prep"></div>
+    <div class="box"><label>Verified By</label><input id="ver"></div>
+</div>
 
-    <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <button class="btn" id="addRow">+ Add Row</button>
-      <button class="btn lock" id="lockRows">Save & Lock</button>
-      <button class="btn pdf" id="downloadPdf">Download PDF</button>
-      <button class="btn reset" id="resetAll">Reset</button>
-      <div style="flex:1"></div>
-      <div style="min-width:220px">
-        <label>Saved Reports</label>
-        <div id="savedList" style="border:1px dashed #ccc;padding:8px;border-radius:6px;max-height:140px;overflow:auto;background:#fafcff">— none —</div>
-      </div>
-    </div>
+<!-- MEAL SECTIONS -->
+<div id="meals"></div>
 
-  </div>
+<!-- GRAND TOTAL -->
+<div class="meal">
+    <div class="meal-title">Grand Summary</div>
+    <div class="totals">
+        <div class="box"><label>Breakfast Total (₹)</label><input id="tbreak" readonly></div>
+        <div class="box"><label>Lunch Total (₹)</label><input id="tlunch" readonly></div>
+        <div class="box"><label>Dinner Total (₹)</label><input id="tdinner" readonly></div>
+        <div class="box"><label><b>Grand Total (₹)</b></label><input id="tgrand" readonly style="font-weight:bold;color:#056c26;"></div>
+    </div>
+</div>
+
+<!-- ACTION BUTTONS -->
+<div style="margin-top:15px;display:flex;flex-wrap:wrap;gap:10px;">
+    <input id="savename" placeholder="Save name" style="padding:8px;border:1px solid #aaa;border-radius:6px;">
+    <button class="btn lock" id="saveAll">Save All</button>
+    <button class="btn pdf" id="pdfBtn">Download PDF</button>
+    <button class="btn reset" id="reset">Reset</button>
+</div>
+
+<!-- SAVED LIST -->
+<div class="saved-box">
+    <label>Saved Reports</label>
+    <div class="saved-list" id="savedList">— none —</div>
+</div>
+
+</div>
 </div>
 
 <script>
-/* --------- table & rows setup ---------- */
-const tbody = document.getElementById('tbody');
-const savedList = document.getElementById('savedList');
+/* -------------------------
+   Create the 3 meal sections
+   ------------------------- */
+const meals = [
+    {key:"breakfast", title:"Breakfast"},
+    {key:"lunch", title:"Lunch"},
+    {key:"dinner", title:"Dinner"}
+];
 
-function addEmptyRow(data){
-  const row = document.createElement('tr');
-  row.innerHTML = `
-    <td class="sn"></td>
-    <td><input class="item" style="width:100%"></td>
-    <td><input class="opening" type="number" min="0" value="${data?.opening ?? 0}"></td>
-    <td><input class="produced" type="number" min="0" value="${data?.produced ?? 0}"></td>
-    <td><input class="available" readonly></td>
-    <td><input class="sold" type="number" min="0" value="${data?.sold ?? 0}"></td>
-    <td><input class="closing" readonly></td>
-    <td><input class="rate" type="number" step="0.01" min="0" value="${data?.rate ?? 0}"></td>
-    <td><input class="total" readonly></td>
-    <td>
-      <select class="mealSelect">
-        <option value="Breakfast">Breakfast</option>
-        <option value="Lunch">Lunch</option>
-        <option value="Dinner">Dinner</option>
-      </select>
-      <div style="margin-top:6px">
-        <button class="btn ghost small btn-del">Del</button>
-      </div>
-    </td>`;
-  tbody.appendChild(row);
-  bindRow(row);
-  renumber();
-  recalcRow(row);
-}
+const mealsDiv = document.getElementById("meals");
 
-/* initial rows */
-for(let i=0;i<6;i++) addEmptyRow();
-
-/* bind events */
-function bindRow(tr){
-  tr.querySelectorAll('input, select').forEach(el=>{
-    el.addEventListener('input', ()=>{ recalcRow(tr); });
-  });
-  tr.querySelector('.btn-del').addEventListener('click', ()=>{ tr.remove(); renumber(); });
-}
-
-function renumber(){
-  [...tbody.querySelectorAll('tr')].forEach((tr,i)=> tr.querySelector('.sn').textContent = i+1 );
-}
-
-/* recalc for row */
-function recalcRow(tr){
-  const op = Number(tr.querySelector('.opening').value) || 0;
-  const pd = Number(tr.querySelector('.produced').value) || 0;
-  const av = op + pd;
-  tr.querySelector('.available').value = av;
-  let sold = Number(tr.querySelector('.sold').value) || 0;
-  if(sold > av){ sold = av; tr.querySelector('.sold').value = sold; }
-  tr.querySelector('.closing').value = av - sold;
-  const rate = Number(tr.querySelector('.rate').value) || 0;
-  tr.querySelector('.total').value = (sold * rate).toFixed(2);
-}
-
-/* add/delete rows */
-document.getElementById('addRow').addEventListener('click', ()=> addEmptyRow());
-
-/* lock rows - disable inputs */
-document.getElementById('lockRows').addEventListener('click', ()=>{
-  [...tbody.querySelectorAll('input,select')].forEach(i=>i.disabled=true);
-  alert('Rows locked (inputs disabled). Use Download PDF to export.');
+meals.forEach(m=>{
+    mealsDiv.innerHTML += mealSectionHTML(m.key, m.title);
 });
 
-/* reset */
-document.getElementById('resetAll').addEventListener('click', ()=>{
-  if(!confirm('Reset entire form?')) return;
-  tbody.innerHTML = '';
-  for(let i=0;i<6;i++) addEmptyRow();
-});
+function mealSectionHTML(key,title){
+return `
+<div class="meal" id="${key}">
+    <div class="meal-title">${title}</div>
+    <div class="sub">Enter all food items clearly with quantities</div>
+    
+    <div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th style="width:260px">Item Name</th>
+                <th>Opening</th>
+                <th>Produced</th>
+                <th>Total</th>
+                <th>Sold</th>
+                <th>Closing</th>
+                <th>Rate</th>
+                <th>Sales</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="${key}-body"></tbody>
+    </table>
+    </div>
 
-/* autosave/display saved list (simple) */
-function refreshSavedList(){
-  const keys = Object.keys(localStorage).filter(k=>k.startsWith('daily_sales:'));
-  if(!keys.length){ savedList.innerHTML = '— none —'; return; }
-  savedList.innerHTML = '';
-  keys.forEach(k=>{
-    const nm = k.replace('daily_sales:','');
-    const wrap = document.createElement('div');
-    wrap.style.display='flex'; wrap.style.justifyContent='space-between'; wrap.style.padding='6px 4px';
-    wrap.innerHTML = `<div style="font-weight:700">${nm}</div>
-      <div style="display:flex;gap:6px">
-        <button class="btn ghost small" data-load="${nm}">Load</button>
-        <button class="btn reset small" data-del="${nm}">Del</button>
-      </div>`;
-    savedList.appendChild(wrap);
-  });
-}
-refreshSavedList();
-
-/* Save current to localStorage with provided name */
-function collectData(){
-  const meta = {
-    date: document.getElementById('rdate').value || '',
-    building: document.getElementById('building').value || '',
-    floor: document.getElementById('floor').value || '',
-    counter: document.getElementById('counter').value || '',
-    prepared: document.getElementById('prepared').value || '',
-    verified: document.getElementById('verified').value || ''
-  };
-  const rows = [...tbody.querySelectorAll('tr')].map(tr=>({
-    item: tr.querySelector('.item').value || '',
-    opening: tr.querySelector('.opening').value || '',
-    produced: tr.querySelector('.produced').value || '',
-    available: tr.querySelector('.available').value || '',
-    sold: tr.querySelector('.sold').value || '',
-    closing: tr.querySelector('.closing').value || '',
-    rate: tr.querySelector('.rate').value || '',
-    total: tr.querySelector('.total').value || '',
-    meal: tr.querySelector('.mealSelect').value || ''
-  }));
-  return { meta, rows };
+    <button class="btn add small" onclick="addRow('${key}')">+ Add Row</button>
+</div>
+`;
 }
 
-document.getElementById('lockRows').addEventListener('click', ()=>{
-  // also save snapshot if user enters name
-  const name = prompt('Enter save name (or leave empty to skip saving):');
-  if(name){
-    localStorage.setItem('daily_sales:' + name, JSON.stringify(collectData()));
-    refreshSavedList();
-    alert('Saved as ' + name);
-  }
-});
+function addRow(meal){
+    let tbody=document.getElementById(meal+"-body");
+    let tr=document.createElement("tr");
+    tr.innerHTML=`
+        <td class="idx"></td>
+        <td><input class="item"></td>
+        <td><input type="number" class="op" value="0"></td>
+        <td><input type="number" class="pd" value="0"></td>
+        <td><input class="av" readonly></td>
+        <td><input type="number" class="sd" value="0"></td>
+        <td><input class="cl" readonly></td>
+        <td><input type="number" class="rt" value="0"></td>
+        <td><input class="sl" readonly></td>
+        <td><button class="btn ghost small" onclick="this.closest('tr').remove(); calcAll();">Del</button></td>
+    `;
+    tbody.appendChild(tr);
+    numberRows(tbody);
+    bindRowEvents(tr);
+}
 
-/* saved list load/delete */
-savedList.addEventListener('click', (ev)=>{
-  const load = ev.target.dataset.load;
-  const del = ev.target.dataset.del;
-  if(load){
-    const payload = JSON.parse(localStorage.getItem('daily_sales:'+load));
-    if(!payload) return alert('Not found');
-    // populate meta
-    document.getElementById('rdate').value = payload.meta.date || '';
-    document.getElementById('building').value = payload.meta.building || '';
-    document.getElementById('floor').value = payload.meta.floor || '';
-    document.getElementById('counter').value = payload.meta.counter || '';
-    document.getElementById('prepared').value = payload.meta.prepared || '';
-    document.getElementById('verified').value = payload.meta.verified || '';
-    // populate rows
-    tbody.innerHTML = '';
-    payload.rows.forEach(r => addEmptyRow(r));
-    // after adding, set disabled state? keep editable
-    alert('Loaded ' + load);
-  } else if(del){
-    if(!confirm('Delete saved "'+del+'"?')) return;
-    localStorage.removeItem('daily_sales:'+del);
-    refreshSavedList();
-  }
-});
+function numberRows(tbody){
+    [...tbody.children].forEach((r,i)=>r.querySelector(".idx").textContent=i+1);
+}
 
-/* ----------- PDF export (LANDSCAPE A4, preserves filled values) ------------- */
-document.getElementById('downloadPdf').addEventListener('click', async function(){
-  // Recalculate all rows to ensure totals are up to date
-  [...tbody.querySelectorAll('tr')].forEach(tr=> recalcRow(tr));
+/* -------------------------
+   Row calculation
+   ------------------------- */
+function bindRowEvents(tr){
+    tr.querySelectorAll("input").forEach(inp=>{
+        inp.addEventListener("input",()=>{calcRow(tr);calcAll();});
+    });
+}
 
-  // Build a printable clone that matches the landscape layout (wide)
-  const sheet = document.getElementById('report-sheet');
-  const clone = sheet.cloneNode(true);
+function calcRow(tr){
+    let op=+tr.querySelector(".op").value||0;
+    let pd=+tr.querySelector(".pd").value||0;
+    let av=op+pd;
+    tr.querySelector(".av").value=av;
 
-  // Replace inputs and selects with text nodes that contain their values
-  clone.querySelectorAll('input, select, button, .saved-list').forEach(node=>{
-    if(node.tagName === 'BUTTON' || node.classList.contains('saved-list')){
-      node.remove(); // remove controls from print
-      return;
+    let sd=+tr.querySelector(".sd").value||0;
+    if(sd>av){ sd=av; tr.querySelector(".sd").value=av; }
+
+    tr.querySelector(".cl").value=av-sd;
+
+    let rt=+tr.querySelector(".rt").value||0;
+    tr.querySelector(".sl").value=(sd*rt).toFixed(2);
+}
+
+function calcMeal(meal){
+    let rows=[...document.querySelectorAll(`#${meal}-body tr`)];
+    let sum=0;
+    rows.forEach(r=>{
+        calcRow(r);
+        sum+=+(r.querySelector(".sl").value||0);
+    });
+    return sum;
+}
+
+function calcAll(){
+    let b=calcMeal("breakfast");
+    let l=calcMeal("lunch");
+    let d=calcMeal("dinner");
+
+    document.getElementById("tbreak").value=b.toFixed(2);
+    document.getElementById("tlunch").value=l.toFixed(2);
+    document.getElementById("tdinner").value=d.toFixed(2);
+    document.getElementById("tgrand").value=(b+l+d).toFixed(2);
+}
+
+/* -------------------------
+   Reset All
+   ------------------------- */
+document.getElementById("reset").onclick=function(){
+    if(!confirm("Reset everything?"))return;
+    location.reload();
+};
+
+/* -------------------------
+   LANDSCAPE PDF DOWNLOAD FIX
+   ------------------------- */
+document.getElementById("pdfBtn").onclick = async function () {
+
+    const { jsPDF } = window.jspdf;
+
+    // Clone sheet
+    const sheet = document.getElementById("sheet");
+    const clone = sheet.cloneNode(true);
+
+    // Replace inputs/selects buttons with plain text for PDF
+    clone.querySelectorAll("input, select, button").forEach(el => {
+        if (el.tagName === "BUTTON") { el.remove(); return; }
+
+        const span = document.createElement("div");
+        span.textContent = el.value || el.textContent;
+        span.style.padding = "2px 4px";
+        span.style.fontSize = "12px";
+        span.style.boxSizing = "border-box";
+        el.parentNode.replaceChild(span, el);
+    });
+
+    // Wrapper for wide PDF output
+    const wrapper = document.createElement("div");
+    wrapper.style.width = "1450px";   // landscape width
+    wrapper.style.padding = "10px";
+    wrapper.style.background = "#fff";
+    wrapper.appendChild(clone);
+
+    // Wait for logo loading
+    await Promise.all(
+        [...wrapper.querySelectorAll("img")].map(img => new Promise(res => {
+            if (img.complete) res();
+            img.onload = img.onerror = res;
+        }))
+    );
+
+    // Render canvas
+    const canvas = await html2canvas(wrapper, {
+        scale: 1.1,
+        backgroundColor: "#fff"
+    });
+
+    const imgData = canvas.toDataURL("image/jpeg", 0.72); // reduced size (<2 MB)
+
+    const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4"
+    });
+
+    const pageW = 297;
+    const pageH = 210;
+    const imgW = pageW;
+    const imgH = (canvas.height * pageW) / canvas.width;
+
+    if (imgH <= pageH) {
+        pdf.addImage(imgData, "JPEG", 0, 0, imgW, imgH);
+    } else {
+        let y = 0;
+        const pxPerMm = canvas.width / pageW;
+        const slicePx = pageH * pxPerMm;
+
+        while (y < canvas.height) {
+            const sliceCanvas = document.createElement("canvas");
+            sliceCanvas.width = canvas.width;
+            sliceCanvas.height = slicePx;
+
+            sliceCanvas.getContext("2d")
+                .drawImage(canvas, 0, y, canvas.width, slicePx, 0, 0, canvas.width, slicePx);
+
+            const sliceImg = sliceCanvas.toDataURL("image/jpeg", 0.72);
+            const sliceMm = slicePx / pxPerMm;
+
+            if (y > 0) pdf.addPage("a4", "landscape");
+            pdf.addImage(sliceImg, "JPEG", 0, 0, pageW, sliceMm);
+
+            y += slicePx;
+        }
     }
-    const val = (node.value !== undefined) ? node.value : node.textContent;
-    const span = document.createElement('div');
-    span.textContent = val;
-    span.style.minHeight = '18px';
-    span.style.fontSize = '13px';
-    span.style.padding = '2px 4px';
-    span.style.boxSizing = 'border-box';
-    node.parentNode.replaceChild(span, node);
-  });
 
-  // Put clone in wrapper sized to landscape print width for better resolution
-  const wrapper = document.createElement('div');
-  wrapper.style.width = '1680px'; // wide canvas for landscape A4 fidelity
-  wrapper.style.background = '#fff';
-  wrapper.style.padding = '18px';
-  wrapper.appendChild(clone);
+    pdf.save("DailyFoodSales.pdf");
+};
 
-  // Wait for logo image to load (if any)
-  const imgs = wrapper.querySelectorAll('img');
-  await Promise.all(Array.from(imgs).map(img=>{
-    return new Promise(res=> { if(img.complete) return res(); img.onload = res; img.onerror = res; });
-  }));
+/* -------------------------
+   Save All (LocalStorage)
+   ------------------------- */
+document.getElementById("saveAll").onclick=function(){
+    let name=document.getElementById("savename").value.trim();
+    if(!name){alert("Enter Save Name");return;}
 
-  // Render to canvas
-  const canvas = await html2canvas(wrapper, { scale: 1.0, useCORS:true, logging:false, backgroundColor: '#ffffff' });
+    let data={
+        meta:{
+            date:date.value,bld:bld.value,flr:flr.value,
+            ctr:ctr.value,prep:prep.value,ver:ver.value
+        },
+        meals:{
+            breakfast:getMeal("breakfast"),
+            lunch:getMeal("lunch"),
+            dinner:getMeal("dinner")
+        },
+        totals:{
+            breakfast: tbreak.value,
+            lunch: tlunch.value,
+            dinner: tdinner.value,
+            grand: tgrand.value
+        }
+    };
 
-  // Create landscape A4 PDF and split if necessary
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-  const pageWidth = 297; // mm
-  const pageHeight = 210; // mm
+    localStorage.setItem("sales_"+name, JSON.stringify(data));
+    loadSavedList();
+    alert("Saved");
+};
 
-  // convert canvas px to mm
-  const pxPerMm = canvas.width / pageWidth;
-  const imgHeightMm = canvas.height / pxPerMm;
-  const imgData = canvas.toDataURL('image/jpeg', 0.95);
+function getMeal(m){
+    return [...document.querySelectorAll(`#${m}-body tr`)].map(r=>({
+        item:r.querySelector(".item").value,
+        op:r.querySelector(".op").value,
+        pd:r.querySelector(".pd").value,
+        sd:r.querySelector(".sd").value,
+        rt:r.querySelector(".rt").value
+    }));
+}
 
-  if(imgHeightMm <= pageHeight){
-    // single page
-    pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, imgHeightMm);
-  } else {
-    // multi-page: slice by pageHeight
-    let yPx = 0;
-    const sliceHeightPx = Math.round(pageHeight * pxPerMm);
+/* -------------------------
+   Load saved list
+   ------------------------- */
+function loadSavedList(){
+    let div=document.getElementById("savedList");
+    let keys=Object.keys(localStorage).filter(k=>k.startsWith("sales_"));
+    if(!keys.length){div.innerHTML="— none —";return;}
+    div.innerHTML="";
+    keys.forEach(k=>{
+        let name=k.replace("sales_","");
+        let row=document.createElement("div");
+        row.style.cssText="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #ccc;";
+        row.innerHTML=`
+            <div><b>${name}</b></div>
+            <div>
+                <button class='btn ghost small' onclick="loadSaved('${name}')">Load</button>
+                <button class='btn reset small' onclick="delSaved('${name}')">Del</button>
+            </div>
+        `;
+        div.appendChild(row);
+    });
+}
+loadSavedList();
 
-    while(yPx < canvas.height){
-      // create temporary canvas to hold slice
-      const tmpCanvas = document.createElement('canvas');
-      tmpCanvas.width = canvas.width;
-      const h = Math.min(sliceHeightPx, canvas.height - yPx);
-      tmpCanvas.height = h;
-      const ctx = tmpCanvas.getContext('2d');
-      ctx.drawImage(canvas, 0, yPx, canvas.width, h, 0, 0, canvas.width, h);
-      const data = tmpCanvas.toDataURL('image/jpeg', 0.95);
-      const hMm = h / pxPerMm;
-      if(yPx > 0) pdf.addPage();
-      pdf.addImage(data, 'JPEG', 0, 0, pageWidth, hMm);
-      yPx += h;
-    }
-  }
+function loadSaved(name){
+    let data=JSON.parse(localStorage.getItem("sales_"+name));
+    if(!data)return;
 
-  // filename
-  const fname = (document.getElementById('building').value || 'DailyFoodSales') + '_' + (document.getElementById('rdate').value || new Date().toISOString().slice(0,10)) + '.pdf';
-  pdf.save(fname);
-});
+    date.value=data.meta.date;
+    bld.value=data.meta.bld;
+    flr.value=data.meta.flr;
+    ctr.value=data.meta.ctr;
+    prep.value=data.meta.prep;
+    ver.value=data.meta.ver;
 
-/* ---------- initialize defaults ---------- */
-document.addEventListener('DOMContentLoaded', ()=>{
-  if(!document.getElementById('rdate').value) document.getElementById('rdate').value = new Date().toISOString().slice(0,10);
-  renumber();
-});
+    ["breakfast","lunch","dinner"].forEach(m=>{
+        let tbody=document.getElementById(m+"-body");
+        tbody.innerHTML="";
+        data.meals[m].forEach(r=>{
+            addRow(m);
+            let last=tbody.lastChild;
+            last.querySelector(".item").value=r.item;
+            last.querySelector(".op").value=r.op;
+            last.querySelector(".pd").value=r.pd;
+            last.querySelector(".sd").value=r.sd;
+            last.querySelector(".rt").value=r.rt;
+        });
+    });
+
+    calcAll();
+    alert("Loaded");
+}
+
+function delSaved(name){
+    if(!confirm("Delete "+name+"?"))return;
+    localStorage.removeItem("sales_"+name);
+    loadSavedList();
+}
 
 </script>
+
 </body>
 </html>
