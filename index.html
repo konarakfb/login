@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -10,544 +10,340 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-  :root { --page-width: 980px; --border-color: #222; --cell-padding:8px; }
-  body { font-family: Arial, Helvetica, sans-serif; background:#f2f2f2; padding:18px; }
-  .page-wrap { max-width: var(--page-width); margin: auto; }
+  :root { --container-max: 980px; }
+  body { font-family: Arial, Helvetica, sans-serif; background:#f6f6f6; padding:12px; }
+  .container { max-width: var(--container-max); margin:auto; background:#fff; border:1px solid #dcdcdc; padding:12px; }
 
-  /* Outer boxed page to mimic uploaded PDF */
-  .sheet {
-    border: 3px solid var(--border-color);
-    padding: 10px;
-    background: #fff;
-    box-sizing: border-box;
-  }
-  .inner-box {
-    border: 2px solid var(--border-color);
-    padding: 10px;
-    box-sizing: border-box;
-  }
+  .header { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .logo { flex:0 0 72px; }
+  .logo img { max-height:54px; width:auto; }
+  .title { flex:1; text-align:center; font-weight:700; font-size:18px; }
+  .spacer { flex:0 0 72px; }
 
-  /* Header single-row (logo left + title center) */
-  .header {
-    display:flex;
-    align-items:center;
-    gap:12px;
-    justify-content:center;
-  }
-  .logo {
-    flex: 0 0 160px;
-    display:flex;
-    align-items:center;
-    justify-content:flex-start;
-  }
-  .logo img { height:45px; width:auto; display:block; }
-  .title {
-    flex: 1 1 auto;
-    text-align:center;
-    font-size:20px;
-    font-weight:700;
-    line-height:1;
-  }
-  .header-right { flex:0 0 160px; } /* balance */
+  .meta-grid { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .meta-item { flex:1 1 180px; min-width:140px; }
+  .meta-item label { font-weight:700; font-size:13px; margin-bottom:4px; display:block; }
+  .meta-item input { width:100%; padding:8px; border:1px solid #999; border-radius:4px; }
 
-  /* metadata area: two rows inside one bordered box */
-  .meta-box { border:1px solid var(--border-color); margin-top:10px; padding:8px; box-sizing:border-box; }
-  .meta-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap:8px;
-  }
-  .meta-grid-row { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-top:8px; }
-  .meta-item { border:1px solid #999; padding:6px; box-sizing:border-box; min-height:38px; display:flex; align-items:center; gap:8px; }
-  .meta-item label { width:110px; font-weight:700; font-size:13px; color:#333; }
-  .meta-item input { flex:1; padding:6px; font-size:13px; border:1px solid #ccc; border-radius:3px; }
-
-  /* Table area */
   .table-wrap { margin-top:12px; overflow-x:auto; }
-  table { border-collapse: collapse; width:100%; min-width:1100px; }
-  th, td { border:1px solid var(--border-color); padding:6px; font-size:13px; vertical-align:middle; }
-  th { background:#f3f3f3; font-weight:700; text-align:center; }
-  td input[type="text"], td select { width:100%; padding:6px; box-sizing:border-box; font-size:13px; border:1px solid #bbb; border-radius:3px; }
-  td .small-input { max-width:80px; }
+  table { width:100%; border-collapse:collapse; min-width:960px; }
+  th, td { border:1px solid #bbb; padding:6px; font-size:13px; text-align:center; }
+  th { background:#f1f1f1; font-weight:700; }
+  table input, table select { width:96%; padding:6px; }
 
-  /* Notes boxes (as big horizontal boxes under table) */
-  .notes-area { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
-  .notes-area .note-box { flex:1 1 32%; border:1px solid var(--border-color); padding:8px; box-sizing:border-box; background:#fff; min-height:70px; }
-  .notes-area label { display:block; font-weight:700; margin-bottom:6px; }
-  .notes-area textarea { width:100%; min-height:48px; resize:vertical; padding:6px; box-sizing:border-box; font-size:13px; border:1px solid #bbb; border-radius:3px; }
+  .controls { display:flex; gap:8px; margin-top:12px; }
+  .controls button { padding:10px 12px; font-size:15px; border:none; color:#fff; border-radius:6px; cursor:pointer; }
+  .btn-add{ background:#198754; }
+  .btn-save{ background:#0d6efd; }
+  .btn-pdf{ background:#ff9800; }
 
-  /* Footer single box with two halves */
-  .footer-box { margin-top:12px; border:1px solid var(--border-color); padding:6px; box-sizing:border-box; display:flex; gap:10px; }
-  .footer-half { flex:1; border-right:1px solid #ddd; padding:8px; min-height:36px; }
-  .footer-half:last-child { border-right:none; }
+  .btn-del { background:#d9534f; color:#fff; border:none; padding:6px 8px; border-radius:6px; cursor:pointer; }
 
-  /* Buttons row like screenshot (below sheet) */
-  .buttons { display:flex; gap:12px; margin-top:14px; }
-  .btn { padding:10px 16px; border-radius:6px; color:#fff; border:none; cursor:pointer; font-weight:700; }
-  .btn-add { background:#0d6efd; } /* blue */
-  .btn-save { background:#198754; } /* green */
-  .btn-pdf { background:#6f42c1; }  /* purple */
-  .btn-reset { background:#d9534f; } /* red */
+  .notes { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+  .note-box { flex:1 1 300px; min-width:300px; border:1px solid #999; padding:8px; }
+  .note-box h4 { margin:0 0 6px 0; font-size:13px; }
 
-  /* small screens */
-  @media (max-width:900px){
-    .meta-grid, .meta-grid-row { grid-template-columns: 1fr; }
-    .logo { flex-basis:80px; }
-    .header-right{ display:none;}
-    table { min-width:880px; }
-  }
+  .footer-row { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .footer-box { flex:1 1 300px; border:1px solid #999; padding:10px; min-height:48px; }
+
+  .bottom-controls { margin-top:14px; display:flex; }
+  .bottom-controls button { flex:1; }
+
 </style>
 </head>
 <body>
-  <div class="page-wrap">
-    <div class="sheet">
-      <div class="inner-box">
+<div class="container">
 
-        <!-- HEADER -->
-        <div class="header" role="banner" aria-label="header">
-          <div class="logo">
-            <img id="logoImg" src="logo.png" alt="Cognizant logo" onerror="this.style.display='none'">
-          </div>
-          <div class="title">Daily Food Quality &amp; Taste Check Report</div>
-          <div class="header-right" aria-hidden="true"></div>
-        </div>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo"><img id="logoImg" src="logo.png" alt="Logo" onerror="this.style.display='none'"></div>
+    <div class="title">Daily Food Quality & Taste Check Report</div>
+    <div class="spacer"></div>
+  </div>
 
-        <!-- Metadata boxed like sample (two rows inside one big box) -->
-        <div class="meta-box" role="group" aria-label="metadata">
-          <div class="meta-grid">
-            <div class="meta-item">
-              <label>Date:</label>
-              <input type="date" id="date">
-            </div>
-            <div class="meta-item">
-              <label>Vendor Name:</label>
-              <input type="text" id="vendorName" placeholder="Vendor name">
-            </div>
-            <div class="meta-item">
-              <label>Vendor Supervisor Name:</label>
-              <input type="text" id="vendorSupervisor" placeholder="Supervisor">
-            </div>
-          </div>
+  <!-- METADATA -->
+  <div class="meta-grid">
+    <div class="meta-item">
+      <label>Date</label>
+      <input id="date" type="date">
+    </div>
 
-          <div class="meta-grid-row">
-            <div class="meta-item">
-              <label>Building:</label>
-              <input type="text" id="building" placeholder="Building">
-            </div>
-            <div class="meta-item">
-              <label>Floor:</label>
-              <input type="text" id="floor" placeholder="Floor">
-            </div>
-            <div class="meta-item">
-              <label>Counter:</label>
-              <input type="text" id="counter" placeholder="Counter">
-            </div>
-          </div>
-        </div>
+    <div class="meta-item">
+      <label>Building</label>
+      <input id="building" type="text">
+    </div>
 
-        <!-- Main table -->
-        <div class="table-wrap" aria-label="stock table">
-          <table id="foodTable" role="table" aria-label="food table">
-            <thead>
-              <tr>
-                <th style="width:48px">S.No</th>
-                <th style="width:300px">Item</th>
-                <th style="width:110px">Temp (°C)</th>
-                <th style="width:120px">Freshness</th>
-                <th style="width:110px">Taste</th>
-                <th style="width:110px">Texture</th>
-                <th style="width:110px">Appearance</th>
-                <th style="width:100px">Portion</th>
-                <th style="width:300px">Remarks</th>
-                <th style="width:60px">Del</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td><input type="text" /></td>
-                <td><input type="text" class="small-input" /></td>
-                <td>
-                  <select>
-                    <option>Good</option><option>Average</option><option>Poor</option>
-                  </select>
-                </td>
-                <td>
-                  <select>
-                    <option>Good</option><option>Average</option><option>Poor</option>
-                  </select>
-                </td>
-                <td>
-                  <select>
-                    <option>Soft</option><option>Normal</option><option>Hard</option>
-                  </select>
-                </td>
-                <td>
-                  <select>
-                    <option>Good</option><option>Average</option><option>Poor</option>
-                  </select>
-                </td>
-                <td>
-                  <select>
-                    <option>Std</option><option>Less</option>
-                  </select>
-                </td>
-                <td><input type="text" /></td>
-                <td><button class="btn btn-reset" onclick="deleteRow(this)" title="Delete row">X</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <div class="meta-item">
+      <label>Floor</label>
+      <input id="floor" type="text">
+    </div>
 
-        <!-- Notes boxes (editable textareas) -->
-        <div class="notes-area" aria-label="notes">
-          <div class="note-box">
-            <label for="tasteNotes">Taste Validation Notes</label>
-            <textarea id="tasteNotes" placeholder="Enter taste validation notes..."></textarea>
-          </div>
-          <div class="note-box">
-            <label for="obsNotes">Special Observations</label>
-            <textarea id="obsNotes" placeholder="Enter special observations..."></textarea>
-          </div>
-          <div class="note-box">
-            <label for="actNotes">Corrective Actions</label>
-            <textarea id="actNotes" placeholder="Enter corrective actions..."></textarea>
-          </div>
-        </div>
+    <div class="meta-item">
+      <label>Counter</label>
+      <input id="counter" type="text">
+    </div>
 
-        <!-- Footer single box with two halves -->
-        <div class="footer-box" aria-label="signatures">
-          <div class="footer-half">
-            <label style="font-weight:700;display:block;margin-bottom:6px;">Vendor PoC :</label>
-            <input type="text" id="vendorPoc" style="width:95%;padding:6px;border:1px solid #ccc;border-radius:4px;">
-          </div>
-          <div class="footer-half">
-            <label style="font-weight:700;display:block;margin-bottom:6px;">Verified by F&amp;B Team :</label>
-            <input type="text" id="verifiedBy" style="width:95%;padding:6px;border:1px solid #ccc;border-radius:4px;">
-          </div>
-        </div>
+    <div class="meta-item">
+      <label>Supervisor</label>
+      <input id="supervisor" type="text">
+    </div>
 
-      </div> <!-- inner-box -->
-    </div> <!-- sheet -->
-
-    <!-- Buttons below the sheet -->
-    <div class="buttons" style="margin-top:12px;">
-      <button class="btn btn-add" onclick="addRow()">Add Row</button>
-      <button class="btn btn-save" onclick="saveForm()">Save (Lock)</button>
-      <button class="btn btn-pdf" onclick="downloadPDF()">Download PDF</button>
-      <button class="btn btn-reset" onclick="resetForm()">Reset</button>
+    <div class="meta-item">
+      <label>CBRE Representative</label>
+      <input id="cbre" type="text">
     </div>
   </div>
 
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <table id="foodTable">
+      <thead>
+        <tr>
+          <th style="width:42px">S.No</th>
+          <th style="width:240px">Item</th>
+          <th style="width:70px">Temp (°C)</th>
+          <th style="width:80px">Freshness</th>
+          <th style="width:70px">Taste</th>
+          <th style="width:70px">Texture</th>
+          <th style="width:70px">Appearance</th>
+          <th style="width:60px">Portion</th>
+          <th style="width:200px">Remarks</th>
+          <th style="width:50px">Del</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><input type="text"></td>
+          <td><input type="text"></td>
+          <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+          <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+          <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
+          <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+          <td><select><option>Std</option><option>Less</option></select></td>
+          <td><input type="text"></td>
+          <td><button class="btn-del" onclick="deleteRow(this)">X</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <button class="btn-add" onclick="addRow()">+ Add Row</button>
+    <button class="btn-save" onclick="saveForm()">Save (local)</button>
+  </div>
+
+  <!-- NOTES -->
+  <div class="notes">
+    <div class="note-box">
+      <h4>Taste Validation Notes</h4>
+      <p id="tastePreview"></p>
+    </div>
+    <div class="note-box">
+      <h4>Special Observations</h4>
+      <p id="obsPreview"></p>
+    </div>
+    <div class="note-box">
+      <h4>Corrective Actions</h4>
+      <p id="actionsPreview"></p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-row">
+    <div class="footer-box">Vendor PoC :</div>
+    <div class="footer-box">Verified by F&B Team :</div>
+  </div>
+
+  <!-- DOWNLOAD -->
+  <div class="bottom-controls">
+    <button class="btn-pdf" onclick="downloadPDF()">Download PDF</button>
+  </div>
+
+</div>
+
+
 <script>
-/* ------------------ Row functions ------------------ */
+/* ---------------- ADD / DELETE ROW ---------------- */
+
 function addRow(){
-  const tbody = document.querySelector('#foodTable tbody');
+  const tbody = document.querySelector("#foodTable tbody");
   const idx = tbody.rows.length + 1;
-  const tr = document.createElement('tr');
+  const tr = document.createElement("tr");
   tr.innerHTML = `
     <td>${idx}</td>
-    <td><input type="text" /></td>
-    <td><input type="text" /></td>
-    <td>
-      <select><option>Good</option><option>Average</option><option>Poor</option></select>
-    </td>
-    <td>
-      <select><option>Good</option><option>Average</option><option>Poor</option></select>
-    </td>
-    <td>
-      <select><option>Soft</option><option>Normal</option><option>Hard</option></select>
-    </td>
-    <td>
-      <select><option>Good</option><option>Average</option><option>Poor</option></select>
-    </td>
-    <td>
-      <select><option>Std</option><option>Less</option></select>
-    </td>
-    <td><input type="text" /></td>
-    <td><button class="btn btn-reset" onclick="deleteRow(this)">X</button></td>
-  `;
-  tbody.appendChild(tr);
-}
-
-function deleteRow(btn){
-  const tr = btn.closest('tr');
-  tr.remove();
-  // reindex
-  document.querySelectorAll('#foodTable tbody tr').forEach((r,i)=> r.cells[0].innerText = i+1);
-}
-
-/* ------------------ Save / Reset ------------------ */
-function saveForm(){
-  const data = collectForm();
-  localStorage.setItem('foodQualityForm_vfinal', JSON.stringify(data));
-  alert('Form saved locally (locked).');
-}
-
-function resetForm(){
-  if(!confirm('Reset the form? This will clear all inputs.')) return;
-  // clear inputs
-  document.querySelectorAll('input[type="text"], input[type="date"]').forEach(i=> i.value='');
-  document.querySelectorAll('textarea').forEach(t=> t.value='');
-  // reset selects to first option
-  document.querySelectorAll('select').forEach(s=> s.selectedIndex = 0);
-  // keep one empty row
-  const tbody = document.querySelector('#foodTable tbody');
-  tbody.innerHTML = '';
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td>1</td>
-    <td><input type="text" /></td>
-    <td><input type="text" /></td>
+    <td><input type="text"></td>
+    <td><input type="text"></td>
     <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
     <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
     <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
     <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
     <td><select><option>Std</option><option>Less</option></select></td>
     <td><input type="text"></td>
-    <td><button class="btn btn-reset" onclick="deleteRow(this)">X</button></td>
+    <td><button class="btn-del" onclick="deleteRow(this)">X</button></td>
   `;
   tbody.appendChild(tr);
 }
 
-/* ------------------ Load saved if any ------------------ */
-(function loadSaved(){
-  try{
-    const raw = localStorage.getItem('foodQualityForm_vfinal');
-    if(!raw) return;
-    const data = JSON.parse(raw);
-    // meta
-    if(data.meta){
-      document.getElementById('date').value = data.meta.date || '';
-      document.getElementById('vendorName').value = data.meta.vendorName || '';
-      document.getElementById('vendorSupervisor').value = data.meta.vendorSupervisor || '';
-      document.getElementById('building').value = data.meta.building || '';
-      document.getElementById('floor').value = data.meta.floor || '';
-      document.getElementById('counter').value = data.meta.counter || '';
-    }
-    // rows
-    if(data.rows && data.rows.length){
-      const tbody = document.querySelector('#foodTable tbody');
-      tbody.innerHTML = '';
-      data.rows.forEach((r,i)=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${i+1}</td>
-          <td><input type="text" value="${escapeHtml(r.item)}"></td>
-          <td><input type="text" value="${escapeHtml(r.temp)}"></td>
-          <td><select><option ${r.freshness==='Good'?'selected':''}>Good</option><option ${r.freshness==='Average'?'selected':''}>Average</option><option ${r.freshness==='Poor'?'selected':''}>Poor</option></select></td>
-          <td><select><option ${r.taste==='Good'?'selected':''}>Good</option><option ${r.taste==='Average'?'selected':''}>Average</option><option ${r.taste==='Poor'?'selected':''}>Poor</option></select></td>
-          <td><select><option ${r.texture==='Soft'?'selected':''}>Soft</option><option ${r.texture==='Normal'?'selected':''}>Normal</option><option ${r.texture==='Hard'?'selected':''}>Hard</option></select></td>
-          <td><select><option ${r.appearance==='Good'?'selected':''}>Good</option><option ${r.appearance==='Average'?'selected':''}>Average</option><option ${r.appearance==='Poor'?'selected':''}>Poor</option></select></td>
-          <td><select><option ${r.portion==='Std'?'selected':''}>Std</option><option ${r.portion==='Less'?'selected':''}>Less</option></select></td>
-          <td><input type="text" value="${escapeHtml(r.remarks)}"></td>
-          <td><button class="btn btn-reset" onclick="deleteRow(this)">X</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-    // notes
-    if(data.notes){
-      document.getElementById('tasteNotes').value = data.notes.taste || '';
-      document.getElementById('obsNotes').value = data.notes.obs || '';
-      document.getElementById('actNotes').value = data.notes.actions || '';
-    }
-    // footer
-    if(data.footer){
-      document.getElementById('vendorPoc').value = data.footer.vendorPoc || '';
-      document.getElementById('verifiedBy').value = data.footer.verifiedBy || '';
-    }
-  }catch(e){ console.warn('loadSaved failed', e); }
-})();
-
-function escapeHtml(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-/* collect form */
-function collectForm(){
-  const meta = {
-    date: document.getElementById('date').value || '',
-    vendorName: document.getElementById('vendorName').value || '',
-    vendorSupervisor: document.getElementById('vendorSupervisor').value || '',
-    building: document.getElementById('building').value || '',
-    floor: document.getElementById('floor').value || '',
-    counter: document.getElementById('counter').value || ''
-  };
-  const rows = [...document.querySelectorAll('#foodTable tbody tr')].map((tr, i)=> {
-    const tds = tr.querySelectorAll('td');
-    return {
-      s: i+1,
-      item: (tds[1].querySelector('input')||{}).value || '',
-      temp: (tds[2].querySelector('input')||{}).value || '',
-      freshness: (tds[3].querySelector('select')||{}).value || '',
-      taste: (tds[4].querySelector('select')||{}).value || '',
-      texture: (tds[5].querySelector('select')||{}).value || '',
-      appearance: (tds[6].querySelector('select')||{}).value || '',
-      portion: (tds[7].querySelector('select')||{}).value || '',
-      remarks: (tds[8].querySelector('input')||{}).value || ''
-    };
-  });
-  const notes = {
-    taste: document.getElementById('tasteNotes').value || '',
-    obs: document.getElementById('obsNotes').value || '',
-    actions: document.getElementById('actNotes').value || ''
-  };
-  const footer = {
-    vendorPoc: document.getElementById('vendorPoc').value || '',
-    verifiedBy: document.getElementById('verifiedBy').value || ''
-  };
-  return { meta, rows, notes, footer };
+function deleteRow(btn){
+  btn.closest("tr").remove();
+  const rows = document.querySelectorAll("#foodTable tbody tr");
+  rows.forEach((r,i)=> r.cells[0].textContent = i+1);
 }
 
-/* ------------------ PDF generation ------------------ */
-async function downloadPDF(){
-  // ensure date
-  if(!document.getElementById('date').value) document.getElementById('date').value = new Date().toISOString().slice(0,10);
+/* ---------------- SAVE LOCAL ---------------- */
 
-  const data = collectForm();
+function saveForm(){
+  const data = {
+    date: date.value,
+    building: building.value,
+    floor: floor.value,
+    counter: counter.value,
+    supervisor: supervisor.value,
+    cbre: cbre.value
+  };
+  localStorage.setItem("foodQuality", JSON.stringify(data));
+  alert("Saved locally.");
+}
+
+/* ---------------- PDF GENERATION ---------------- */
+
+async function downloadPDF(){
 
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+  const doc = new jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
+
+  const margin = 20;
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 22;
-  const usable = pageWidth - margin*2;
+  const usableWidth = pageWidth - margin*2;
   let cursorY = margin;
 
-  // load logo if present
-  const logoEl = document.getElementById('logoImg');
-  let logoObj = null;
-  if(logoEl && logoEl.src && logoEl.style.display !== 'none'){
-    logoObj = await loadImageData(logoEl.src).catch(()=>null);
+  /* -------- LOGO (fixed no-stretch) -------- */
+
+  let logoData = null;
+  const logoEl = document.getElementById("logoImg");
+
+  if(logoEl && logoEl.src && logoEl.style.display !== "none"){
+    logoData = await toDataUrl(logoEl.src).catch(()=>null);
   }
 
-  // draw header: logo left (scaled proportionally to height 55), centered title
-  const logoH = 55;
-  if(logoObj){
-    const scale = logoH / logoObj.height;
-    const logoW = Math.round(logoObj.width * scale);
-    doc.addImage(logoObj.data, 'PNG', margin, cursorY, logoW, logoH);
+  const logoH = 40;
+  const logoW = 40 * 1.4;
+
+  if(logoData){
+    doc.addImage(logoData, "PNG", margin, cursorY, logoW, logoH, undefined, "FAST");
   }
-  doc.setFontSize(18);
-  doc.setFont('helvetica','bold');
-  doc.text('Daily Food Quality & Taste Check Report', pageWidth/2, cursorY + 36, { align: 'center' });
 
-  cursorY += Math.max(logoH, 40) + 6;
-  doc.setLineWidth(1);
-  doc.line(margin, cursorY - 6, pageWidth - margin, cursorY - 6);
+  doc.setFontSize(16);
+  doc.setFont(undefined,"bold");
+  doc.text("Daily Food Quality & Taste Check Report", pageWidth/2, cursorY+28, {align:"center"});
 
-  // Metadata: create two rows like the page
+  cursorY += 50;
+  doc.line(margin, cursorY, pageWidth-margin, cursorY);
+  cursorY += 10;
+
+  /* -------- METADATA: OPTION B -------- */
+
   doc.setFontSize(10);
-  const metaLabels = [
-    ['Date', data.meta.date || ''],
-    ['Vendor Name', data.meta.vendorName || ''],
-    ['Vendor Supervisor', data.meta.vendorSupervisor || ''],
-    ['Building', data.meta.building || ''],
-    ['Floor', data.meta.floor || ''],
-    ['Counter', data.meta.counter || '']
-  ];
+  const row1 = ["Date", date.value, "Building", building.value, "Floor", floor.value, "Counter", counter.value];
+  const row2 = ["Supervisor", supervisor.value, "CBRE Rep", cbre.value];
 
-  // layout each as small bordered cell across width (3 columns per row)
-  const colW = (usable - 10) / 3;
   let x = margin;
-  for(let i=0;i<3;i++){
-    const label = metaLabels[i][0];
-    const val = metaLabels[i][1];
-    doc.rect(x, cursorY, colW, 34);
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text(label + ':', x + 6, cursorY + 12);
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    doc.text(doc.splitTextToSize(val, colW - 12), x + 6, cursorY + 26);
-    x += colW + 5;
+  const cellW = usableWidth / 4;
+  const cellH = 26;
+
+  // Row 1 (four boxes)
+  for(let i=0;i<4;i++){
+    doc.rect(x, cursorY, cellW, cellH);
+    doc.setFont(undefined,"bold"); doc.text(row1[i*2], x+6, cursorY+12);
+    doc.setFont(undefined,"normal"); doc.text(row1[i*2+1], x+6, cursorY+22);
+    x += cellW;
   }
-  cursorY += 34 + 6;
+
+  cursorY += cellH + 8;
+
+  // Row 2 (two boxes)
+  const cellW2 = usableWidth / 2;
   x = margin;
-  for(let i=3;i<6;i++){
-    const label = metaLabels[i][0];
-    const val = metaLabels[i][1];
-    doc.rect(x, cursorY, colW, 34);
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text(label + ':', x + 6, cursorY + 12);
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    doc.text(doc.splitTextToSize(val, colW - 12), x + 6, cursorY + 26);
-    x += colW + 5;
+
+  for(let i=0;i<2;i++){
+    doc.rect(x, cursorY, cellW2, cellH);
+    doc.setFont(undefined,"bold"); doc.text(row2[i*2], x+6, cursorY+12);
+    doc.setFont(undefined,"normal"); doc.text(row2[i*2+1], x+6, cursorY+22);
+    x += cellW2;
   }
-  cursorY += 34 + 10;
 
-  // Table: build body rows
-  const head = [['S.No','Item','Temp (°C)','Freshness','Taste','Texture','Appearance','Portion','Remarks']];
-  const body = data.rows.length ? data.rows.map(r => [r.s, r.item, r.temp, r.freshness, r.taste, r.texture, r.appearance, r.portion, r.remarks]) : [['','','','','','','','','']];
+  cursorY += cellH + 15;
 
-  doc.autoTable({
-    head: head,
-    body: body,
-    startY: cursorY,
-    margin: { left: margin, right: margin },
-    styles: { fontSize: 10, cellPadding: 6, valign: 'middle' },
-    headStyles: { fillColor: [240,240,240], textColor: 0, fontStyle: 'bold' },
-    columnStyles: {
-      0:{cellWidth:36},
-      1:{cellWidth:220, halign:'left'},
-      2:{cellWidth:70},
-      3:{cellWidth:90},
-      4:{cellWidth:80},
-      5:{cellWidth:80},
-      6:{cellWidth:80},
-      7:{cellWidth:70},
-      8:{cellWidth:240, overflow:'linebreak', halign:'left'}
-    },
-    didDrawPage: function (dataA) {}
+  /* -------- TABLE -------- */
+
+  const rows = Array.from(document.querySelectorAll("#foodTable tbody tr")).map((tr,i)=>{
+    const t = tr.querySelectorAll("td");
+    return [
+      i+1,
+      t[1].querySelector("input").value,
+      t[2].querySelector("input").value,
+      t[3].querySelector("select").value,
+      t[4].querySelector("select").value,
+      t[5].querySelector("select").value,
+      t[6].querySelector("select").value,
+      t[7].querySelector("select").value,
+      t[8].querySelector("input").value
+    ];
   });
 
-  cursorY = doc.lastAutoTable.finalY + 12;
+  doc.autoTable({
+    startY: cursorY,
+    head:[["S.No","Item","Temp","Freshness","Taste","Texture","Appearance","Portion","Remarks"]],
+    body: rows,
+    margin:{left:margin, right:margin},
+    styles:{fontSize:10, cellPadding:5, valign:"middle"},
+    columnStyles:{
+      0:{cellWidth:28},
+      1:{cellWidth:180},
+      2:{cellWidth:55},
+      3:{cellWidth:70},
+      4:{cellWidth:60},
+      5:{cellWidth:60},
+      6:{cellWidth:60},
+      7:{cellWidth:55},
+      8:{cellWidth:150}   /* FIXED REMARKS WIDTH */
+    }
+  });
 
-  // Notes: draw three boxes side-by-side (wide) — but to match your earlier request we now use single stacked boxes? 
-  // The image earlier had one large metadata box and then table; user requested three horizontal boxes earlier — we'll place three side-by-side only if wide enough, otherwise stacked.
-  const notes = data.notes;
-  const boxGap = 10;
-  const boxW = (usable - boxGap*2) / 3;
-  const boxH = 70;
-  // Try side-by-side
-  let nx = margin;
-  for(const [title, val] of [['Taste Validation Notes', notes.taste], ['Special Observations', notes.obs], ['Corrective Actions', notes.actions]]){
-    doc.rect(nx, cursorY, boxW, boxH);
-    doc.setFont('helvetica','bold'); doc.setFontSize(11);
-    doc.text(title, nx + 6, cursorY + 14);
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    doc.text(doc.splitTextToSize(val, boxW - 12), nx + 6, cursorY + 30);
-    nx += boxW + boxGap;
-  }
-  cursorY += boxH + 18;
+  cursorY = doc.lastAutoTable.finalY + 20;
 
-  // Footer signature box split into two halves inside one big box
-  const sigH = 60;
-  doc.rect(margin, cursorY, usable, sigH);
-  doc.line(margin + usable/2, cursorY, margin + usable/2, cursorY + sigH);
-  doc.setFont('helvetica','bold'); doc.setFontSize(11);
-  doc.text('Vendor PoC : ' + (data.footer ? (data.footer.vendorPoc || '') : ''), margin + 8, cursorY + 24);
-  doc.text('Verified by F&B Team : ' + (data.footer ? (data.footer.verifiedBy || '') : ''), margin + usable/2 + 8, cursorY + 24);
+  /* -------- FOOTER -------- */
 
-  // Save PDF
-  doc.save('Food_Quality_Check.pdf');
+  const sigH = 45;
+  const sigW = (usableWidth - 20)/2;
 
-  // helper to load logo and return data + natural size
-  async function loadImageData(src){
-    return new Promise((resolve, reject) => {
+  doc.rect(margin, cursorY, sigW, sigH);
+  doc.text("Vendor PoC :", margin+10, cursorY+20);
+
+  doc.rect(margin+sigW+20, cursorY, sigW, sigH);
+  doc.text("Verified by F&B Team :", margin+sigW+30, cursorY+20);
+
+  doc.save("Food_Quality_Check.pdf");
+
+  /* ------- Helper function ------- */
+  function toDataUrl(src){
+    return new Promise((resolve)=>{
       const img = new Image();
-      img.crossOrigin = 'anonymous';
+      img.crossOrigin = "anonymous";
       img.onload = function(){
-        const canvas = document.createElement('canvas');
-        canvas.width = this.width;
-        canvas.height = this.height;
-        canvas.getContext('2d').drawImage(this, 0, 0);
-        resolve({ data: canvas.toDataURL('image/png'), width: this.width, height: this.height });
+        const c = document.createElement("canvas");
+        c.width = this.width; c.height = this.height;
+        c.getContext("2d").drawImage(this,0,0);
+        resolve(c.toDataURL("image/png"));
       };
-      img.onerror = () => resolve(null);
+      img.onerror = ()=>resolve(null);
       img.src = src;
     });
   }
 }
-
-/* ------------------ Utility ------------------ */
-function escapeHtml(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 </script>
+
 </body>
 </html>
