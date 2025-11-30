@@ -2,415 +2,215 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Daily Food Sales Report</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!-- PDF LIBS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<title>Daily Food Quality & Taste Check</title>
 
 <style>
-body {font-family: Arial;background:#f4f4f4;margin:0;padding:12px;}
-.container {max-width:1100px;margin:auto;}
-.sheet {background:#fff;border:1px solid #000;padding:15px;border-radius:6px;}
+    body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        padding: 10px;
+    }
+    .form-box {
+        background: #fff;
+        padding: 15px;
+        border: 1px solid #ccc;
+        max-width: 950px;
+        margin: auto;
+    }
 
-.header {display:flex;align-items:center;border-bottom:1px solid #000;padding-bottom:12px;margin-bottom:15px;}
-.header img {width:120px;margin-right:10px;}
-.header h1 {flex:1;text-align:center;margin:0;font-size:20px;}
+    /* Header with logo */
+    .header-box {
+        border: 1px solid #333;
+        padding: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .header-box img {
+        height: 55px;
+    }
+    .header-title {
+        flex: 1;
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+    }
 
-.top-grid {display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
-.top-grid .box {flex:1 1 180px;}
-label {font-size:13px;color:#555;margin-bottom:4px;display:block;}
-input {width:100%;padding:7px;font-size:14px;border:1px solid #aaa;border-radius:4px;box-sizing:border-box;}
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+    .col {
+        flex: 1;
+        min-width: 150px;
+        padding: 5px;
+    }
+    label {
+        font-weight: bold;
+        font-size: 14px;
+    }
+    input, select, textarea {
+        width: 100%;
+        padding: 7px;
+        border: 1px solid #999;
+        border-radius: 3px;
+        margin-top: 3px;
+        font-size: 14px;
+    }
 
-.meal {border:1px solid #000;margin-bottom:18px;padding:12px;border-radius:6px;}
-.meal-title {font-size:18px;font-weight:bold;margin-bottom:6px;}
-.section-total {font-weight:bold;color:#0a6;margin-bottom:8px;}
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
+    table th, table td {
+        border: 1px solid #555;
+        padding: 6px;
+        font-size: 14px;
+        text-align: center;
+    }
+    table th {
+        background: #e6e6e6;
+    }
 
-.table-wrap {overflow-x:auto;}
+    textarea { height: 70px; }
 
-table {
-    width:100%;
-    border-collapse:collapse;
-    table-layout:fixed;
-    font-size:13px;
-    min-width:900px;
-}
+    .sign-row {
+        display: flex;
+        margin-top: 15px;
+    }
+    .sign-col {
+        flex: 1;
+        border: 1px solid #777;
+        padding: 10px;
+        height: 60px;
+        margin-right: 5px;
+    }
+    .sign-col:last-child {
+        margin-right: 0;
+    }
 
-th, td {
-    border:1px solid #000;
-    padding:6px;
-    vertical-align:middle;
-    word-break:break-word;
-    text-align:center;
-}
-
-/* FIX INPUT OVERLAP */
-td input {
-    width:100%;
-    max-width:100%;
-    padding:4px 5px!important;
-    height:32px!important;
-    font-size:13px!important;
-    border:1px solid #aaa;
-    border-radius:3px;
-    box-sizing:border-box!important;
-    overflow:hidden;
-}
-
-.btn {padding:8px 12px;border-radius:6px;font-weight:bold;color:#fff;border:0;cursor:pointer;}
-.add {background:#0b63c6;}
-.lock {background:#28a745;}
-.reset {background:#dc3545;}
-.pdf {background:#6f42c1;}
-.ghost {background:#fff;color:#0b63c6;border:1px solid #0b63c6;}
-
-.saved-box {margin-top:15px;}
-.saved-list {border:1px dashed #aaa;padding:8px;background:#fafcff;border-radius:6px;max-height:140px;overflow:auto;font-size:14px;}
-
-.grand-green {font-weight:bold;color:#0a6;font-size:16px;margin-top:-5px;margin-bottom:12px;}
+    .submit-btn {
+        width: 100%;
+        padding: 12px;
+        margin-top: 20px;
+        background: #0066cc;
+        color: white;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+    }
 </style>
 </head>
 
 <body>
-<div class="container">
-<div class="sheet" id="sheet">
 
-<!-- HEADER -->
-<div class="header">
-    <img src="logo.png">
-    <h1>Daily Food Sales Report</h1>
-</div>
+<div class="form-box">
 
-<!-- TOP FIELDS -->
-<div class="top-grid">
-    <div class="box"><label>Date</label><input id="date" type="date"></div>
-    <div class="box"><label>Building</label><input id="bld"></div>
-    <div class="box"><label>Floor</label><input id="flr"></div>
-    <div class="box"><label>Counter</label><input id="ctr"></div>
-    <div class="box"><label>Prepared By</label><input id="prep"></div>
-    <div class="box"><label>Verified By</label><input id="ver"></div>
-</div>
-
-<!-- MEALS -->
-<div id="meals"></div>
-
-<!-- GRAND SUMMARY -->
-<div class="meal">
-    <div class="meal-title">Grand Summary</div>
-
-    <div class="top-grid">
-        <div class="box"><label>Breakfast Total (₹)</label><input id="tbreak" readonly></div>
-        <div class="box"><label>Lunch Total (₹)</label><input id="tlunch" readonly></div>
-        <div class="box"><label>Dinner Total (₹)</label><input id="tdinner" readonly></div>
-        <div class="box"><label><b>Grand Total (₹)</b></label><input id="tgrand" readonly></div>
+    <!-- Header -->
+    <div class="header-box">
+        <img src="logo.png" alt="Logo">
+        <div class="header-title">Daily Food Quality & Taste Check Report</div>
     </div>
 
-    <!-- NEW GREEN GRAND TOTAL BELOW SUMMARY -->
-    <div class="grand-green">Grand Total: ₹ <span id="grand-green-value">0.00</span></div>
-</div>
-
-<!-- ACTION BUTTONS -->
-<div style="margin-top:15px;display:flex;flex-wrap:wrap;gap:10px;">
-    <input id="savename" placeholder="Save name" style="padding:8px;border:1px solid #aaa;border-radius:6px;">
-    <button class="btn lock" id="saveAll">Save All</button>
-    <button class="btn pdf" id="pdfBtn">Download PDF</button>
-    <button class="btn reset" id="reset">Reset</button>
-</div>
-
-<!-- SAVED LIST -->
-<div class="saved-box" id="saved-box">
-    <label>Saved Reports</label>
-    <div class="saved-list" id="savedList">— none —</div>
-</div>
-
-</div>
-</div>
-
-<script>
-/* -------------------------
-   CREATE MEAL SECTIONS
-------------------------- */
-const meals=[
- {key:"breakfast",title:"Breakfast"},
- {key:"lunch",title:"Lunch"},
- {key:"dinner",title:"Dinner"}
-];
-
-const mealsDiv=document.getElementById("meals");
-
-meals.forEach(m=>{
- mealsDiv.innerHTML+=`
-<div class="meal" id="${m.key}">
- <div class="meal-title">${m.title}</div>
- <div class="section-total">Section Total: ₹ <span id="${m.key}-total">0.00</span></div>
-
- <div class="table-wrap">
- <table>
-  <thead>
-   <tr>
-    <th>S.No</th><th style="width:250px">Item Name</th>
-    <th>Opening</th><th>Produced</th><th>Total</th>
-    <th>Sold</th><th>Closing</th><th>Rate</th><th>Sales</th>
-    <th>Action</th>
-   </tr>
-  </thead>
-  <tbody id="${m.key}-body"></tbody>
- </table>
- </div>
- <button class="btn add" onclick="addRow('${m.key}')">+ Add Row</button>
-</div>`;
-});
-
-/* ADD ROW */
-function addRow(meal){
- let tbody=document.getElementById(meal+"-body");
- let tr=document.createElement("tr");
- tr.innerHTML=`
- <td class="idx"></td>
- <td><input class="item"></td>
- <td><input type="number" class="op" value="0"></td>
- <td><input type="number" class="pd" value="0"></td>
- <td><input class="av" readonly></td>
- <td><input type="number" class="sd" value="0"></td>
- <td><input class="cl" readonly></td>
- <td><input type="number" class="rt" value="0"></td>
- <td><input class="sl" readonly></td>
- <td><button class="btn ghost" onclick="this.closest('tr').remove(); calcAll();">Del</button></td>`;
- tbody.appendChild(tr);
- updateIndex(tbody);
- bindRow(tr);
-}
-
-function updateIndex(tbody){
- [...tbody.children].forEach((tr,i)=> tr.querySelector(".idx").textContent=i+1);
-}
-
-function bindRow(tr){
- tr.querySelectorAll("input").forEach(inp=>{
-   inp.addEventListener("input",()=>{calcRow(tr);calcAll();});
- });
-}
-
-/* ROW CALC */
-function calcRow(tr){
- let op=+tr.querySelector(".op").value||0;
- let pd=+tr.querySelector(".pd").value||0;
- let av=op+pd; tr.querySelector(".av").value=av;
- let sd=+tr.querySelector(".sd").value||0;
- if(sd>av){ sd=av; tr.querySelector(".sd").value=sd; }
- tr.querySelector(".cl").value=av-sd;
- let rt=+tr.querySelector(".rt").value||0;
- tr.querySelector(".sl").value=(sd*rt).toFixed(2);
-}
-
-/* MEAL TOTAL */
-function calcMeal(meal){
- let rows=[...document.querySelectorAll(`#${meal}-body tr`)];
- let total = rows.reduce((a,r)=> a + +(r.querySelector(".sl").value||0), 0);
- document.getElementById(meal+"-total").textContent = total.toFixed(2);
- return total;
-}
-
-/* GRAND TOTAL */
-function calcAll(){
- let b=calcMeal("breakfast");
- let l=calcMeal("lunch");
- let d=calcMeal("dinner");
-
- document.getElementById("tbreak").value=b.toFixed(2);
- document.getElementById("tlunch").value=l.toFixed(2);
- document.getElementById("tdinner").value=d.toFixed(2);
-
- let g=(b+l+d).toFixed(2);
- document.getElementById("tgrand").value=g;
-
- /* UPDATE GREEN GRAND TOTAL */
- document.getElementById("grand-green-value").textContent = g;
-}
-
-/* RESET */
-document.getElementById("reset").onclick=()=>location.reload();
-
-/* SAVE ALL */
-document.getElementById("saveAll").onclick=function(){
- let name=document.getElementById("savename").value.trim();
- if(!name){alert("Enter a name");return;}
-
- let data={
-  meta:{date:date.value,bld:bld.value,flr:flr.value,ctr:ctr.value,prep:prep.value,ver:ver.value},
-  meals:{
-   breakfast:getMeal("breakfast"),
-   lunch:getMeal("lunch"),
-   dinner:getMeal("dinner")
-  }
- };
-
- localStorage.setItem("sales_"+name, JSON.stringify(data));
- loadSavedList();
- alert("Saved");
-};
-
-function getMeal(m){
- return [...document.querySelectorAll(`#${m}-body tr`)].map(r=>({
-  item:r.querySelector(".item").value,
-  op:r.querySelector(".op").value,
-  pd:r.querySelector(".pd").value,
-  sd:r.querySelector(".sd").value,
-  rt:r.querySelector(".rt").value
- }));
-}
-
-/* SAVED LIST */
-function loadSavedList(){
- let div=document.getElementById("savedList");
- let keys=Object.keys(localStorage).filter(k=>k.startsWith("sales_"));
-
- if(!keys.length){div.innerHTML="— none —";return;}
-
- div.innerHTML="";
- keys.forEach(k=>{
-  const name=k.replace("sales_","");
-
-  let row=document.createElement("div");
-  row.style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #ccc";
-
-  row.innerHTML=`
-    <b>${name}</b>
-    <div style="display:flex;gap:6px">
-       <button class="btn ghost" onclick="loadSaved('${name}')">Load</button>
-       <button class="btn reset" onclick="deleteSaved('${name}')">Del</button>
+    <!-- Basic Info -->
+    <div class="row">
+        <div class="col">
+            <label>Date</label>
+            <input type="date">
+        </div>
+        <div class="col">
+            <label>Building</label>
+            <input type="text">
+        </div>
+        <div class="col">
+            <label>Floor / Counter</label>
+            <input type="text">
+        </div>
     </div>
-  `;
-  div.appendChild(row);
- });
-}
-loadSavedList();
 
-function loadSaved(name){
- let d=JSON.parse(localStorage.getItem("sales_"+name));
- if(!d){alert("Not found");return;}
+    <div class="row">
+        <div class="col">
+            <label>Supervisor Name</label>
+            <input type="text">
+        </div>
+        <div class="col">
+            <label>CBRE Representative</label>
+            <input type="text">
+        </div>
+    </div>
 
- date.value=d.meta.date;
- bld.value=d.meta.bld;
- flr.value=d.meta.flr;
- ctr.value=d.meta.ctr;
- prep.value=d.meta.prep;
- ver.value=d.meta.ver;
+    <!-- Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th>Item</th>
+                <th>Temp (°C)</th>
+                <th>Freshness</th>
+                <th>Taste</th>
+                <th>Texture</th>
+                <th>Appearance</th>
+                <th>Portion</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td><input></td>
+                <td><input></td>
+                <td>
+                    <select>
+                        <option>Good</option><option>Average</option><option>Poor</option>
+                    </select>
+                </td>
+                <td>
+                    <select>
+                        <option>Good</option><option>Average</option><option>Poor</option>
+                    </select>
+                </td>
+                <td>
+                    <select>
+                        <option>Soft</option><option>Normal</option><option>Hard</option>
+                    </select>
+                </td>
+                <td>
+                    <select>
+                        <option>Good</option><option>Average</option><option>Poor</option>
+                    </select>
+                </td>
+                <td>
+                    <select>
+                        <option>Standard</option><option>Less</option>
+                    </select>
+                </td>
+                <td><input></td>
+            </tr>
+        </tbody>
+    </table>
 
- ["breakfast","lunch","dinner"].forEach(m=>{
-  let tbody=document.getElementById(m+"-body");
-  tbody.innerHTML="";
-  d.meals[m].forEach(r=>{
-   addRow(m);
-   let tr=tbody.lastChild;
-   tr.querySelector(".item").value=r.item;
-   tr.querySelector(".op").value=r.op;
-   tr.querySelector(".pd").value=r.pd;
-   tr.querySelector(".sd").value=r.sd;
-   tr.querySelector(".rt").value=r.rt;
-   calcRow(tr);
-  });
- });
+    <label style="margin-top:15px;">Taste Validation Notes</label>
+    <textarea></textarea>
 
- calcAll();
- alert("Loaded");
-}
+    <label>Special Observations</label>
+    <textarea></textarea>
 
-function deleteSaved(name){
- if(!confirm("Delete saved report?"))return;
+    <label>Corrective Actions</label>
+    <textarea></textarea>
 
- localStorage.removeItem("sales_"+name);
- loadSavedList();
-}
+    <!-- Signatures -->
+    <div class="sign-row">
+        <div class="sign-col">Supervisor Signature</div>
+        <div class="sign-col">CBRE Signature</div>
+    </div>
 
-/* -------------------------
-   FIXED PDF DOWNLOAD + 
-   REMOVE SAVED REPORTS FROM PDF
-------------------------- */
+    <button class="submit-btn">Submit</button>
 
-document.getElementById("pdfBtn").onclick = async function () {
-
-    const { jsPDF } = window.jspdf;
-    const sheet = document.getElementById("sheet");
-
-    const clone = sheet.cloneNode(true);
-
-    /* REMOVE SAVED REPORTS FROM PDF */
-    const savedBox = clone.querySelector("#saved-box");
-    if(savedBox) savedBox.remove();
-
-    clone.querySelectorAll("input,button,select").forEach(el => {
-        if (el.tagName === "BUTTON") { el.remove(); return; }
-        const div = document.createElement("div");
-        div.textContent = el.value || el.textContent;
-        div.style.padding = "2px 4px";
-        div.style.fontSize = "12px";
-        el.parentNode.replaceChild(div, el);
-    });
-
-    const container = document.createElement("div");
-    container.style.position = "fixed";
-    container.style.left = "-9999px"; 
-    container.style.top = "0";
-    container.style.width = "1500px"; 
-    container.style.background = "#fff";
-    container.appendChild(clone);
-
-    document.body.appendChild(container);
-
-    await Promise.all(
-        [...clone.querySelectorAll("img")].map(img => new Promise(res => {
-            if (img.complete) return res();
-            img.onload = img.onerror = res;
-        }))
-    );
-
-    const canvas = await html2canvas(clone, {
-        scale: 1,
-        backgroundColor: "#fff",
-        useCORS: true
-    });
-
-    const imgData = canvas.toDataURL("image/jpeg", 0.72);
-    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-
-    const pageWidth = 297;
-    const pageHeight = 210;
-    const pxPerMm = canvas.width / pageWidth;
-    const imgHeightMm = canvas.height / pxPerMm;
-
-    if (imgHeightMm <= pageHeight) {
-        pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, imgHeightMm);
-    } else {
-        let y = 0;
-        const slicePx = pageHeight * pxPerMm;
-
-        while (y < canvas.height) {
-            const sliceCanvas = document.createElement("canvas");
-            sliceCanvas.width = canvas.width;
-            sliceCanvas.height = Math.min(slicePx, canvas.height - y);
-
-            sliceCanvas.getContext("2d").drawImage(
-                canvas, 0, y, canvas.width, sliceCanvas.height,
-                0, 0, canvas.width, sliceCanvas.height
-            );
-
-            const sliceImg = sliceCanvas.toDataURL("image/jpeg", 0.72);
-            const sliceHeightMm = sliceCanvas.height / pxPerMm;
-
-            if (y > 0) pdf.addPage("a4", "landscape");
-            pdf.addImage(sliceImg, "JPEG", 0, 0, pageWidth, sliceHeightMm);
-
-            y += slicePx;
-        }
-    }
-
-    container.remove();
-    pdf.save("DailyFoodSales.pdf");
-};
-
-</script>
+</div>
 
 </body>
 </html>
