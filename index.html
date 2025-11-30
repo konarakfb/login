@@ -1,255 +1,299 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Daily Food Quality & Taste Check</title>
 
-<!-- Stable jsPDF + html2canvas -->
+<!-- html2canvas + jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f2f2f2;
-        padding: 8px;
-    }
+  /* Page / container */
+  body { font-family: Arial, Helvetica, sans-serif; background:#f2f2f2; padding:10px; }
+  .sheet {
+    width: 800px;               /* keep fixed width for predictable PDF capture */
+    margin: auto;
+    background: #fff;
+    border: 1px solid #111;
+    padding: 10px;
+    box-sizing: border-box;
+  }
 
-    .form-box {
-        background: #fff;
-        padding: 12px;
-        border: 1px solid #777;
-        max-width: 900px;
-        margin: auto;
-    }
+  /* Header box like your PDF */
+  .header {
+    border: 1px solid #000;
+    padding: 8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .header-left { flex:0 0 90px; display:flex; align-items:center; justify-content:center; }
+  .header-left img { max-height:62px; width:auto; display:block; }
+  .header-title { flex:1 1 auto; text-align:center; font-weight:700; font-size:20px; }
+  .header-right { flex:0 0 90px; }
 
-    /* Header */
-    .header-flex {
-        border: 1px solid #000;
-        padding: 8px;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        text-align: center;
-    }
-    .header-flex img {
-        height: 45px;
-    }
-    .header-title {
-        font-size: 17px;
-        font-weight: bold;
-        width: 100%;
-    }
+  /* meta rows */
+  .meta { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .meta .meta-item { flex:1 1 180px; min-width:160px; }
+  label { display:block; font-weight:700; font-size:13px; margin-bottom:4px; }
+  input[type="text"], input[type="date"], select, textarea {
+    width:100%; padding:6px; font-size:13px; box-sizing:border-box;
+    border:1px solid #888; border-radius:3px;
+  }
 
-    /* Input fields */
-    .row {
-        display: flex;
-        flex-wrap: wrap;
-    }
-    .col {
-        flex: 1;
-        padding: 5px;
-        min-width: 160px;
-    }
-    label {
-        font-size: 13px;
-        font-weight: bold;
-    }
-    input, select, textarea {
-        width: 100%;
-        padding: 4px;
-        font-size: 13px;
-        border: 1px solid #888;
-        border-radius: 3px;
-    }
+  /* table container: allow horizontal scroll on very small screens,
+     but keep fixed table width to match PDF layout */
+  .table-wrap { margin-top:10px; overflow-x:auto; }
+  table { border-collapse:collapse; width:760px; /* fixed width for predictable PDF */ }
+  th, td {
+    border:1px solid #000; padding:6px; font-size:12px; vertical-align:middle;
+    white-space:nowrap;
+  }
+  th { background:#e8e8e8; font-weight:700; }
 
-    /* Table Fix: Scroll + Tight Cells + No Overflow */
-    .table-container {
-        width: 100%;
-        overflow-x: auto;
-    }
+  /* inputs inside table */
+  table input, table select { width:94%; padding:4px; font-size:12px; }
 
-    table {
-        width: 900px;  /* Fixed width = stops wrapping */
-        border-collapse: collapse;
-    }
-    table th, table td {
-        border: 1px solid #000;
-        padding: 3px;
-        font-size: 12px;
-        white-space: nowrap; /* Prevent line break */
-    }
-    table th {
-        background: #e6e6e6;
-    }
-    table input, table select {
-        width: 95%;
-        padding: 2px;
-        font-size: 11px;
-    }
+  /* controls */
+  .controls { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .controls button { padding:10px 12px; font-size:14px; border:none; color:#fff; border-radius:4px; }
+  .btn-add { background:#138000; }
+  .btn-save { background:#0b66c3; }
+  .btn-pdf  { background:#cc7a00; }
 
-    textarea { height: 65px; }
+  /* notes area */
+  .notes { margin-top:12px; }
+  .notes label { margin-bottom:6px; display:block; }
+  .notes textarea { height:70px; }
 
-    button {
-        padding: 10px;
-        font-size: 15px;
-        border: none;
-        border-radius: 4px;
-        color: #fff;
-        width: 100%;
-        margin-top: 10px;
-    }
-    .green { background: #0b7d2b; }
-    .blue { background: #005ce6; }
-    .orange { background: #cc7a00; }
-    .red { background: #b30000; padding: 4px; font-size: 12px; width: 100%; }
-
+  /* small screens */
+  @media (max-width:820px){
+    .sheet { width:100%; }
+    table { width:720px; } /* allow small shrink */
+  }
 </style>
 </head>
 
 <body>
+  <div class="sheet" id="sheet">
+    <!-- Header like uploaded PDF (logo left + centered title) -->
+    <div class="header">
+      <div class="header-left">
+        <!-- put logo.png in same folder -->
+        <img src="logo.png" alt="Logo" id="logoImg" onerror="this.style.display='none'">
+      </div>
 
-<div class="form-box">
+      <div class="header-title">
+        Daily Food Quality & Taste Check Report
+      </div>
 
-    <!-- Header -->
-    <div class="header-flex">
-        <img src="logo.png">
-        <div class="header-title">Daily Food Quality & Taste Check Report</div>
+      <div class="header-right">
+        <!-- optional small right area (leave empty to match PDF spacing) -->
+      </div>
     </div>
 
-    <!-- Info Section -->
-    <div class="row">
-        <div class="col">
-            <label>Date</label>
-            <input type="date" id="date">
-        </div>
-        <div class="col">
-            <label>Building</label>
-            <input type="text" id="building">
-        </div>
-        <div class="col">
-            <label>Floor / Counter</label>
-            <input type="text" id="floor">
-        </div>
+    <!-- meta fields -->
+    <div class="meta" style="margin-top:8px;">
+      <div class="meta-item">
+        <label for="date">Date</label>
+        <input id="date" type="date">
+      </div>
+      <div class="meta-item">
+        <label for="building">Building</label>
+        <input id="building" type="text" placeholder="e.g. 12A">
+      </div>
+      <div class="meta-item">
+        <label for="floor">Floor / Counter</label>
+        <input id="floor" type="text" placeholder="e.g. 6th / Food Court">
+      </div>
+      <div class="meta-item">
+        <label for="supervisor">Supervisor</label>
+        <input id="supervisor" type="text">
+      </div>
+      <div class="meta-item">
+        <label for="cbre">CBRE Representative</label>
+        <input id="cbre" type="text">
+      </div>
     </div>
 
-    <div class="row">
-        <div class="col">
-            <label>Supervisor Name</label>
-            <input type="text" id="supervisor">
-        </div>
-        <div class="col">
-            <label>CBRE Representative</label>
-            <input type="text" id="cbre">
-        </div>
+    <!-- table -->
+    <div class="table-wrap">
+      <table id="foodTable" aria-label="Food quality table">
+        <thead>
+          <tr>
+            <th style="width:40px">S.No</th>
+            <th style="width:220px">Item</th>
+            <th style="width:60px">Temp (°C)</th>
+            <th style="width:90px">Freshness</th>
+            <th style="width:80px">Taste</th>
+            <th style="width:80px">Texture</th>
+            <th style="width:80px">Appearance</th>
+            <th style="width:70px">Portion</th>
+            <th style="width:130px">Remarks</th>
+            <th style="width:50px">Del</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><input type="text" placeholder="Item name"></td>
+            <td><input type="text" placeholder="e.g. 60"></td>
+            <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+            <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+            <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
+            <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+            <td><select><option>Std</option><option>Less</option></select></td>
+            <td><input type="text"></td>
+            <td><button onclick="deleteRow(this)" style="background:#b30000;color:#fff;border:none;padding:4px 6px;border-radius:3px">X</button></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-    <!-- TABLE -->
-    <div class="table-container">
-        <table id="foodTable">
-            <thead>
-            <tr>
-                <th>S.No</th>
-                <th>Item</th>
-                <th>Temp</th>
-                <th>Freshness</th>
-                <th>Taste</th>
-                <th>Texture</th>
-                <th>Appearance</th>
-                <th>Portion</th>
-                <th>Remarks</th>
-                <th>Delete</th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr>
-                <td>1</td>
-                <td><input></td>
-                <td><input></td>
-                <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-                <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-                <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
-                <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-                <td><select><option>Standard</option><option>Less</option></select></td>
-                <td><input></td>
-                <td><button class="red" onclick="deleteRow(this)">X</button></td>
-            </tr>
-            </tbody>
-        </table>
+    <!-- controls -->
+    <div class="controls">
+      <button class="btn-add" onclick="addRow()">+ Add Row</button>
+      <button class="btn-save" onclick="saveForm()">Save (local)</button>
+      <button class="btn-pdf" onclick="downloadPDF()">Download PDF</button>
     </div>
 
-    <!-- Add Row -->
-    <button class="green" onclick="addRow()">+ Add Row</button>
+    <!-- notes -->
+    <div class="notes">
+      <label for="tasteNotes">Taste Validation Notes</label>
+      <textarea id="tasteNotes"></textarea>
 
-    <!-- Notes -->
-    <label style="margin-top:15px;">Taste Validation Notes</label>
-    <textarea id="taste"></textarea>
+      <label for="obs" style="margin-top:8px;">Special Observations</label>
+      <textarea id="obs"></textarea>
 
-    <label>Special Observations</label>
-    <textarea id="obs"></textarea>
+      <label for="actions" style="margin-top:8px;">Corrective Actions</label>
+      <textarea id="actions"></textarea>
+    </div>
+  </div>
 
-    <label>Corrective Actions</label>
-    <textarea id="actions"></textarea>
-
-    <!-- Buttons -->
-    <button class="blue" onclick="saveForm()">Save</button>
-    <button class="orange" onclick="downloadPDF()">Download PDF</button>
-
-</div>
-
-
-<!-- JAVASCRIPT -->
 <script>
-function addRow() {
-    let table = document.getElementById("foodTable").getElementsByTagName("tbody")[0];
-    let rowCount = table.rows.length;
-    let row = table.insertRow();
-
-    row.innerHTML = `
-        <td>${rowCount + 1}</td>
-        <td><input></td>
-        <td><input></td>
-        <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-        <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-        <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
-        <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-        <td><select><option>Standard</option><option>Less</option></select></td>
-        <td><input></td>
-        <td><button class='red' onclick='deleteRow(this)'>X</button></td>
-    `;
+/* Row add / delete */
+function addRow(){
+  const tbody = document.querySelector("#foodTable tbody");
+  const idx = tbody.rows.length + 1;
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${idx}</td>
+    <td><input type="text" placeholder="Item name"></td>
+    <td><input type="text"></td>
+    <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+    <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+    <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
+    <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+    <td><select><option>Std</option><option>Less</option></select></td>
+    <td><input type="text"></td>
+    <td><button onclick="deleteRow(this)" style="background:#b30000;color:#fff;border:none;padding:4px 6px;border-radius:3px">X</button></td>
+  `;
+  tbody.appendChild(tr);
 }
 
-function deleteRow(btn) {
-    let row = btn.parentNode.parentNode;
-    row.remove();
-
-    let rows = document.querySelectorAll("#foodTable tbody tr");
-    rows.forEach((r, i) => r.cells[0].innerText = i + 1);
+function deleteRow(btn){
+  const tr = btn.closest("tr");
+  tr.remove();
+  // re-index
+  const rows = document.querySelectorAll("#foodTable tbody tr");
+  rows.forEach((r,i)=> r.cells[0].textContent = i+1);
 }
 
-function saveForm() {
-    alert("Saved successfully!");
+/* Save to localStorage (simple) */
+function saveForm(){
+  const data = {};
+  data.meta = {
+    date: document.getElementById("date").value,
+    building: document.getElementById("building").value,
+    floor: document.getElementById("floor").value,
+    supervisor: document.getElementById("supervisor").value,
+    cbre: document.getElementById("cbre").value
+  };
+  data.rows = Array.from(document.querySelectorAll("#foodTable tbody tr")).map(tr=>{
+    return Array.from(tr.querySelectorAll("td")).slice(1,9).map(cell=>{
+      const input = cell.querySelector("input,select,textarea");
+      return input ? input.value : "";
+    });
+  });
+  data.notes = {
+    tasteNotes: document.getElementById("tasteNotes").value,
+    obs: document.getElementById("obs").value,
+    actions: document.getElementById("actions").value
+  };
+  localStorage.setItem("foodQualityForm", JSON.stringify(data));
+  alert("Form saved locally (browser storage).");
 }
 
-async function downloadPDF() {
-    const element = document.querySelector(".form-box");
-    const canvas = await html2canvas(element, { scale: 1 });
+/* PDF generation: capture sheet, slice into A4 pages and save */
+async function downloadPDF(){
+  // ensure some values exist to avoid blank screenshot (e.g. set placeholder date)
+  if(!document.getElementById("date").value){
+    document.getElementById("date").value = new Date().toISOString().slice(0,10);
+  }
 
-    const imgData = canvas.toDataURL("image/jpeg", 0.7);
-    const pdf = new jspdf.jsPDF("p", "pt", "a4");
+  const sheet = document.getElementById("sheet");
 
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const imgWidth = pageWidth - 20;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  // use higher scale for sharpness, but we'll compress to keep size small
+  const scale = 2; // scale 2 gives good quality
+  const canvas = await html2canvas(sheet, {
+    scale: scale,
+    useCORS: true,
+    logging: false,
+    backgroundColor: "#ffffff"
+  });
 
-    pdf.addImage(imgData, "JPEG", 10, 10, imgWidth, imgHeight);
-    pdf.save("Food_Quality_Check.pdf");
+  const imgData = canvas.toDataURL("image/jpeg", 0.85); // JPEG with compression
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p", "pt", "a4");
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+
+  // image dims in pt (1 px at scale px->pt conversion approximated by ratio)
+  const imgProps = { width: canvas.width, height: canvas.height };
+  const pxToPt = pageWidth / imgProps.width; // scale to fit pdf width
+  const imgWidthPt = imgProps.width * pxToPt;
+  const imgHeightPt = imgProps.height * pxToPt;
+
+  if (imgHeightPt <= pageHeight - 20) {
+    // single page
+    pdf.addImage(imgData, "JPEG", 10, 10, imgWidthPt - 20, imgHeightPt - 20, undefined, 'FAST');
+  } else {
+    // multi-page: slice by pageHeight
+    let remainingHeight = imgProps.height;
+    let positionY = 0;
+    const imgWidthPx = imgProps.width;
+    const pageHeightPx = Math.floor(pageHeight / pxToPt);
+
+    while (remainingHeight > 0) {
+      // create a temporary canvas for each page slice
+      const pageCanvas = document.createElement("canvas");
+      pageCanvas.width = imgProps.width;
+      pageCanvas.height = Math.min(pageHeightPx, remainingHeight);
+      const ctx = pageCanvas.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0,0,pageCanvas.width,pageCanvas.height);
+      // draw slice
+      ctx.drawImage(canvas, 0, positionY, pageCanvas.width, pageCanvas.height, 0, 0, pageCanvas.width, pageCanvas.height);
+
+      const pageImgData = pageCanvas.toDataURL("image/jpeg", 0.85);
+      const pageImgHeightPt = (pageCanvas.height * pxToPt);
+
+      if (positionY > 0) pdf.addPage();
+      pdf.addImage(pageImgData, "JPEG", 10, 10, pageWidth - 20, pageImgHeightPt - 20, undefined, 'FAST');
+
+      remainingHeight -= pageHeightPx;
+      positionY += pageHeightPx;
+    }
+  }
+
+  // save with a name
+  pdf.save("Food_Quality_Check.pdf");
 }
 </script>
-
 </body>
 </html>
