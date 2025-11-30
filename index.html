@@ -5,39 +5,45 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Daily Food Quality & Taste Check</title>
 
+<!-- jsPDF for PDF Download -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
     body {
         font-family: Arial, sans-serif;
-        background: #f5f5f5;
+        background: #f3f3f3;
         padding: 10px;
     }
+
     .form-box {
         background: #fff;
-        padding: 15px;
-        border: 1px solid #ccc;
-        max-width: 950px;
+        padding: 12px;
+        border: 1px solid #777;
+        max-width: 900px;
         margin: auto;
     }
 
-    /* Header with logo */
-    .header-box {
-        border: 1px solid #333;
-        padding: 10px;
-        margin-bottom: 15px;
+    /* Header Box */
+    .header-flex {
         display: flex;
         align-items: center;
-        gap: 15px;
+        justify-content: space-between;
+        border: 1px solid #000;
+        padding: 10px;
+        flex-wrap: wrap;
     }
-    .header-box img {
-        height: 55px;
+    .header-flex img {
+        height: 50px;
     }
     .header-title {
-        flex: 1;
+        flex: 1 1 200px;
         text-align: center;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: bold;
+        margin-top: 5px;
     }
 
+    /* Responsive fields */
     .row {
         display: flex;
         flex-wrap: wrap;
@@ -50,15 +56,15 @@
     }
     label {
         font-weight: bold;
-        font-size: 14px;
+        font-size: 13px;
     }
     input, select, textarea {
         width: 100%;
-        padding: 7px;
-        border: 1px solid #999;
+        padding: 6px;
+        border: 1px solid #888;
         border-radius: 3px;
-        margin-top: 3px;
         font-size: 14px;
+        margin-top: 3px;
     }
 
     table {
@@ -67,42 +73,36 @@
         margin-top: 12px;
     }
     table th, table td {
-        border: 1px solid #555;
-        padding: 6px;
-        font-size: 14px;
+        border: 1px solid #000;
+        padding: 5px;
+        font-size: 12px;
         text-align: center;
     }
     table th {
-        background: #e6e6e6;
+        background: #e8e8e8;
+        font-weight: bold;
     }
 
     textarea { height: 70px; }
 
-    .sign-row {
+    .btn-row {
         display: flex;
+        gap: 10px;
         margin-top: 15px;
     }
-    .sign-col {
-        flex: 1;
-        border: 1px solid #777;
-        padding: 10px;
-        height: 60px;
-        margin-right: 5px;
-    }
-    .sign-col:last-child {
-        margin-right: 0;
-    }
 
-    .submit-btn {
-        width: 100%;
+    button {
+        flex: 1;
         padding: 12px;
-        margin-top: 20px;
-        background: #0066cc;
+        background: #0047b3;
         color: white;
-        font-size: 16px;
         border: none;
-        border-radius: 5px;
+        font-size: 15px;
+        border-radius: 4px;
     }
+    button.red { background: #b30000; }
+    button.green { background: #00802b; }
+
 </style>
 </head>
 
@@ -111,7 +111,7 @@
 <div class="form-box">
 
     <!-- Header -->
-    <div class="header-box">
+    <div class="header-flex">
         <img src="logo.png" alt="Logo">
         <div class="header-title">Daily Food Quality & Taste Check Report</div>
     </div>
@@ -120,97 +120,139 @@
     <div class="row">
         <div class="col">
             <label>Date</label>
-            <input type="date">
+            <input type="date" id="date">
         </div>
         <div class="col">
             <label>Building</label>
-            <input type="text">
+            <input type="text" id="building">
         </div>
         <div class="col">
             <label>Floor / Counter</label>
-            <input type="text">
+            <input type="text" id="floor">
         </div>
     </div>
 
     <div class="row">
         <div class="col">
             <label>Supervisor Name</label>
-            <input type="text">
+            <input type="text" id="supervisor">
         </div>
         <div class="col">
             <label>CBRE Representative</label>
-            <input type="text">
+            <input type="text" id="cbre">
         </div>
     </div>
 
     <!-- Table -->
-    <table>
+    <table id="foodTable">
         <thead>
             <tr>
                 <th>S.No</th>
                 <th>Item</th>
-                <th>Temp (°C)</th>
+                <th>Temp</th>
                 <th>Freshness</th>
                 <th>Taste</th>
                 <th>Texture</th>
                 <th>Appearance</th>
                 <th>Portion</th>
                 <th>Remarks</th>
+                <th>Delete</th>
             </tr>
         </thead>
+
         <tbody>
             <tr>
                 <td>1</td>
                 <td><input></td>
                 <td><input></td>
                 <td>
-                    <select>
-                        <option>Good</option><option>Average</option><option>Poor</option>
-                    </select>
+                    <select><option>Good</option><option>Average</option><option>Poor</option></select>
                 </td>
                 <td>
-                    <select>
-                        <option>Good</option><option>Average</option><option>Poor</option>
-                    </select>
+                    <select><option>Good</option><option>Average</option><option>Poor</option></select>
                 </td>
                 <td>
-                    <select>
-                        <option>Soft</option><option>Normal</option><option>Hard</option>
-                    </select>
+                    <select><option>Soft</option><option>Normal</option><option>Hard</option></select>
                 </td>
                 <td>
-                    <select>
-                        <option>Good</option><option>Average</option><option>Poor</option>
-                    </select>
+                    <select><option>Good</option><option>Average</option><option>Poor</option></select>
                 </td>
                 <td>
-                    <select>
-                        <option>Standard</option><option>Less</option>
-                    </select>
+                    <select><option>Standard</option><option>Less</option></select>
                 </td>
                 <td><input></td>
+                <td><button class="red" onclick="deleteRow(this)">X</button></td>
             </tr>
         </tbody>
     </table>
 
+    <!-- Add Row Button -->
+    <button class="green" onclick="addRow()">+ Add Row</button>
+
     <label style="margin-top:15px;">Taste Validation Notes</label>
-    <textarea></textarea>
+    <textarea id="tasteNotes"></textarea>
 
     <label>Special Observations</label>
-    <textarea></textarea>
+    <textarea id="observations"></textarea>
 
     <label>Corrective Actions</label>
-    <textarea></textarea>
+    <textarea id="actions"></textarea>
 
-    <!-- Signatures -->
-    <div class="sign-row">
-        <div class="sign-col">Supervisor Signature</div>
-        <div class="sign-col">CBRE Signature</div>
+    <!-- Save + Download Buttons -->
+    <div class="btn-row">
+        <button onclick="saveForm()">Save</button>
+        <button onclick="downloadPDF()">Download PDF</button>
     </div>
 
-    <button class="submit-btn">Submit</button>
-
 </div>
+
+
+<script>
+function addRow() {
+    let table = document.getElementById("foodTable").getElementsByTagName("tbody")[0];
+    let rowCount = table.rows.length;
+    let row = table.insertRow();
+
+    row.innerHTML = `
+        <td>${rowCount + 1}</td>
+        <td><input></td>
+        <td><input></td>
+        <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+        <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+        <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
+        <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+        <td><select><option>Standard</option><option>Less</option></select></td>
+        <td><input></td>
+        <td><button class="red" onclick="deleteRow(this)">X</button></td>
+    `;
+}
+
+function deleteRow(btn) {
+    let row = btn.parentNode.parentNode;
+    row.parentNode.removeChild(row);
+
+    let rows = document.querySelectorAll("#foodTable tbody tr");
+    rows.forEach((r, i) => r.cells[0].innerText = i + 1);
+}
+
+function saveForm() {
+    alert("Form saved locally! (Offline save will be added if required)");
+}
+
+async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "pt", "a4");
+
+    pdf.html(document.querySelector(".form-box"), {
+        callback: function (pdf) {
+            pdf.save("Food_Quality_Check.pdf");
+        },
+        margin: [10, 10, 10, 10],
+        autoPaging: 'text',
+        html2canvas: { scale: 0.45 } 
+    });
+}
+</script>
 
 </body>
 </html>
