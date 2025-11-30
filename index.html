@@ -5,375 +5,541 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Daily Food Quality & Taste Check — Konarak F&B</title>
 
-<!-- jsPDF + AutoTable -->
+<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-  body {
-    margin: 0;
-    padding: 0;
-    background: #f6f6f6;
+  :root{
+    --container-max: 920px;
+    --accent:#0d6efd;
+    --muted:#f3f3f3;
+    --border:#cfcfcf;
+  }
+  body{
+    margin:0;
+    background:#f6f6f6;
     font-family: Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .container{
+    max-width: var(--container-max);
+    margin:20px auto;
+    background:#fff;
+    padding:18px 18px;
+    border-radius:6px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    box-sizing:border-box;
   }
 
-  .container {
-    max-width: 820px;
-    margin: 22px auto;
-    background: #fff;
-    padding: 18px 22px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-    border-radius: 4px;
+  /* Header: Sales-style with mobile behavior:
+     Desktop: logo left, title center-aligned in same row.
+     Mobile: logo left, title on next centered line (as requested).
+  */
+  .header{
+    display:flex;
+    align-items:center;
+    gap:12px;
   }
-
-  /* HEADER (Sales Style + Mobile Fix) */
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 6px 0;
+  .header-left img{
+    max-height:48px;
+    width:auto;
+    display:block;
   }
-  .header-left img {
-    max-height: 48px;
-    width: auto;
-    display: block;
+  .header-center{
+    flex:1;
+    text-align:center;
+    font-weight:700;
+    font-size:20px;
   }
-  .header-center {
-    text-align: center;
-    font-size: 20px;
-    font-weight: 700;
-    width: 100%;
-  }
-
-  @media (max-width: 480px) {
-    .header {
-      flex-direction: column;
-      text-align: center;
-      gap: 6px;
+  @media (max-width:560px){
+    .header{
+      flex-direction:row;
+      align-items:flex-start;
     }
-    .header-left img {
-      max-height: 40px;
+    /* Move the title to the next centered line by making it full width and forcing wrap */
+    .header-center{
+      width:100%;
+      text-align:center;
+      display:block;
+      margin-top:6px;
+      font-size:17px;
     }
-    .header-center {
-      font-size: 17px;
-    }
   }
 
-  /* Meta fields */
-  .meta-grid {
-    margin-top: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
+  /* meta grid */
+  .meta-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-top:16px;
   }
-  .meta-item {
-    flex: 1 1 160px;
+  .meta-item{ flex:1 1 160px; min-width:140px; }
+  .meta-item label{ display:block; font-weight:600; margin-bottom:4px; font-size:13px; }
+  .meta-item input{ width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:4px; box-sizing:border-box; }
+
+  /* table */
+  .table-wrap{ overflow-x:auto; margin-top:16px; }
+  table{ width:100%; border-collapse:collapse; min-width:900px; }
+  th, td{ border:1px solid #ddd; padding:8px; font-size:13px; text-align:center; }
+  th{ background:var(--muted); font-weight:700; }
+  table input, table select { width:100%; padding:6px; box-sizing:border-box; }
+
+  /* controls spacing (extra space between buttons and notes) */
+  .controls{ margin-top:16px; margin-bottom:18px; display:flex; gap:8px; flex-wrap:wrap; }
+  .controls button{
+    padding:10px 14px; border-radius:6px; border:none; color:#fff; cursor:pointer; font-size:14px;
   }
-  .meta-item label {
-    font-weight: 600;
-    margin-bottom: 4px;
-    display: block;
+  .btn-add{ background:#198754; }
+  .btn-save{ background:var(--accent); }
+  .btn-pdf{ background:#ff9800; }
+
+  /* notes: stacked, full width; fixed spacing to avoid overflow on mobile */
+  .notes{ margin-top:8px; }
+  .note-box{
+    width:100%;
+    border:1px solid var(--border);
+    padding:12px;
+    border-radius:6px;
+    background:#fff;
+    margin-bottom:14px;
+    box-sizing:border-box;
   }
-  .meta-item input {
-    padding: 8px;
-    width: 100%;
-    border: 1px solid #bbb;
-    border-radius: 4px;
+  .note-box h4{ margin:0 0 6px 0; font-size:14px; font-weight:700; }
+  .note-box textarea{
+    width:100%;
+    min-height:100px;
+    padding:8px;
+    border-radius:4px;
+    border:1px solid #cfcfcf;
+    font-size:14px;
+    box-sizing:border-box;
+    resize:vertical;
   }
 
-  /* Table */
-  .table-wrap {
-    overflow-x: auto;
-    margin-top: 20px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 900px;
-  }
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-  }
-  th {
-    background: #f3f3f3;
-    font-weight: 600;
-  }
-  table input, table select {
-    width: 100%;
-    padding: 6px;
+  /* footer signature boxes */
+  .footer-row{ display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; }
+  .footer-box{ flex:1 1 200px; min-width:180px; border:1px solid var(--border); padding:10px; border-radius:6px; background:#fff; box-sizing:border-box; }
+
+  /* small screens: ensure notes fit and table scrolls */
+  @media (max-width:560px){
+    table{ min-width:760px; }
+    .header-left img{ max-height:40px; }
+    .meta-item{ flex:1 1 48%; }
   }
 
-  .btn-del {
-    background: #d9534f;
-    color: white;
-    padding: 6px 8px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-  }
-
-  /* Buttons */
-  .controls {
-    margin-top: 18px;
-    margin-bottom: 18px;  /* SPACING FIXED */
-  }
-  .controls button {
-    padding: 10px 14px;
-    border: none;
-    margin-right: 6px;
-    border-radius: 4px;
-    color: white;
-  }
-  .btn-add { background: #198754; }
-  .btn-save { background: #0d6efd; }
-  .btn-pdf { background: #ff9800; }
-
-  /* NOTES */
-  .note-box {
-    width: 100%;
-    border: 1px solid #999;
-    padding: 12px;
-    border-radius: 4px;
-    background: #fafafa;
-    margin-bottom: 16px;
-  }
-  .note-box textarea {
-    width: 100%;
-    min-height: 100px;
-    padding: 8px;
-    border: 1px solid #999;
-    border-radius: 4px;
-    resize: vertical;
-    font-size: 14px;
-  }
-
-  @media (max-width: 480px) {
-    .note-box { width: 100%; }
-  }
-
-  /* Footer */
-  .footer-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-top: 20px;
-  }
-  .footer-box {
-    flex: 1 1 200px;
-    border: 1px solid #bbb;
-    padding: 10px;
-    background: #fafafa;
-    min-height: 48px;
-    border-radius: 4px;
-  }
 </style>
 </head>
-
 <body>
 
-<div class="container">
+<div class="container" role="main">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="header-left">
-      <img src="logo.png" id="logoImg" alt="Logo" onerror="this.style.display='none'">
-    </div>
-    <div class="header-center">Daily Food Quality & Taste Check Report</div>
+  <!-- Header -->
+  <div class="header" aria-label="header">
+    <div class="header-left"><img id="logoImg" src="logo.png" alt="Logo" onerror="this.style.display='none'"></div>
+    <div class="header-center">Daily Food Quality &amp; Taste Check Report</div>
   </div>
 
-  <!-- META -->
-  <div class="meta-grid">
-    <div class="meta-item"><label>Date</label><input id="date" type="date"></div>
-    <div class="meta-item"><label>Building</label><input id="building" type="text"></div>
-    <div class="meta-item"><label>Floor</label><input id="floor" type="text"></div>
-    <div class="meta-item"><label>Counter</label><input id="counter" type="text"></div>
-    <div class="meta-item"><label>Supervisor</label><input id="supervisor" type="text"></div>
-    <div class="meta-item"><label>CBRE Representative</label><input id="cbre" type="text"></div>
+  <!-- Meta grid -->
+  <div class="meta-grid" aria-label="metadata">
+    <div class="meta-item"><label for="date">Date</label><input id="date" type="date"></div>
+    <div class="meta-item"><label for="building">Building</label><input id="building" type="text"></div>
+    <div class="meta-item"><label for="floor">Floor</label><input id="floor" type="text"></div>
+    <div class="meta-item"><label for="counter">Counter</label><input id="counter" type="text"></div>
+    <div class="meta-item"><label for="supervisor">Supervisor</label><input id="supervisor" type="text"></div>
+    <div class="meta-item"><label for="cbre">CBRE Representative</label><input id="cbre" type="text"></div>
   </div>
 
-  <!-- TABLE -->
-  <div class="table-wrap">
-    <table id="foodTable">
+  <!-- Table -->
+  <div class="table-wrap" aria-label="food table">
+    <table id="foodTable" role="table" aria-label="Food Items">
       <thead>
         <tr>
-          <th>S.No</th>
-          <th>Item</th>
-          <th>Temp</th>
-          <th>Freshness</th>
-          <th>Taste</th>
-          <th>Texture</th>
-          <th>Appearance</th>
-          <th>Portion</th>
-          <th>Remarks</th>
-          <th>Del</th>
+          <th style="width:46px">S.No</th>
+          <th style="width:260px">Item</th>
+          <th style="width:72px">Temp (°C)</th>
+          <th style="width:110px">Freshness</th>
+          <th style="width:90px">Taste</th>
+          <th style="width:90px">Texture</th>
+          <th style="width:90px">Appearance</th>
+          <th style="width:80px">Portion</th>
+          <th style="width:240px">Remarks</th>
+          <th style="width:60px">Del</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td>1</td>
-          <td><input type="text"></td>
-          <td><input type="text"></td>
+          <td><input type="text" placeholder="Item name"></td>
+          <td><input type="text" placeholder="e.g. 65"></td>
           <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
           <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
           <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
           <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
           <td><select><option>Std</option><option>Less</option></select></td>
-          <td><input type="text"></td>
+          <td><input type="text" placeholder="Remarks"></td>
           <td><button class="btn-del" onclick="deleteRow(this)">X</button></td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <!-- BUTTONS -->
-  <div class="controls">
+  <!-- Controls (space added between controls and notes) -->
+  <div class="controls" role="group" aria-label="controls">
     <button class="btn-add" onclick="addRow()">+ Add Row</button>
     <button class="btn-save" onclick="saveForm()">Save</button>
+    <button class="btn-pdf" onclick="downloadPDF()">Download PDF</button>
   </div>
 
-  <!-- NOTES -->
-  <div class="note-box">
-    <h4>Taste Validation Notes</h4>
-    <textarea id="tasteInput" oninput="syncNotes()"></textarea>
+  <!-- Notes (stacked, full width; will not overflow) -->
+  <div class="notes">
+    <div class="note-box">
+      <h4>Taste Validation Notes</h4>
+      <textarea id="tasteInput" placeholder="Enter taste validation notes..." oninput="syncNotes()"></textarea>
+    </div>
+
+    <div class="note-box">
+      <h4>Special Observations</h4>
+      <textarea id="obsInput" placeholder="Enter special observations..." oninput="syncNotes()"></textarea>
+    </div>
+
+    <div class="note-box">
+      <h4>Corrective Actions</h4>
+      <textarea id="actionsInput" placeholder="Enter corrective actions..." oninput="syncNotes()"></textarea>
+    </div>
   </div>
 
-  <div class="note-box">
-    <h4>Special Observations</h4>
-    <textarea id="obsInput" oninput="syncNotes()"></textarea>
+  <!-- hidden preview nodes used only for PDF generation -->
+  <div style="display:none">
+    <p id="tastePreview"></p>
+    <p id="obsPreview"></p>
+    <p id="actionsPreview"></p>
   </div>
 
-  <div class="note-box">
-    <h4>Corrective Actions</h4>
-    <textarea id="actionsInput" oninput="syncNotes()"></textarea>
-  </div>
-
-  <!-- hidden for PDF -->
-  <p id="tastePreview" style="display:none"></p>
-  <p id="obsPreview" style="display:none"></p>
-  <p id="actionsPreview" style="display:none"></p>
-
-  <!-- FOOTER -->
+  <!-- Footer -->
   <div class="footer-row">
     <div class="footer-box">Vendor PoC :</div>
     <div class="footer-box">Verified by F&B Team :</div>
   </div>
 
-  <!-- DOWNLOAD PDF -->
-  <div style="margin-top:20px;">
-    <button class="btn-pdf" onclick="downloadPDF()">Download PDF</button>
-  </div>
-
 </div>
 
 <script>
+/* ---------------- Helpers: table rows ---------------- */
 function addRow(){
   const tbody = document.querySelector("#foodTable tbody");
   const idx = tbody.rows.length + 1;
-
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td>${idx}</td>
-    <td><input type="text"></td>
+    <td><input type="text" placeholder="Item name"></td>
     <td><input type="text"></td>
     <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
     <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
     <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
     <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
     <td><select><option>Std</option><option>Less</option></select></td>
-    <td><input type="text"></td>
+    <td><input type="text" placeholder="Remarks"></td>
     <td><button class="btn-del" onclick="deleteRow(this)">X</button></td>
   `;
   tbody.appendChild(tr);
 }
 
 function deleteRow(btn){
-  btn.closest("tr").remove();
+  const tr = btn.closest("tr");
+  tr.remove();
   const rows = document.querySelectorAll("#foodTable tbody tr");
-  rows.forEach((r,i)=> r.cells[0].innerText = i+1);
+  rows.forEach((r,i)=> r.cells[0].textContent = i+1);
 }
 
+/* ---------------- Notes sync ---------------- */
 function syncNotes(){
-  tastePreview.innerText = tasteInput.value;
-  obsPreview.innerText  = obsInput.value;
-  actionsPreview.innerText = actionsInput.value;
+  document.getElementById("tastePreview").innerText = document.getElementById("tasteInput").value || "";
+  document.getElementById("obsPreview").innerText = document.getElementById("obsInput").value || "";
+  document.getElementById("actionsPreview").innerText = document.getElementById("actionsInput").value || "";
 }
 
+/* ---------------- Save: lock inputs after save ---------------- */
 function saveForm(){
-  document.querySelectorAll("#foodTable input").forEach(i=> i.setAttribute("readonly","true"));
-  document.querySelectorAll("#foodTable select").forEach(s=> s.setAttribute("disabled","true"));
-  tasteInput.setAttribute("readonly","true");
-  obsInput.setAttribute("readonly","true");
-  actionsInput.setAttribute("readonly","true");
+  // lock table inputs and selects
+  document.querySelectorAll("#foodTable input").forEach(i => i.setAttribute("readonly","true"));
+  document.querySelectorAll("#foodTable select").forEach(s => s.setAttribute("disabled","true"));
 
-  alert("Saved Successfully!");
+  // lock note textareas
+  document.getElementById("tasteInput").setAttribute("readonly","true");
+  document.getElementById("obsInput").setAttribute("readonly","true");
+  document.getElementById("actionsInput").setAttribute("readonly","true");
+
+  // store data silently (no name/UI text)
+  try{
+    const payload = {
+      meta: {
+        date: document.getElementById("date").value || "",
+        building: document.getElementById("building").value || "",
+        floor: document.getElementById("floor").value || "",
+        counter: document.getElementById("counter").value || "",
+        supervisor: document.getElementById("supervisor").value || "",
+        cbre: document.getElementById("cbre").value || ""
+      },
+      notes: {
+        taste: document.getElementById("tasteInput").value || "",
+        obs: document.getElementById("obsInput").value || "",
+        actions: document.getElementById("actionsInput").value || ""
+      },
+      rows: Array.from(document.querySelectorAll("#foodTable tbody tr")).map(tr=>{
+        const t = tr.querySelectorAll("td");
+        return {
+          item: (t[1].querySelector("input")||{}).value || "",
+          temp: (t[2].querySelector("input")||{}).value || "",
+          freshness: (t[3].querySelector("select")||{}).value || "",
+          taste: (t[4].querySelector("select")||{}).value || "",
+          texture: (t[5].querySelector("select")||{}).value || "",
+          appearance: (t[6].querySelector("select")||{}).value || "",
+          portion: (t[7].querySelector("select")||{}).value || "",
+          remarks: (t[8].querySelector("input")||{}).value || ""
+        };
+      })
+    };
+    // save under single key (no visible name)
+    localStorage.setItem("dailyFoodQuality_v1", JSON.stringify(payload));
+  }catch(e){ console.warn("save failed", e); }
+
+  alert("Saved — form locked.");
 }
 
+/* ---------------- PDF generator: manual drawing to match mix of samples ----------------
+   - Draw header with logo left + centered title
+   - Draw thin rule
+   - Draw metadata row(s)
+   - Draw bordered section for table
+   - Draw table cells manually (adaptive columns)
+   - Draw notes in bordered boxes
+   - Handle simple pagination if table grows beyond page
+*/
 async function downloadPDF(){
-
+  syncNotes(); // ensure previews updated
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation:"landscape", unit:"pt", format:"a4" });
+  const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 24;
+  const usableW = pageW - margin*2;
+  let y = margin;
 
-  const margin = 20;
-  let cursorY = margin;
+  // try to embed logo (if accessible)
+  const logoEl = document.getElementById("logoImg");
+  let logoData = null;
+  if(logoEl && logoEl.src && logoEl.style.display !== "none"){
+    logoData = await toDataUrl(logoEl.src).catch(()=>null);
+  }
 
-  doc.setFontSize(18);
+  // Header: logo left and centered title (title is drawn centered)
+  const logoH = 32;
+  const logoW = logoH * 1.6;
+  if(logoData){
+    doc.addImage(logoData, "PNG", margin, y, logoW, logoH, undefined, "FAST");
+  }
+  doc.setFontSize(16);
   doc.setFont(undefined,"bold");
-  doc.text("Daily Food Quality & Taste Check Report", 420, cursorY, {align:"center"});
-  cursorY += 30;
+  doc.text("Daily Food Quality & Taste Check Report", margin + (usableW/2), y + 20, { align: "center" });
 
-  doc.setFontSize(11);
-  doc.text(`Date: ${date.value}`, margin, cursorY);
-  doc.text(`Building: ${building.value}`, 200, cursorY);
-  doc.text(`Floor: ${floor.value}`, 380, cursorY);
-  doc.text(`Counter: ${counter.value}`, 520, cursorY);
-  cursorY += 20;
-  doc.text(`Supervisor: ${supervisor.value}`, margin, cursorY);
-  doc.text(`CBRE Rep: ${cbre.value}`, 260, cursorY);
-  cursorY += 25;
+  y += Math.max(logoH, 28) + 8;
 
-  const rows = Array.from(document.querySelectorAll("#foodTable tbody tr")).map((tr,i)=>{
+  // header thin line
+  doc.setLineWidth(0.8);
+  doc.setDrawColor(120);
+  doc.line(margin, y, pageW - margin, y);
+  y += 10;
+
+  // Meta (two rows: row1 date/building/floor/counter, row2 supervisor/cbre)
+  doc.setFontSize(10);
+  doc.setDrawColor(140);
+  const metaH = 28;
+  const col1W = usableW/4; // date, building, floor, counter
+  let x = margin;
+  const meta = {
+    date: document.getElementById("date").value || "",
+    building: document.getElementById("building").value || "",
+    floor: document.getElementById("floor").value || "",
+    counter: document.getElementById("counter").value || "",
+    supervisor: document.getElementById("supervisor").value || "",
+    cbre: document.getElementById("cbre").value || ""
+  };
+
+  // Row 1: four small boxes
+  for(let i=0;i<4;i++){
+    doc.rect(x, y, col1W, metaH);
+    doc.setFont(undefined,"bold"); doc.text(["Date","Building","Floor","Counter"][i], x+6, y+11);
+    doc.setFont(undefined,"normal"); doc.text([meta.date, meta.building, meta.floor, meta.counter][i], x+6, y+24, {maxWidth: col1W-12});
+    x += col1W;
+  }
+  y += metaH + 8;
+
+  // Row 2: two boxes
+  const col2W = usableW/2;
+  x = margin;
+  for(let i=0;i<2;i++){
+    doc.rect(x, y, col2W, metaH);
+    doc.setFont(undefined,"bold"); doc.text(["Supervisor","CBRE Rep"][i], x+6, y+11);
+    doc.setFont(undefined,"normal"); doc.text([meta.supervisor, meta.cbre][i], x+6, y+24, {maxWidth: col2W-12});
+    x += col2W;
+  }
+  y += metaH + 12;
+
+  // Table container (a big rounded rectangle look)
+  const tableTop = y;
+  const tableLeft = margin;
+  const tableRight = pageW - margin;
+  // We'll draw table header and rows manually
+  // Columns widths (adapted to your web layout)
+  const colWidths = [
+    40,   // S.No
+    200,  // Item
+    60,   // Temp
+    80,   // Freshness
+    70,   // Taste
+    70,   // Texture
+    70,   // Appearance
+    60,   // Portion
+    210   // Remarks
+  ];
+  const tableStartX = tableLeft;
+  const tableWidth = colWidths.reduce((a,b)=>a+b,0);
+  const colCount = colWidths.length;
+
+  // Draw outer container for table (thin border)
+  const containerHapprox = 20 + 30*(document.querySelectorAll("#foodTable tbody tr").length + 1); // estimate
+  const containerBottom = Math.min(pageH - margin - 220, tableTop + containerHapprox); // avoid overlapping notes, will adjust page break if needed
+  doc.rect(tableLeft, tableTop, usableW, Math.max(32, containerHapprox));
+
+  // Draw header row
+  let curX = tableStartX;
+  const headerH = 26;
+  doc.setFontSize(10);
+  doc.setFont(undefined,"bold");
+  doc.setFillColor(243,243,243);
+  doc.rect(tableStartX, y, tableWidth, headerH, 'FD');
+  const headers = ["S.No","Item","Temp (°C)","Freshness","Taste","Texture","Appearance","Portion","Remarks"];
+  for(let i=0;i<colCount;i++){
+    // vertical separators will be drawn when drawing cells
+    doc.setTextColor(20);
+    doc.text(headers[i], curX + 4, y + 16, {maxWidth: colWidths[i]-8});
+    curX += colWidths[i];
+  }
+  y += headerH;
+
+  // Draw rows
+  doc.setFont(undefined,"normal"); doc.setFontSize(10);
+  const rows = Array.from(document.querySelectorAll("#foodTable tbody tr")).map(tr=>{
     const t = tr.querySelectorAll("td");
     return [
-      i+1,
-      t[1].querySelector("input").value,
-      t[2].querySelector("input").value,
-      t[3].querySelector("select").value,
-      t[4].querySelector("select").value,
-      t[5].querySelector("select").value,
-      t[6].querySelector("select").value,
-      t[7].querySelector("select").value,
-      t[8].querySelector("input").value
+      (t[0].innerText || "").toString(),
+      (t[1].querySelector("input")||{}).value || "",
+      (t[2].querySelector("input")||{}).value || "",
+      (t[3].querySelector("select")||{}).value || "",
+      (t[4].querySelector("select")||{}).value || "",
+      (t[5].querySelector("select")||{}).value || "",
+      (t[6].querySelector("select")||{}).value || "",
+      (t[7].querySelector("select")||{}).value || "",
+      (t[8].querySelector("input")||{}).value || ""
     ];
   });
 
-  doc.autoTable({
-    startY: cursorY,
-    head:[["S.No","Item","Temp","Freshness","Taste","Texture","Appearance","Portion","Remarks"]],
-    body: rows,
-    margin:{left:margin, right:margin},
-    styles:{fontSize:10, cellPadding:5}
-  });
+  const rowH = 24;
+  for(let r=0;r<rows.length;r++){
+    // page break if needed
+    if(y + rowH + 160 > pageH){ // leave space for notes + footer
+      doc.addPage();
+      y = margin;
+    }
+    curX = tableStartX;
+    // draw a white background for the row (optional)
+    doc.setFillColor(255,255,255);
+    doc.rect(tableStartX, y, tableWidth, rowH, 'FD');
+    for(let c=0;c<colCount;c++){
+      // draw vertical borders
+      doc.setDrawColor(200);
+      doc.line(curX + colWidths[c], y, curX + colWidths[c], y + rowH);
+      // draw text
+      const txt = rows[r][c] || "";
+      doc.setTextColor(20);
+      // Left-align item & remarks, center others
+      if(c === 1 || c === 8) {
+        doc.text(txt.toString(), curX + 4, y + 16, {maxWidth: colWidths[c]-8});
+      } else {
+        // center text
+        const tw = doc.getTextWidth(txt.toString());
+        const cx = curX + colWidths[c]/2;
+        // jsPDF text baseline is bottom-ish so offset y
+        doc.text(txt.toString(), cx, y + 16, { align: 'center', maxWidth: colWidths[c]-8 });
+      }
+      curX += colWidths[c];
+    }
+    y += rowH;
+  }
 
-  cursorY = doc.lastAutoTable.finalY + 20;
+  // After table, leave small gap
+  y += 12;
 
-  doc.setFont(undefined,"bold"); doc.text("Taste Validation Notes:", margin, cursorY);
-  doc.setFont(undefined,"normal");
-  doc.text(doc.splitTextToSize(tastePreview.innerText, 750), margin, cursorY+12);
-  cursorY += 50;
+  // Notes boxes: draw bordered boxes and place text (similar to sample)
+  const noteBoxH = 74;
+  const noteGap = 10;
+  const notes = [
+    {title:"Taste Validation Notes", text: document.getElementById("tastePreview").innerText || ""},
+    {title:"Special Observations", text: document.getElementById("obsPreview").innerText || ""},
+    {title:"Corrective Actions", text: document.getElementById("actionsPreview").innerText || ""}
+  ];
 
-  doc.setFont(undefined,"bold"); doc.text("Special Observations:", margin, cursorY);
-  doc.setFont(undefined,"normal");
-  doc.text(doc.splitTextToSize(obsPreview.innerText, 750), margin, cursorY+12);
-  cursorY += 50;
+  for(let i=0;i<notes.length;i++){
+    if(y + noteBoxH + 80 > pageH){
+      doc.addPage();
+      y = margin;
+    }
+    // box
+    doc.rect(margin, y, usableW, noteBoxH);
+    doc.setFont(undefined,"bold"); doc.text(notes[i].title + ":", margin + 6, y + 14);
+    doc.setFont(undefined,"normal");
+    const lines = doc.splitTextToSize(notes[i].text || "", usableW - 12);
+    doc.text(lines, margin + 6, y + 30);
+    y += noteBoxH + noteGap;
+  }
 
-  doc.setFont(undefined,"bold"); doc.text("Corrective Actions:", margin, cursorY);
-  doc.setFont(undefined,"normal");
-  doc.text(doc.splitTextToSize(actionsPreview.innerText, 750), margin, cursorY+12);
+  // Signature boxes at bottom
+  if(y + 80 > pageH){
+    doc.addPage();
+    y = margin;
+  }
+  const sigW = (usableW - 20)/2;
+  doc.rect(margin, y, sigW, 48);
+  doc.text("Vendor PoC :", margin + 8, y + 22);
+  doc.rect(margin + sigW + 20, y, sigW, 48);
+  doc.text("Verified by F&B Team :", margin + sigW + 28, y + 22);
 
+  // Save
   doc.save("Food_Quality_Check.pdf");
-}
-</script>
 
+  // helper to convert image to dataURL (works for same-origin or if CORS allows)
+  function toDataUrl(src){
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function(){
+        try{
+          const canvas = document.createElement('canvas');
+          canvas.width = this.naturalWidth;
+          canvas.height = this.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(this,0,0);
+          resolve(canvas.toDataURL('image/png'));
+        }catch(e){
+          resolve(null);
+        }
+      };
+      img.onerror = function(){ resolve(null); };
+      img.src = src + (src.indexOf('?') === -1 ? '?v=1' : '&v=1');
+    });
+  }
+}
+
+</script>
 </body>
 </html>
