@@ -1,448 +1,386 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Daily Food Quality & Taste Check — Konarak F&B</title>
+<meta charset="UTF-8">
+<title>Food Quality & Taste Checking Report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- jsPDF + AutoTable -->
+<!-- PDF LIBS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-  body{
-    font-family:Arial,Helvetica,sans-serif;
-    background:#f3f3f3;
-    padding:18px;
-    margin:0;
-  }
-  .page-wrap{ max-width:1000px; margin:auto; }
-  .sheet{ border:3px solid #222; background:#fff; padding:12px; }
-  .inner-box{ border:2px solid #222; padding:12px; }
+body {font-family: Arial, Helvetica, sans-serif;background:#f4f4f4;margin:0;padding:12px;color:#111}
+.container {max-width:1100px;margin:auto}
+.sheet {background:#fff;border:1px solid #000;padding:15px;border-radius:6px;}
 
-  /* HEADER – small logo like Sales Report */
-  .header{
-    position:relative;
-    display:flex;
-    align-items:center;
-    height:60px;
-  }
-  .logo{
-    flex:0 0 auto;
-    display:flex;
-    align-items:center;
-  }
-  .logo img{
-    height:36px;
-    width:auto;
-    object-fit:contain;
-  }
-  @media(max-width:600px){
-    .logo img{ height:32px; }
-  }
-  .title{
-    position:absolute; left:50%; transform:translateX(-50%);
-    font-size:20px; font-weight:700; text-align:center;
-  }
-  .header-right{ flex:0 0 150px; }
-  .header-line{
-    border-bottom:2px solid #222;
-    margin-top:10px; margin-bottom:10px;
-  }
+/* HEADER */
+.header {display:flex;align-items:center;border-bottom:1px solid #000;padding-bottom:12px;margin-bottom:15px;gap:12px}
+.header img {width:120px;max-height:80px;object-fit:contain}
+.header h1 {flex:1;text-align:center;margin:0;font-size:20px}
 
-  /* METADATA */
-  .meta-box{ border:1px solid #222; padding:8px; }
-  .meta-row{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px; }
-  .meta-item{
-    flex:1 1 30%;
-    border:1px solid #999;
-    padding:10px;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    min-height:48px;
-    box-sizing:border-box;
-  }
-  .meta-item label{
-    font-weight:700;
-    font-size:13px;
-    flex-shrink:0;
-    width:110px;
-  }
-  .meta-item input{
-    flex:1; min-width:0;
-    padding:8px;
-    border:1px solid #bbb;
-    border-radius:3px;
-    font-size:14px;
-    box-sizing:border-box;
-  }
+/* MOBILE: center title below logo */
+@media (max-width:520px){
+  .header{flex-direction:column;align-items:flex-start}
+  .header img{align-self:flex-start}
+  .header h1{width:100%;text-align:center;margin-top:6px}
+}
 
-  /* TABLE */
-  .table-wrap{ margin-top:14px; overflow:auto; }
-  table{
-    width:100%; border-collapse:collapse; min-width:1100px;
-  }
-  th,td{
-    border:1px solid #222;
-    padding:6px;
-    font-size:13px;
-  }
-  th{ background:#eee; font-weight:700; }
-  td input,td select{
-    width:100%; padding:6px;
-    border:1px solid #bbb; border-radius:3px;
-    font-size:13px; box-sizing:border-box;
-  }
-  .after-table-gap{ height:16px; }
+.top-grid {display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.top-grid .box {flex:1 1 180px}
+label {font-size:13px;color:#555;margin-bottom:4px;display:block}
+input[type="text"], input[type="date"], textarea, select {width:100%;padding:7px;font-size:14px;border:1px solid #aaa;border-radius:4px;box-sizing:border-box}
+textarea{min-height:70px;resize:vertical}
 
-  /* NOTES – FIXED padding/width so not crossing line */
-  .notes-area{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    width:100%;
-    box-sizing:border-box;
-  }
-  .note-box{
-    flex:1 1 calc(33.33% - 8px);
-    border:1px solid #222;
-    padding:6px;                       /* smaller padding */
-    box-sizing:border-box;              /* IMPORTANT */
-    min-height:82px;
-    background:#fff;
-  }
-  .note-box label{
-    font-weight:700;
-    margin-bottom:4px;
-    display:block;
-    font-size:13px;
-  }
-  .note-box textarea{
-    width:100%;
-    min-height:58px;
-    resize:vertical;
-    padding:6px;
-    border:1px solid #bbb;
-    border-radius:3px;
-    font-size:13px;
-    box-sizing:border-box;
-  }
+.section {border:1px solid #000;margin-bottom:18px;padding:12px;border-radius:6px}
+.section-title {font-size:18px;font-weight:bold;margin-bottom:6px}
+.section-total {font-weight:bold;color:#0a6;margin-bottom:8px}
+.table-wrap {overflow-x:auto}
 
-  /* FOOTER */
-  .footer-box{
-    margin-top:12px;
-    border:1px solid #222;
-    display:flex;
-  }
-  .footer-half{
-    flex:1;
-    border-right:1px solid #ddd;
-    padding:10px;
-    box-sizing:border-box;
-  }
-  .footer-half:last-child{ border-right:none; }
-  .footer-half input{
-    width:95%;
-    padding:8px;
-    border:1px solid #bbb;
-    border-radius:3px;
-    font-size:14px;
-    box-sizing:border-box;
-  }
+table {width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px;min-width:900px}
+th, td {border:1px solid #000;padding:6px;vertical-align:middle;word-break:break-word;text-align:center}
 
-  /* BUTTONS AT BOTTOM */
-  .buttons{ display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; }
-  .btn{
-    padding:10px 16px; color:#fff; border:none;
-    border-radius:6px; font-weight:700; cursor:pointer;
-  }
-  .btn-add{ background:#0d6efd; }
-  .btn-save{ background:#198754; }
-  .btn-pdf{ background:#6f42c1; }
-  .btn-reset{ background:#d9534f; }
+td input[type="text"], td input[type="number"] {width:100%;max-width:100%;padding:4px 5px;height:32px;font-size:13px;border:1px solid #aaa;border-radius:3px;box-sizing:border-box}
 
+.btn {padding:8px 12px;border-radius:6px;font-weight:bold;color:#fff;border:0;cursor:pointer}
+.add {background:#0b63c6}
+.lock {background:#28a745}
+.reset {background:#dc3545}
+.pdf {background:#6f42c1}
+.ghost {background:#fff;color:#0b63c6;border:1px solid #0b63c6}
+
+.saved-box {margin-top:15px}
+.saved-list {border:1px dashed #aaa;padding:8px;background:#fafcff;border-radius:6px;max-height:140px;overflow:auto;font-size:14px}
+
+.input-inline{display:flex;gap:8px;align-items:center}
+.checkbox-row{display:flex;flex-wrap:wrap;gap:10px}
+.checkbox-row label{display:flex;gap:6px;align-items:center;font-size:14px}
+
+.signature-row{display:flex;gap:12px;flex-wrap:wrap}
+.signature-row .sig{flex:1}
+
+.small-note{font-size:12px;color:#555;margin-top:6px}
 </style>
 </head>
+
 <body>
+<div class="container">
+  <div class="sheet" id="sheet">
 
-<div class="page-wrap">
-  <div class="sheet">
-    <div class="inner-box">
+    <!-- HEADER -->
+    <div class="header">
+      <img src="logo.png" alt="logo" id="logoImg">
+      <h1>Food Quality &amp; Taste Checking Report</h1>
+    </div>
 
-      <!-- HEADER -->
-      <div class="header">
-        <div class="logo"><img id="logoImg" src="logo.png" alt="Logo"></div>
-        <div class="title">Daily Food Quality &amp; Taste Check Report</div>
-        <div class="header-right"></div>
-      </div>
+    <!-- TOP FIELDS -->
+    <div class="top-grid">
+      <div class="box"><label>Date</label><input id="date" type="date"></div>
+      <div class="box"><label>Time</label><input id="time" type="text" placeholder="e.g. 10:30 AM"></div>
+      <div class="box"><label>Building</label><input id="bld" type="text"></div>
+      <div class="box"><label>Floor</label><input id="flr" type="text"></div>
+      <div class="box"><label>Counter / Outlet</label><input id="ctr" type="text"></div>
+      <div class="box"><label>Vendor Name</label><input id="vendor" type="text"></div>
+      <div class="box"><label>Supervisor</label><input id="supervisor" type="text"></div>
+      <div class="box"><label>Checked By</label><input id="checkedby" type="text"></div>
+    </div>
 
-      <div class="header-line"></div>
+    <!-- QUALITY TABLE SECTION -->
+    <div class="section" id="quality-section">
+      <div class="section-title">1. Food Quality Check</div>
+      <div class="section-total">(Add rows, enter values. Freshness / Taste / Texture / Appearance can be free text.)</div>
 
-      <!-- METADATA -->
-      <div class="meta-box">
-        <div class="meta-row">
-          <div class="meta-item"><label>Date:</label><input id="date" type="date"></div>
-          <div class="meta-item"><label>Vendor Name:</label><input id="vendorName" type="text"></div>
-          <div class="meta-item"><label>Vendor Supervisor:</label><input id="vendorSupervisor" type="text"></div>
-        </div>
-
-        <div class="meta-row">
-          <div class="meta-item"><label>Building:</label><input id="building" type="text"></div>
-          <div class="meta-item"><label>Floor:</label><input id="floor" type="text"></div>
-          <div class="meta-item"><label>Counter:</label><input id="counter" type="text"></div>
-        </div>
-      </div>
-
-      <!-- TABLE -->
       <div class="table-wrap">
-        <table id="foodTable">
+        <table>
           <thead>
             <tr>
-              <th style="width:40px;">S.No</th>
-              <th style="width:260px;">Item</th>
-              <th style="width:90px;">Temp (°C)</th>
-              <th style="width:120px;">Freshness</th>
-              <th style="width:110px;">Taste</th>
-              <th style="width:110px;">Texture</th>
-              <th style="width:110px;">Appearance</th>
-              <th style="width:100px;">Portion</th>
-              <th style="width:260px;">Remarks</th>
-              <th style="width:50px;">Del</th>
+              <th>S.No</th>
+              <th style="width:250px">Item Name</th>
+              <th>Temp (°C)</th>
+              <th>Freshness</th>
+              <th>Taste</th>
+              <th>Texture</th>
+              <th>Appearance</th>
+              <th>Portion</th>
+              <th>Remarks</th>
+              <th>Action</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td><input></td>
-              <td><input></td>
-              <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-              <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-              <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
-              <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-              <td><select><option>Std</option><option>Less</option></select></td>
-              <td><input></td>
-              <td><button onclick="deleteRow(this)" class="btn btn-reset" style="padding:4px 6px;">X</button></td>
-            </tr>
-          </tbody>
+          <tbody id="quality-body"></tbody>
         </table>
       </div>
+      <button class="btn add" onclick="addRow()">+ Add Row</button>
+    </div>
 
-      <div class="after-table-gap"></div>
-
-      <!-- NOTES -->
-      <div class="notes-area">
-        <div class="note-box">
-          <label>Taste Validation Notes</label>
-          <textarea id="tasteNotes"></textarea>
-        </div>
-        <div class="note-box">
-          <label>Special Observations</label>
-          <textarea id="obsNotes"></textarea>
-        </div>
-        <div class="note-box">
-          <label>Corrective Actions</label>
-          <textarea id="actNotes"></textarea>
-        </div>
+    <!-- HYGIENE CHECK -->
+    <div class="section">
+      <div class="section-title">2. Hygiene &amp; Handling Checklist</div>
+      <div class="checkbox-row">
+        <label><input type="checkbox" id="h_staff"> Staff Hygiene OK</label>
+        <label><input type="checkbox" id="h_gloves"> Gloves / Cap / Apron</label>
+        <label><input type="checkbox" id="h_covered"> Food Covered</label>
+        <label><input type="checkbox" id="h_utensils"> Utensils Clean</label>
+        <label><input type="checkbox" id="h_counter"> Counter Clean</label>
+        <label><input type="checkbox" id="h_handwash"> Handwash / Sanitizer</label>
       </div>
+      <div class="small-note">(Tick the checkboxes if the condition is met.)</div>
+    </div>
 
-      <!-- FOOTER -->
-      <div class="footer-box">
-        <div class="footer-half">
-          <label style="font-weight:700;display:block;margin-bottom:6px;">Vendor PoC :</label>
-          <input id="vendorPoc" type="text">
-        </div>
-        <div class="footer-half">
-          <label style="font-weight:700;display:block;margin-bottom:6px;">Verified by F&amp;B Team :</label>
-          <input id="verifiedBy" type="text">
-        </div>
+    <!-- TASTE / OBSERVATIONS -->
+    <div class="section">
+      <div class="section-title">3. Taste Validation Notes</div>
+      <textarea id="tasteNotes" placeholder="Describe the taste: Balanced / Too spicy / Less salt / Other..."></textarea>
+    </div>
+
+    <div class="section">
+      <div class="section-title">4. Special Observations</div>
+      <textarea id="observations" placeholder="Any deviation, poor quality, customer complaints, time of issue, etc."></textarea>
+    </div>
+
+    <div class="section">
+      <div class="section-title">5. Corrective Actions Taken</div>
+      <textarea id="actions" placeholder="Immediate action taken to fix the issue."></textarea>
+    </div>
+
+    <!-- SIGNATURES -->
+    <div class="section">
+      <div class="section-title">Signatures</div>
+      <div class="signature-row">
+        <div class="sig"><label>Quality Checker</label><input id="sign_checker" type="text" placeholder="Name / Sign"></div>
+        <div class="sig"><label>Vendor Supervisor</label><input id="sign_supervisor" type="text" placeholder="Name / Sign"></div>
       </div>
+    </div>
 
-    </div><!-- inner-box -->
-  </div><!-- sheet -->
+    <!-- ACTIONS -->
+    <div style="margin-top:15px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+      <input id="savename" placeholder="Save name" style="padding:8px;border:1px solid #aaa;border-radius:6px;">
+      <button class="btn lock" id="saveAll">Save All</button>
+      <button class="btn pdf" id="pdfBtn">Download PDF</button>
+      <button class="btn reset" id="reset">Reset</button>
+    </div>
 
-  <!-- BUTTONS -->
-  <div class="buttons">
-    <button class="btn btn-add" onclick="addRow()">Add Row</button>
-    <button class="btn btn-save" onclick="saveForm()">Save</button>
-    <button class="btn btn-pdf" onclick="downloadPDF()">Download PDF</button>
-    <button class="btn btn-reset" onclick="resetForm()">Reset</button>
+    <!-- SAVED LIST -->
+    <div class="saved-box" id="saved-box">
+      <label>Saved Reports</label>
+      <div class="saved-list" id="savedList">— none —</div>
+    </div>
+
   </div>
-
 </div>
 
 <script>
-function deleteRow(btn){
-  let tr=btn.closest("tr");
-  tr.remove();
-  document.querySelectorAll("#foodTable tbody tr").forEach((r,i)=>r.cells[0].innerText=i+1);
-}
-
-function addRow(){
-  const tbody=document.querySelector("#foodTable tbody");
-  let i=tbody.rows.length+1;
-  let tr=document.createElement("tr");
+/* -------------------------
+   ROW HANDLING
+------------------------- */
+function addRow(data={}){
+  const tbody=document.getElementById('quality-body');
+  const tr=document.createElement('tr');
   tr.innerHTML=`
-    <td>${i}</td>
-    <td><input></td>
-    <td><input></td>
-    <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-    <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-    <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
-    <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-    <td><select><option>Std</option><option>Less</option></select></td>
-    <td><input></td>
-    <td><button onclick="deleteRow(this)" class="btn btn-reset" style="padding:4px 6px;">X</button></td>
+    <td class="idx"></td>
+    <td><input class="item" type="text" value="${escapeHtml(data.item||'')}"></td>
+    <td><input class="temp" type="number" step="0.1" value="${data.temp||''}"></td>
+    <td><input class="fresh" type="text" value="${escapeHtml(data.fresh||'')}"></td>
+    <td><input class="taste" type="text" value="${escapeHtml(data.taste||'')}"></td>
+    <td><input class="texture" type="text" value="${escapeHtml(data.texture||'')}"></td>
+    <td><input class="appear" type="text" value="${escapeHtml(data.appear||'')}"></td>
+    <td><input class="portion" type="text" value="${escapeHtml(data.portion||'')}"></td>
+    <td><input class="remarks" type="text" value="${escapeHtml(data.remarks||'')}"></td>
+    <td><button class="btn ghost" onclick="this.closest('tr').remove(); updateIndex();">Del</button></td>
   `;
   tbody.appendChild(tr);
+  updateIndex();
+  bindRow(tr);
 }
 
-/* -------------- PDF GENERATION -------------- */
-async function downloadPDF(){
-  const { jsPDF }=window.jspdf;
-  const doc=new jsPDF({orientation:"landscape",unit:"pt",format:"a4"});
-  const margin=22;
-  const pageW=doc.internal.pageSize.getWidth();
-  const usable=pageW - margin*2;
-  let y=margin;
-
-  // load logo
-  let logoEl=document.getElementById("logoImg");
-  let logo=await loadImage(logoEl.src);
-
-  if(logo){
-    const targetH=42;
-    const scale=targetH/logo.height;
-    let w=logo.width*scale;
-    let h=targetH;
-
-    let maxW=usable*0.28;
-    if(w>maxW){
-      const s=maxW/w;
-      w*=s; h*=s;
-    }
-    doc.addImage(logo.data,"PNG",margin,y,w,h);
-  }
-
-  doc.setFont("helvetica","bold");
-  doc.setFontSize(18);
-  doc.text("Daily Food Quality & Taste Check Report",pageW/2,y+26,{align:"center"});
-
-  y+=60;
-  doc.line(margin,y-6,pageW-margin,y-6);
-
-  const meta=[
-    ["Date",document.getElementById("date").value],
-    ["Vendor Name",document.getElementById("vendorName").value],
-    ["Vendor Supervisor",document.getElementById("vendorSupervisor").value],
-    ["Building",document.getElementById("building").value],
-    ["Floor",document.getElementById("floor").value],
-    ["Counter",document.getElementById("counter").value]
-  ];
-
-  doc.setFontSize(10);
-  const colW=(usable-10)/3;
-
-  let x=margin;
-  for(let i=0;i<3;i++){
-    doc.rect(x,y,colW,34);
-    doc.text(meta[i][0]+":",x+6,y+12);
-    doc.text(doc.splitTextToSize(meta[i][1],colW-12),x+6,y+26);
-    x+=colW+5;
-  }
-  y+=40;
-  x=margin;
-  for(let i=3;i<6;i++){
-    doc.rect(x,y,colW,34);
-    doc.text(meta[i][0]+":",x+6,y+12);
-    doc.text(doc.splitTextToSize(meta[i][1],colW-12),x+6,y+26);
-    x+=colW+5;
-  }
-  y+=46;
-
-  const rows=[...document.querySelectorAll("#foodTable tbody tr")].map((tr,i)=>{
-    const c=tr.querySelectorAll("td");
-    return [
-      i+1,
-      c[1].querySelector("input").value,
-      c[2].querySelector("input").value,
-      c[3].querySelector("select").value,
-      c[4].querySelector("select").value,
-      c[5].querySelector("select").value,
-      c[6].querySelector("select").value,
-      c[7].querySelector("select").value,
-      c[8].querySelector("input").value
-    ];
-  });
-
-  doc.autoTable({
-    head:[["S.No","Item","Temp (°C)","Freshness","Taste","Texture","Appearance","Portion","Remarks"]],
-    body:rows,
-    startY:y,
-    margin:{left:margin+5,right:margin+5},
-    theme:"grid",
-    styles:{fontSize:10,cellPadding:6,lineWidth:0.7,lineColor:[0,0,0]},
-    headStyles:{fillColor:[230,230,230],fontStyle:"bold",lineWidth:1,lineColor:[0,0,0]},
-    columnStyles:{
-      0:{cellWidth:36},
-      1:{cellWidth:220},
-      2:{cellWidth:60},
-      3:{cellWidth:70},
-      4:{cellWidth:70},
-      5:{cellWidth:70},
-      6:{cellWidth:70},
-      7:{cellWidth:60},
-      8:{cellWidth:usable-(36+220+60+70+70+70+70+60)-40, overflow:"linebreak"}
-    }
-  });
-
-  y=doc.lastAutoTable.finalY+18;
-
-  const notes=[
-    ["Taste Validation Notes",document.getElementById("tasteNotes").value],
-    ["Special Observations",document.getElementById("obsNotes").value],
-    ["Corrective Actions",document.getElementById("actNotes").value]
-  ];
-
-  const gap=10;
-  const bw=(usable-gap*2)/3;
-  const bh=72;
-  let nx=margin;
-
-  notes.forEach(n=>{
-    doc.rect(nx,y,bw,bh);
-    doc.text(n[0],nx+6,y+14);
-    doc.text(doc.splitTextToSize(n[1],bw-12),nx+6,y+30);
-    nx+=bw+gap;
-  });
-
-  y+=bh+16;
-
-  const vendor=document.getElementById("vendorPoc").value;
-  const fb=document.getElementById("verifiedBy").value;
-
-  doc.rect(margin,y,usable,60);
-  doc.line(margin+usable/2,y,margin+usable/2,y+60);
-  doc.text("Vendor PoC : "+vendor,margin+10,y+26);
-  doc.text("Verified by F&B Team : "+fb,margin+usable/2+10,y+26);
-
-  doc.save("Food_Quality_Check.pdf");
-
-  function loadImage(src){
-    return new Promise(res=>{
-      const img=new Image();
-      img.crossOrigin="anonymous";
-      img.onload=function(){
-        const c=document.createElement("canvas");
-        c.width=this.width; c.height=this.height;
-        c.getContext("2d").drawImage(this,0,0);
-        res({data:c.toDataURL("image/png"),width:this.width,height:this.height});
-      };
-      img.onerror=()=>res(null);
-      img.src=src;
-    });
-  }
+function updateIndex(){
+  [...document.querySelectorAll('#quality-body tr')].forEach((tr,i)=> tr.querySelector('.idx').textContent = i+1);
 }
+
+function bindRow(tr){
+  tr.querySelectorAll('input').forEach(inp=> inp.addEventListener('input', ()=>{}));
+}
+
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* RESET */
+document.getElementById('reset').onclick = ()=>{
+  if(!confirm('Reset the form?')) return; location.reload();
+};
+
+/* -------------------------
+   SAVE / LOAD
+------------------------- */
+document.getElementById('saveAll').onclick = function(){
+  const name = document.getElementById('savename').value.trim();
+  if(!name){ alert('Enter a name'); return; }
+  const data = collectAll();
+  localStorage.setItem('quality_'+name, JSON.stringify(data));
+  loadSavedList();
+  alert('Saved');
+};
+
+function collectAll(){
+  return {
+    meta: {
+      date: document.getElementById('date').value,
+      time: document.getElementById('time').value,
+      bld: document.getElementById('bld').value,
+      flr: document.getElementById('flr').value,
+      ctr: document.getElementById('ctr').value,
+      vendor: document.getElementById('vendor').value,
+      supervisor: document.getElementById('supervisor').value,
+      checkedby: document.getElementById('checkedby').value,
+      sign_checker: document.getElementById('sign_checker').value,
+      sign_supervisor: document.getElementById('sign_supervisor').value
+    },
+    hygiene: {
+      staff: document.getElementById('h_staff').checked,
+      gloves: document.getElementById('h_gloves').checked,
+      covered: document.getElementById('h_covered').checked,
+      utensils: document.getElementById('h_utensils').checked,
+      counter: document.getElementById('h_counter').checked,
+      handwash: document.getElementById('h_handwash').checked
+    },
+    notes: {
+      tasteNotes: document.getElementById('tasteNotes').value,
+      observations: document.getElementById('observations').value,
+      actions: document.getElementById('actions').value
+    },
+    items: [...document.querySelectorAll('#quality-body tr')].map(tr=>({
+      item: tr.querySelector('.item').value,
+      temp: tr.querySelector('.temp').value,
+      fresh: tr.querySelector('.fresh').value,
+      taste: tr.querySelector('.taste').value,
+      texture: tr.querySelector('.texture').value,
+      appear: tr.querySelector('.appear').value,
+      portion: tr.querySelector('.portion').value,
+      remarks: tr.querySelector('.remarks').value
+    }))
+  };
+}
+
+function loadSavedList(){
+  const div=document.getElementById('savedList');
+  const keys = Object.keys(localStorage).filter(k=>k.startsWith('quality_'));
+  if(!keys.length){ div.innerHTML='— none —'; return; }
+  div.innerHTML='';
+  keys.forEach(k=>{
+    const name = k.replace('quality_','');
+    const row = document.createElement('div');
+    row.style = 'display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #ccc';
+    row.innerHTML = `<b>${name}</b><div style="display:flex;gap:6px"><button class="btn ghost" onclick="loadSaved('${name}')">Load</button><button class="btn reset" onclick="deleteSaved('${name}')">Del</button></div>`;
+    div.appendChild(row);
+  });
+}
+loadSavedList();
+
+function loadSaved(name){
+  const d = JSON.parse(localStorage.getItem('quality_'+name));
+  if(!d){ alert('Not found'); return; }
+  const m = d.meta;
+  document.getElementById('date').value = m.date || '';
+  document.getElementById('time').value = m.time || '';
+  document.getElementById('bld').value = m.bld || '';
+  document.getElementById('flr').value = m.flr || '';
+  document.getElementById('ctr').value = m.ctr || '';
+  document.getElementById('vendor').value = m.vendor || '';
+  document.getElementById('supervisor').value = m.supervisor || '';
+  document.getElementById('checkedby').value = m.checkedby || '';
+  document.getElementById('sign_checker').value = m.sign_checker || '';
+  document.getElementById('sign_supervisor').value = m.sign_supervisor || '';
+
+  const h = d.hygiene || {};
+  document.getElementById('h_staff').checked = !!h.staff;
+  document.getElementById('h_gloves').checked = !!h.gloves;
+  document.getElementById('h_covered').checked = !!h.covered;
+  document.getElementById('h_utensils').checked = !!h.utensils;
+  document.getElementById('h_counter').checked = !!h.counter;
+  document.getElementById('h_handwash').checked = !!h.handwash;
+
+  document.getElementById('tasteNotes').value = (d.notes && d.notes.tasteNotes) || '';
+  document.getElementById('observations').value = (d.notes && d.notes.observations) || '';
+  document.getElementById('actions').value = (d.notes && d.notes.actions) || '';
+
+  const tbody = document.getElementById('quality-body'); tbody.innerHTML = '';
+  (d.items || []).forEach(it=> addRow(it));
+  updateIndex();
+  alert('Loaded');
+}
+
+function deleteSaved(name){
+  if(!confirm('Delete saved report?')) return;
+  localStorage.removeItem('quality_'+name);
+  loadSavedList();
+}
+
+/* -------------------------
+   PDF EXPORT
+   - remove saved list
+   - convert inputs to text
+   - convert checkboxes to Yes/No
+------------------------- */
+
+document.getElementById('pdfBtn').onclick = async function(){
+  const { jsPDF } = window.jspdf;
+  const sheet = document.getElementById('sheet');
+  const clone = sheet.cloneNode(true);
+
+  // remove saved box from PDF
+  const savedBox = clone.querySelector('#saved-box'); if(savedBox) savedBox.remove();
+
+  // replace inputs & textareas
+  clone.querySelectorAll('input,textarea,button,select').forEach(el=>{
+    if(el.tagName === 'BUTTON') { el.remove(); return; }
+    let text = '';
+    if(el.type === 'checkbox') text = el.checked ? 'Yes' : 'No';
+    else text = el.value || el.textContent || '';
+
+    const div = document.createElement('div');
+    div.textContent = text;
+    div.style.padding = '2px 4px';
+    div.style.fontSize = '12px';
+    // keep width behavior for table cells
+    el.parentNode.replaceChild(div, el);
+  });
+
+  // ensure images loaded
+  await Promise.all([...clone.querySelectorAll('img')].map(img=> new Promise(res=>{ if(img.complete) return res(); img.onload=img.onerror=res; })));
+
+  // create container offscreen
+  const container = document.createElement('div');
+  container.style.position = 'fixed'; container.style.left='-9999px'; container.style.top='0'; container.style.width='1500px'; container.style.background='#fff';
+  container.appendChild(clone);
+  document.body.appendChild(container);
+
+  const canvas = await html2canvas(clone, {scale:1, backgroundColor:'#fff', useCORS:true});
+  const imgData = canvas.toDataURL('image/jpeg', 0.72);
+  const pdf = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+  const pageWidth = 297; const pageHeight = 210;
+  const pxPerMm = canvas.width / pageWidth; const imgHeightMm = canvas.height / pxPerMm;
+
+  if(imgHeightMm <= pageHeight){ pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, imgHeightMm); }
+  else {
+    let y = 0; const slicePx = pageHeight * pxPerMm;
+    while(y < canvas.height){
+      const sliceCanvas = document.createElement('canvas');
+      sliceCanvas.width = canvas.width;
+      sliceCanvas.height = Math.min(slicePx, canvas.height - y);
+      sliceCanvas.getContext('2d').drawImage(canvas, 0, y, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
+      const sliceImg = sliceCanvas.toDataURL('image/jpeg', 0.72);
+      const sliceHeightMm = sliceCanvas.height / pxPerMm;
+      if(y > 0) pdf.addPage('a4', 'landscape');
+      pdf.addImage(sliceImg, 'JPEG', 0, 0, pageWidth, sliceHeightMm);
+      y += slicePx;
+    }
+  }
+
+  container.remove();
+  pdf.save('FoodQualityReport.pdf');
+};
+
+// populate with a starter row
+if(!document.querySelector('#quality-body tr')) addRow();
+
 </script>
 
 </body>
