@@ -10,462 +10,484 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-  :root{
-    --page-max:1000px;
-    --border-color:#222;
-    --cell-pad:8px;
+  body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f3f3f3;
+    padding:18px;
+    margin:0;
   }
-  body{font-family:Arial,Helvetica,sans-serif;background:#f2f2f2;margin:0;padding:18px;}
-  .page-wrap{max-width:var(--page-max);margin:0 auto;}
-
-  /* Outer sheet like PDF */
-  .sheet{border:3px solid var(--border-color);background:#fff;padding:10px;box-sizing:border-box;}
-  .inner-box{border:2px solid var(--border-color);padding:10px;box-sizing:border-box;}
-
-  /* Header: we place title absolutely centered; logo left; header-right to balance */
-  .header{position:relative;display:flex;align-items:center;height:64px;}
-  .logo{flex:0 0 auto; display:flex; align-items:center;}
-  .logo img{display:block; width:auto; height:auto; max-height:120px;} /* show natural size in page; PDF uses natural size too */
-  .title{position:absolute; left:50%; transform:translateX(-50%); font-weight:700; font-size:20px; text-align:center;}
-  .header-right{flex:0 0 140px;} /* visual balance */
-
-  /* Horizontal rule under header */
-  .header-line{height:6px;margin-top:8px;border-bottom:2px solid var(--border-color);} /* visual only on page */
-
-  /* metadata area - big boxed area with two rows */
-  .meta-box{border:1px solid var(--border-color);margin-top:10px;padding:8px;box-sizing:border-box;}
-  .meta-row{display:flex;gap:8px;}
-  .meta-item{flex:1;min-width:140px;border:1px solid #999;padding:6px;box-sizing:border-box;display:flex;align-items:center;gap:8px;}
-  .meta-item label{min-width:120px;font-weight:700;}
-  .meta-item input{flex:1;padding:6px;border:1px solid #bbb;border-radius:3px;}
-
-  /* Table */
-  .table-wrap{margin-top:12px;overflow:auto;}
-  table{width:100%;border-collapse:collapse;min-width:1100px;}
-  th,td{border:1px solid var(--border-color);padding:6px;font-size:13px;vertical-align:middle;}
-  th{background:#f3f3f3;font-weight:700;text-align:center;}
-  td input[type="text"], td select{width:100%;padding:6px;box-sizing:border-box;border:1px solid #bbb;border-radius:3px;}
-
-  /* gap between table and notes */
-  .after-table-gap{height:16px;}
-
-  /* Notes boxes (three side-by-side) */
-  .notes-area{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
-  .note-box{flex:1 1 32%;border:1px solid var(--border-color);padding:8px;box-sizing:border-box;background:#fff;min-height:80px;}
-  .note-box label{display:block;font-weight:700;margin-bottom:6px;}
-  .note-box textarea{width:100%;min-height:56px;padding:6px;box-sizing:border-box;border:1px solid #bbb;border-radius:3px;resize:vertical;}
-
-  /* Footer single box divided */
-  .footer-box{margin-top:12px;border:1px solid var(--border-color);display:flex;gap:8px;padding:8px;box-sizing:border-box;}
-  .footer-half{flex:1;padding:6px;border-right:1px solid #ddd;box-sizing:border-box;}
-  .footer-half:last-child{border-right:none;}
-
-  /* Buttons at page bottom only */
-  .buttons{display:flex;gap:12px;margin-top:14px;justify-content:flex-start;flex-wrap:wrap;}
-  .btn{padding:10px 16px;border-radius:6px;border:none;color:#fff;font-weight:700;cursor:pointer;}
-  .btn-add{background:#0d6efd;} .btn-save{background:#198754;} .btn-pdf{background:#6f42c1;} .btn-reset{background:#d9534f;}
-
-  /* Responsive: on small screens header: logo left, title centered, header-right hidden; metadata stacked */
-  @media (max-width:900px){
-    .meta-row{flex-direction:column;}
-    .header-right{display:none;}
-    .logo img{max-height:46px;}
-    .title{font-size:16px;}
-    table{min-width:900px;}
+  .page-wrap{
+    max-width:1000px;
+    margin:auto;
   }
+  .sheet{
+    border:3px solid #222;
+    background:#fff;
+    padding:12px;
+  }
+  .inner-box{
+    border:2px solid #222;
+    padding:12px;
+  }
+
+  /* HEADER – small logo like Sales Report */
+  .header{
+    position:relative;
+    display:flex;
+    align-items:center;
+    height:60px;
+  }
+  .logo{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+  }
+  .logo img{
+    height:36px;          /* Small like sales report */
+    width:auto;
+    object-fit:contain;
+  }
+  @media(max-width:600px){
+    .logo img{
+      height:32px;
+    }
+  }
+  .title{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:20px;
+    font-weight:700;
+    text-align:center;
+  }
+  .header-right{
+    flex:0 0 150px;
+  }
+
+  /* horizontal divider */
+  .header-line{
+    border-bottom:2px solid #222;
+    margin-top:10px;
+    margin-bottom:10px;
+  }
+
+  /* METADATA BLOCK */
+  .meta-box{
+    border:1px solid #222;
+    padding:8px;
+  }
+  .meta-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+  }
+  .meta-item{
+    flex:1 1 30%;
+    border:1px solid #999;
+    padding:10px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    min-height:48px;
+  }
+  .meta-item label{
+    font-weight:700;
+    font-size:13px;
+    flex-shrink:0;
+    width:110px;
+  }
+  .meta-item input{
+    flex:1;
+    padding:8px;
+    font-size:14px;
+    border:1px solid #bbb;
+    border-radius:3px;
+    min-width:0;
+  }
+
+  /* TABLE */
+  .table-wrap{ margin-top:14px; overflow:auto; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:1100px;
+  }
+  th,td{
+    border:1px solid #222;
+    padding:6px;
+    font-size:13px;
+  }
+  th{
+    background:#eee;
+    font-weight:700;
+  }
+  td input,td select{
+    width:100%;
+    padding:6px;
+    border:1px solid #bbb;
+    border-radius:3px;
+    font-size:13px;
+    box-sizing:border-box;
+  }
+  .after-table-gap{ height:16px; }
+
+  /* NOTES */
+  .notes-area{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .note-box{
+    flex:1 1 32%;
+    border:1px solid #222;
+    padding:8px;
+  }
+  .note-box label{ font-weight:700; margin-bottom:6px; display:block; }
+  .note-box textarea{
+    width:100%;
+    min-height:60px;
+    resize:vertical;
+    padding:8px;
+    border:1px solid #bbb;
+    font-size:13px;
+  }
+
+  /* FOOTER */
+  .footer-box{
+    margin-top:12px;
+    border:1px solid #222;
+    display:flex;
+  }
+  .footer-half{
+    flex:1;
+    border-right:1px solid #ddd;
+    padding:10px;
+  }
+  .footer-half:last-child{
+    border-right:none;
+  }
+  .footer-half input{
+    width:95%;
+    padding:8px;
+    border:1px solid #bbb;
+    border-radius:3px;
+  }
+
+  /* BUTTONS AT BOTTOM ONLY */
+  .buttons{
+    margin-top:14px;
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    padding:10px 16px;
+    color:#fff;
+    border:none;
+    border-radius:6px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-add{ background:#0d6efd; }
+  .btn-save{ background:#198754; }
+  .btn-pdf{ background:#6f42c1; }
+  .btn-reset{ background:#d9534f; }
+
 </style>
 </head>
 <body>
-  <div class="page-wrap">
-    <div class="sheet">
-      <div class="inner-box">
 
-        <!-- HEADER (single-row) -->
-        <div class="header" role="banner" aria-label="header">
-          <div class="logo"><img id="logoImg" src="logo.png" alt="Logo" onerror="this.style.display='none'"></div>
-          <div class="title">Daily Food Quality &amp; Taste Check Report</div>
-          <div class="header-right" aria-hidden="true"></div>
+<div class="page-wrap">
+  <div class="sheet">
+    <div class="inner-box">
+
+      <!-- HEADER -->
+      <div class="header">
+        <div class="logo"><img id="logoImg" src="logo.png" alt="Logo"></div>
+        <div class="title">Daily Food Quality &amp; Taste Check Report</div>
+        <div class="header-right"></div>
+      </div>
+
+      <div class="header-line"></div>
+
+      <!-- METADATA -->
+      <div class="meta-box">
+        <div class="meta-row">
+          <div class="meta-item"><label>Date:</label><input id="date" type="date"></div>
+          <div class="meta-item"><label>Vendor Name:</label><input id="vendorName" type="text"></div>
+          <div class="meta-item"><label>Vendor Supervisor:</label><input id="vendorSupervisor" type="text"></div>
         </div>
-
-        <!-- horizontal line after header (visual) -->
-        <div class="header-line" aria-hidden="true"></div>
-
-        <!-- METADATA (two rows inside one box) -->
-        <div class="meta-box" role="group" aria-label="metadata">
-          <div class="meta-row" style="margin-bottom:8px;">
-            <div class="meta-item"><label>Date:</label><input id="date" type="date"></div>
-            <div class="meta-item"><label>Vendor Name:</label><input id="vendorName" type="text" placeholder="Vendor name"></div>
-            <div class="meta-item"><label>Vendor Supervisor Name:</label><input id="vendorSupervisor" type="text" placeholder="Supervisor"></div>
-          </div>
-          <div class="meta-row">
-            <div class="meta-item"><label>Building:</label><input id="building" type="text" placeholder="Building"></div>
-            <div class="meta-item"><label>Floor:</label><input id="floor" type="text" placeholder="Floor"></div>
-            <div class="meta-item"><label>Counter:</label><input id="counter" type="text" placeholder="Counter"></div>
-          </div>
+        <div class="meta-row">
+          <div class="meta-item"><label>Building:</label><input id="building" type="text"></div>
+          <div class="meta-item"><label>Floor:</label><input id="floor" type="text"></div>
+          <div class="meta-item"><label>Counter:</label><input id="counter" type="text"></div>
         </div>
+      </div>
 
-        <!-- TABLE -->
-        <div class="table-wrap" aria-label="table">
-          <table id="foodTable" role="table" aria-label="food items">
-            <thead>
-              <tr>
-                <th style="width:48px">S.No</th>
-                <th style="width:300px">Item</th>
-                <th style="width:110px">Temp (°C)</th>
-                <th style="width:120px">Freshness</th>
-                <th style="width:110px">Taste</th>
-                <th style="width:110px">Texture</th>
-                <th style="width:110px">Appearance</th>
-                <th style="width:100px">Portion</th>
-                <th style="width:300px">Remarks</th>
-                <th style="width:60px">Del</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td><input type="text" /></td>
-                <td><input type="text" /></td>
-                <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-                <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-                <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
-                <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
-                <td><select><option>Std</option><option>Less</option></select></td>
-                <td><input type="text" /></td>
-                <td><button class="btn btn-reset" onclick="deleteRow(this)">X</button></td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- TABLE -->
+      <div class="table-wrap">
+        <table id="foodTable">
+          <thead>
+            <tr>
+              <th style="width:40px;">S.No</th>
+              <th style="width:260px;">Item</th>
+              <th style="width:90px;">Temp</th>
+              <th style="width:120px;">Freshness</th>
+              <th style="width:110px;">Taste</th>
+              <th style="width:110px;">Texture</th>
+              <th style="width:110px;">Appearance</th>
+              <th style="width:100px;">Portion</th>
+              <th style="width:260px;">Remarks</th>
+              <th style="width:50px;">Del</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><input type="text"></td>
+              <td><input type="text"></td>
+              <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+              <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+              <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
+              <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+              <td><select><option>Std</option><option>Less</option></select></td>
+              <td><input type="text"></td>
+              <td><button onclick="deleteRow(this)" class="btn btn-reset" style="padding:4px 6px;">X</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="after-table-gap"></div>
+
+      <!-- NOTES -->
+      <div class="notes-area">
+        <div class="note-box">
+          <label>Taste Validation Notes</label>
+          <textarea id="tasteNotes"></textarea>
         </div>
-
-        <!-- Gap between table and notes -->
-        <div class="after-table-gap" aria-hidden="true"></div>
-
-        <!-- NOTES (three horizontal boxes) -->
-        <div class="notes-area" aria-label="notes">
-          <div class="note-box">
-            <label for="tasteNotes">Taste Validation Notes</label>
-            <textarea id="tasteNotes" placeholder="Enter taste validation notes..."></textarea>
-          </div>
-          <div class="note-box">
-            <label for="obsNotes">Special Observations</label>
-            <textarea id="obsNotes" placeholder="Enter special observations..."></textarea>
-          </div>
-          <div class="note-box">
-            <label for="actNotes">Corrective Actions</label>
-            <textarea id="actNotes" placeholder="Enter corrective actions..."></textarea>
-          </div>
+        <div class="note-box">
+          <label>Special Observations</label>
+          <textarea id="obsNotes"></textarea>
         </div>
-
-        <!-- Footer single box split -->
-        <div class="footer-box" aria-label="footer">
-          <div class="footer-half">
-            <label style="font-weight:700;display:block;margin-bottom:6px;">Vendor PoC :</label>
-            <input id="vendorPoc" type="text" style="width:95%;padding:6px;border:1px solid #ccc;border-radius:3px;">
-          </div>
-          <div class="footer-half">
-            <label style="font-weight:700;display:block;margin-bottom:6px;">Verified by F&amp;B Team :</label>
-            <input id="verifiedBy" type="text" style="width:95%;padding:6px;border:1px solid #ccc;border-radius:3px;">
-          </div>
+        <div class="note-box">
+          <label>Corrective Actions</label>
+          <textarea id="actNotes"></textarea>
         </div>
+      </div>
 
-      </div> <!-- inner-box -->
-    </div> <!-- sheet -->
+      <!-- FOOTER -->
+      <div class="footer-box">
+        <div class="footer-half">
+          <label style="font-weight:700;display:block;margin-bottom:6px;">Vendor PoC :</label>
+          <input id="vendorPoc" type="text">
+        </div>
+        <div class="footer-half">
+          <label style="font-weight:700;display:block;margin-bottom:6px;">Verified by F&B Team :</label>
+          <input id="verifiedBy" type="text">
+        </div>
+      </div>
 
-    <!-- Buttons at the VERY bottom -->
-    <div class="buttons" style="margin-top:12px;">
-      <button class="btn btn-add" onclick="addRow()">Add Row</button>
-      <button class="btn btn-save" onclick="saveForm()">Save (Lock)</button>
-      <button class="btn btn-pdf" onclick="downloadPDF()">Download PDF</button>
-      <button class="btn btn-reset" onclick="resetForm()">Reset</button>
     </div>
   </div>
 
-<script>
-/* ------------------- Basic utilities ------------------- */
-function escapeHtml(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  <!-- BUTTONS at bottom -->
+  <div class="buttons">
+    <button class="btn btn-add" onclick="addRow()">Add Row</button>
+    <button class="btn btn-save" onclick="saveForm()">Save</button>
+    <button class="btn btn-pdf" onclick="downloadPDF()">Download PDF</button>
+    <button class="btn btn-reset" onclick="resetForm()">Reset</button>
+  </div>
+</div>
 
-/* ------------------- Row handling ------------------- */
+<script>
+function deleteRow(btn){
+  let tr = btn.closest("tr");
+  tr.remove();
+  document.querySelectorAll("#foodTable tbody tr").forEach((r,i)=>r.cells[0].innerText=i+1);
+}
+
 function addRow(){
-  const tbody = document.querySelector('#foodTable tbody');
-  const idx = tbody.rows.length + 1;
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td>${idx}</td>
-    <td><input type="text" /></td>
-    <td><input type="text" /></td>
+  const tbody=document.querySelector("#foodTable tbody");
+  let i=tbody.rows.length+1;
+  let tr=document.createElement("tr");
+  tr.innerHTML=`
+    <td>${i}</td>
+    <td><input></td>
+    <td><input></td>
     <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
     <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
     <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
     <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
     <td><select><option>Std</option><option>Less</option></select></td>
-    <td><input type="text" /></td>
-    <td><button class="btn btn-reset" onclick="deleteRow(this)">X</button></td>
+    <td><input></td>
+    <td><button class="btn btn-reset" onclick="deleteRow(this)" style="padding:4px 6px;">X</button></td>
   `;
   tbody.appendChild(tr);
 }
 
-function deleteRow(btn){
-  const tr = btn.closest('tr');
-  tr.remove();
-  // reindex
-  document.querySelectorAll('#foodTable tbody tr').forEach((r,i)=> r.cells[0].innerText = i+1);
-}
-
-/* ------------------- Save / Reset ------------------- */
-function collectForm(){
-  const meta = {
-    date: document.getElementById('date').value || '',
-    vendorName: document.getElementById('vendorName').value || '',
-    vendorSupervisor: document.getElementById('vendorSupervisor').value || '',
-    building: document.getElementById('building').value || '',
-    floor: document.getElementById('floor').value || '',
-    counter: document.getElementById('counter').value || ''
-  };
-  const rows = Array.from(document.querySelectorAll('#foodTable tbody tr')).map((tr,i)=> {
-    const tds = tr.querySelectorAll('td');
-    return {
-      s: i+1,
-      item: (tds[1].querySelector('input')||{}).value || '',
-      temp: (tds[2].querySelector('input')||{}).value || '',
-      freshness: (tds[3].querySelector('select')||{}).value || '',
-      taste: (tds[4].querySelector('select')||{}).value || '',
-      texture: (tds[5].querySelector('select')||{}).value || '',
-      appearance: (tds[6].querySelector('select')||{}).value || '',
-      portion: (tds[7].querySelector('select')||{}).value || '',
-      remarks: (tds[8].querySelector('input')||{}).value || ''
-    };
-  });
-  const notes = {
-    taste: document.getElementById('tasteNotes').value || '',
-    obs: document.getElementById('obsNotes').value || '',
-    actions: document.getElementById('actNotes').value || ''
-  };
-  const footer = {
-    vendorPoc: document.getElementById('vendorPoc').value || '',
-    verifiedBy: document.getElementById('verifiedBy').value || ''
-  };
-  return { meta, rows, notes, footer };
-}
-
-function saveForm(){
-  const data = collectForm();
-  localStorage.setItem('foodQuality_final_v2', JSON.stringify(data));
-  alert('Saved locally (locked).');
-}
-
-function resetForm(){
-  if(!confirm('Reset the form?')) return;
-  // reset metadata
-  document.querySelectorAll('.meta-item input').forEach(i=>i.value='');
-  // reset notes & footer
-  document.querySelectorAll('textarea').forEach(t=>t.value='');
-  document.getElementById('vendorPoc').value='';
-  document.getElementById('verifiedBy').value='';
-  // reset table to single empty row
-  const tbody = document.querySelector('#foodTable tbody');
-  tbody.innerHTML = '';
-  addRow();
-}
-
-/* load saved */
-(function loadSaved(){
-  try{
-    const raw = localStorage.getItem('foodQuality_final_v2');
-    if(!raw) return;
-    const data = JSON.parse(raw);
-    if(data.meta){
-      document.getElementById('date').value = data.meta.date || '';
-      document.getElementById('vendorName').value = data.meta.vendorName || '';
-      document.getElementById('vendorSupervisor').value = data.meta.vendorSupervisor || '';
-      document.getElementById('building').value = data.meta.building || '';
-      document.getElementById('floor').value = data.meta.floor || '';
-      document.getElementById('counter').value = data.meta.counter || '';
-    }
-    if(data.rows && data.rows.length){
-      const tbody = document.querySelector('#foodTable tbody');
-      tbody.innerHTML='';
-      data.rows.forEach((r,i)=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${i+1}</td>
-          <td><input type="text" value="${escapeHtml(r.item)}" /></td>
-          <td><input type="text" value="${escapeHtml(r.temp)}" /></td>
-          <td><select><option ${r.freshness==='Good'?'selected':''}>Good</option><option ${r.freshness==='Average'?'selected':''}>Average</option><option ${r.freshness==='Poor'?'selected':''}>Poor</option></select></td>
-          <td><select><option ${r.taste==='Good'?'selected':''}>Good</option><option ${r.taste==='Average'?'selected':''}>Average</option><option ${r.taste==='Poor'?'selected':''}>Poor</option></select></td>
-          <td><select><option ${r.texture==='Soft'?'selected':''}>Soft</option><option ${r.texture==='Normal'?'selected':''}>Normal</option><option ${r.texture==='Hard'?'selected':''}>Hard</option></select></td>
-          <td><select><option ${r.appearance==='Good'?'selected':''}>Good</option><option ${r.appearance==='Average'?'selected':''}>Average</option><option ${r.appearance==='Poor'?'selected':''}>Poor</option></select></td>
-          <td><select><option ${r.portion==='Std'?'selected':''}>Std</option><option ${r.portion==='Less'?'selected':''}>Less</option></select></td>
-          <td><input type="text" value="${escapeHtml(r.remarks)}" /></td>
-          <td><button class="btn btn-reset" onclick="deleteRow(this)">X</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-    if(data.notes){
-      document.getElementById('tasteNotes').value = data.notes.taste || '';
-      document.getElementById('obsNotes').value = data.notes.obs || '';
-      document.getElementById('actNotes').value = data.notes.actions || '';
-    }
-    if(data.footer){
-      document.getElementById('vendorPoc').value = data.footer.vendorPoc || '';
-      document.getElementById('verifiedBy').value = data.footer.verifiedBy || '';
-    }
-  }catch(e){ console.warn('loadSaved', e); }
-})();
-
-/* ------------------- PDF generator (final) ------------------- */
+/* ------------------ PDF GENERATION ------------------ */
 async function downloadPDF(){
-  // ensure date present
-  if(!document.getElementById('date').value) document.getElementById('date').value = new Date().toISOString().slice(0,10);
-  const data = collectForm();
-
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation:'landscape', unit:'pt', format:'a4' });
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 22;
-  const usable = pageWidth - margin*2;
-  let y = margin;
+  const doc = new jsPDF({orientation:"landscape",unit:"pt",format:"a4"});
 
-  // load logo data (natural size). Option A: use exact original size.
-  const logoEl = document.getElementById('logoImg');
-  let logoObj = null;
-  if(logoEl && logoEl.src && logoEl.style.display !== 'none'){
-    logoObj = await loadImage(logoEl.src).catch(()=>null);
-  }
+  const margin=22;
+  const pageW=doc.internal.pageSize.getWidth();
+  const usable=pageW - margin*2;
+  let y=margin;
 
-  // draw header: place logo at left with natural pixel size (converted to pt scale)
-  if(logoObj){
-    // image natural size in px -> convert to points: 1px ≈ 0.75pt (approx). We'll use a simple scale factor:
-    const pxToPt = 0.75;
-    const drawW = logoObj.width * pxToPt;
-    const drawH = logoObj.height * pxToPt;
-    // If image is too wide for printable area, scale it down preserving aspect ratio
-    if(drawW > usable * 0.4){ // never allow logo to take more than 40% width
-      const s = (usable * 0.4) / drawW;
-      doc.addImage(logoObj.data, 'PNG', margin, y, drawW * s, drawH * s);
-    } else {
-      doc.addImage(logoObj.data, 'PNG', margin, y, drawW, drawH);
+  // Load logo natural size
+  let logoEl=document.getElementById("logoImg");
+  let logo=await loadImage(logoEl.src);
+
+  // Draw scaled small logo (Option A)
+  if(logo){
+    const targetH=42; // small clean height
+    const scale=targetH/logo.height;
+    let drawW=logo.width*scale;
+    let drawH=targetH;
+
+    // prevent too wide
+    let maxW=usable*0.28;
+    if(drawW>maxW){
+      const s=maxW/drawW;
+      drawW*=s;
+      drawH*=s;
     }
+    doc.addImage(logo.data,"PNG",margin,y,drawW,drawH);
   }
 
-  // title centered
-  doc.setFont('helvetica','bold');
+  // Title centered
+  doc.setFont("helvetica","bold");
   doc.setFontSize(18);
-  doc.text('Daily Food Quality & Taste Check Report', pageWidth/2, y + 28, { align:'center' });
+  doc.text("Daily Food Quality & Taste Check Report", pageW/2, y+26,{align:"center"});
 
-  // horizontal rule after header
-  y += Math.max((logoObj ? (logoObj.height * 0.75) : 36), 40) + 6;
+  // Divider line
+  y+=60;
   doc.setLineWidth(1);
-  doc.line(margin, y-6, pageWidth - margin, y-6);
+  doc.line(margin,y-6,pageW-margin,y-6);
 
-  // META boxes (2 rows, 3 columns)
-  doc.setFontSize(10);
-  const colW = (usable - 10) / 3;
-  let x = margin;
-  const metaArr = [
-    ['Date', data.meta.date || ''],
-    ['Vendor Name', data.meta.vendorName || ''],
-    ['Vendor Supervisor Name', data.meta.vendorSupervisor || ''],
-    ['Building', data.meta.building || ''],
-    ['Floor', data.meta.floor || ''],
-    ['Counter', data.meta.counter || '']
+  // METADATA to array for PDF
+  const meta=[
+    ["Date",document.getElementById("date").value],
+    ["Vendor Name",document.getElementById("vendorName").value],
+    ["Vendor Supervisor",document.getElementById("vendorSupervisor").value],
+    ["Building",document.getElementById("building").value],
+    ["Floor",document.getElementById("floor").value],
+    ["Counter",document.getElementById("counter").value]
   ];
-  // first row
-  for(let i=0;i<3;i++){
-    doc.rect(x, y, colW, 34);
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text(metaArr[i][0] + ':', x + 6, y + 12);
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    doc.text(doc.splitTextToSize(metaArr[i][1], colW - 12), x + 6, y + 26);
-    x += colW + 5;
-  }
-  y += 34 + 6;
-  x = margin;
-  for(let i=3;i<6;i++){
-    doc.rect(x, y, colW, 34);
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.text(metaArr[i][0] + ':', x + 6, y + 12);
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    doc.text(doc.splitTextToSize(metaArr[i][1], colW - 12), x + 6, y + 26);
-    x += colW + 5;
-  }
-  y += 34 + 12;
 
-  // Table (autoTable) with column widths fixed so table fits printable area
-  const head = [['S.No','Item','Temp (°C)','Freshness','Taste','Texture','Appearance','Portion','Remarks']];
-  const body = data.rows.length ? data.rows.map(r => [r.s, r.item, r.temp, r.freshness, r.taste, r.texture, r.appearance, r.portion, r.remarks]) : [['','','','','','','','','']];
+  doc.setFontSize(10);
+  const colW=(usable-10)/3;
+
+  let x=margin;
+  for(let i=0;i<3;i++){
+    doc.rect(x,y,colW,34);
+    doc.text(meta[i][0]+":",x+6,y+12);
+    doc.text(doc.splitTextToSize(meta[i][1],colW-12),x+6,y+26);
+    x+=colW+5;
+  }
+  y+=40;
+  x=margin;
+  for(let i=3;i<6;i++){
+    doc.rect(x,y,colW,34);
+    doc.text(meta[i][0]+":",x+6,y+12);
+    doc.text(doc.splitTextToSize(meta[i][1],colW-12),x+6,y+26);
+    x+=colW+5;
+  }
+  y+=46;
+
+  // TABLE
+  const rows=[...document.querySelectorAll("#foodTable tbody tr")].map((tr,i)=>{
+    const t=tr.querySelectorAll("td");
+    return [
+      i+1,
+      t[1].querySelector("input").value,
+      t[2].querySelector("input").value,
+      t[3].querySelector("select").value,
+      t[4].querySelector("select").value,
+      t[5].querySelector("select").value,
+      t[6].querySelector("select").value,
+      t[7].querySelector("select").value,
+      t[8].querySelector("input").value
+    ];
+  });
 
   doc.autoTable({
-    head: head,
-    body: body,
-    startY: y,
-    margin: { left: margin, right: margin },
-    styles: { fontSize:10, cellPadding:6, valign:'middle' },
-    headStyles: { fillColor:[240,240,240], textColor:0, fontStyle:'bold' },
-    columnStyles: {
+    startY:y,
+    head:[["S.No","Item","Temp","Fresh.","Taste","Texture","Appear.","Portion","Remarks"]],
+    body:rows,
+    margin:{left:margin,right:margin},
+    styles:{fontSize:10,cellPadding:6},
+    columnStyles:{
       0:{cellWidth:36},
-      1:{cellWidth:220, halign:'left'},
+      1:{cellWidth:220},
       2:{cellWidth:60},
-      3:{cellWidth:90},
-      4:{cellWidth:80},
-      5:{cellWidth:80},
-      6:{cellWidth:80},
+      3:{cellWidth:70},
+      4:{cellWidth:70},
+      5:{cellWidth:70},
+      6:{cellWidth:70},
       7:{cellWidth:60},
-      8:{cellWidth:usable - (36+220+60+90+80+80+80+60) - 20, overflow:'linebreak', halign:'left'}
+      8:{cellWidth:usable-(36+220+60+70+70+70+70+60)-20, overflow:"linebreak"}
     }
   });
 
-  y = doc.lastAutoTable.finalY + 18; // gap after table (ensures notes do not touch)
+  y=doc.lastAutoTable.finalY+18;
 
-  // Notes: three boxes side-by-side if space else stacked (we will try side-by-side)
-  const boxGap = 10;
-  const boxW = (usable - boxGap*2) / 3;
-  const boxH = 74;
-  const notes = data.notes || { taste:'', obs:'', actions:'' };
-  let nx = margin;
-  [['Taste Validation Notes', notes.taste], ['Special Observations', notes.obs], ['Corrective Actions', notes.actions]].forEach(pair=>{
-    doc.rect(nx, y, boxW, boxH);
-    doc.setFont('helvetica','bold'); doc.setFontSize(11);
-    doc.text(pair[0], nx + 6, y + 14);
-    doc.setFont('helvetica','normal'); doc.setFontSize(10);
-    doc.text(doc.splitTextToSize(pair[1] || '', boxW - 12), nx + 6, y + 30);
-    nx += boxW + boxGap;
+  // NOTES
+  const notes=[
+    ["Taste Validation Notes",document.getElementById("tasteNotes").value],
+    ["Special Observations",document.getElementById("obsNotes").value],
+    ["Corrective Actions",document.getElementById("actNotes").value]
+  ];
+  const gap=10;
+  const bw=(usable-gap*2)/3;
+  const bh=72;
+
+  let nx=margin;
+  notes.forEach(n=>{
+    doc.rect(nx,y,bw,bh);
+    doc.text(n[0],nx+6,y+14);
+    doc.text(doc.splitTextToSize(n[1],bw-12),nx+6,y+30);
+    nx+=bw+gap;
   });
-  y += boxH + 16;
 
-  // Footer single box split into two halves
-  const sigH = 58;
-  doc.rect(margin, y, usable, sigH);
-  doc.line(margin + usable/2, y, margin + usable/2, y + sigH);
-  doc.setFont('helvetica','bold'); doc.setFontSize(11);
-  const footerLeft = data.footer ? (data.footer.vendorPoc || '') : '';
-  const footerRight = data.footer ? (data.footer.verifiedBy || '') : '';
-  doc.text('Vendor PoC : ' + footerLeft, margin + 8, y + 26);
-  doc.text('Verified by F&B Team : ' + footerRight, margin + usable/2 + 8, y + 26);
+  y+=bh+16;
 
-  // Save PDF
-  doc.save('Food_Quality_Check.pdf');
+  // FOOTER
+  const vendor=document.getElementById("vendorPoc").value;
+  const fb=document.getElementById("verifiedBy").value;
 
-  // helper: load image and return dataURL + width/height
+  doc.rect(margin,y,usable,60);
+  doc.line(margin+usable/2,y,margin+usable/2,y+60);
+  doc.text("Vendor PoC : "+vendor,margin+10,y+26);
+  doc.text("Verified by F&B Team : "+fb,margin+usable/2+10,y+26);
+
+  doc.save("Food_Quality_Check.pdf");
+
+  /** load image helper **/
   function loadImage(src){
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = function(){
-        const canvas = document.createElement('canvas');
-        canvas.width = this.width;
-        canvas.height = this.height;
-        canvas.getContext('2d').drawImage(this,0,0);
-        resolve({ data: canvas.toDataURL('image/png'), width: this.width, height: this.height });
+    return new Promise((resolve)=>{
+      const img=new Image();
+      img.crossOrigin="anonymous";
+      img.onload=function(){
+        const canvas=document.createElement("canvas");
+        canvas.width=this.width;
+        canvas.height=this.height;
+        canvas.getContext("2d").drawImage(this,0,0);
+        resolve({
+          data:canvas.toDataURL("image/png"),
+          width:this.width,
+          height:this.height
+        });
       };
-      img.onerror = function(){ resolve(null); };
-      img.src = src;
+      img.onerror=()=>resolve(null);
+      img.src=src;
     });
   }
 }
-
-/* ------------------- end ------------------- */
 </script>
+
 </body>
 </html>
