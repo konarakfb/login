@@ -363,8 +363,8 @@ document.getElementById('pdfBtn').onclick = async function(){
   container.appendChild(clone);
   document.body.appendChild(container);
 
-  const canvas = await html2canvas(clone, {scale:1, backgroundColor:'#fff', useCORS:true});
-  const imgData = canvas.toDataURL('image/jpeg', 0.72);
+  const canvas = await html2canvas(clone, {scale:2.5, backgroundColor:'#fff', useCORS:true});
+  const imgData = canvas.toDataURL('image/jpeg', 0.92);
   const pdf = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
   const pageWidth = 297; const pageHeight = 210;
   const pxPerMm = canvas.width / pageWidth; const imgHeightMm = canvas.height / pxPerMm;
@@ -377,7 +377,7 @@ document.getElementById('pdfBtn').onclick = async function(){
       sliceCanvas.width = canvas.width;
       sliceCanvas.height = Math.min(slicePx, canvas.height - y);
       sliceCanvas.getContext('2d').drawImage(canvas, 0, y, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
-      const sliceImg = sliceCanvas.toDataURL('image/jpeg', 0.72);
+      const sliceImg = sliceCanvas.toDataURL('image/jpeg', 0.92);
       const sliceHeightMm = sliceCanvas.height / pxPerMm;
       if(y > 0) pdf.addPage('a4', 'landscape');
       pdf.addImage(sliceImg, 'JPEG', 0, 0, pageWidth, sliceHeightMm);
