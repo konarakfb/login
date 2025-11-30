@@ -1,398 +1,516 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Food Quality & Taste Checking Report</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Konarak F&B — HR System (Static)</title>
 
-<!-- PDF LIBS -->
+<!-- jsPDF + html2canvas (for PDF salary slip) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-body {font-family: Arial, Helvetica, sans-serif;background:#f4f4f4;margin:0;padding:12px;color:#111}
-.container {max-width:1100px;margin:auto}
-.sheet {background:#fff;border:1px solid #000;padding:15px;border-radius:6px;}
-
-/* HEADER */
-.header {display:flex;align-items:center;border-bottom:1px solid #000;padding-bottom:12px;margin-bottom:15px;gap:12px}
-.header img {width:120px;max-height:80px;object-fit:contain}
-.header h1 {flex:1;text-align:center;margin:0;font-size:20px}
-
-/* MOBILE: center title below logo */
-@media (max-width:520px){
-  .header{flex-direction:column;align-items:flex-start}
-  .header img{align-self:flex-start}
-  .header h1{width:100%;text-align:center;margin-top:6px}
-}
-
-.top-grid {display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
-.top-grid .box {flex:1 1 180px}
-label {font-size:13px;color:#555;margin-bottom:4px;display:block}
-input[type="text"], input[type="date"], textarea, select {width:100%;padding:7px;font-size:14px;border:1px solid #aaa;border-radius:4px;box-sizing:border-box}
-textarea{min-height:70px;resize:vertical}
-
-.section {border:1px solid #000;margin-bottom:18px;padding:12px;border-radius:6px}
-.section-title {font-size:18px;font-weight:bold;margin-bottom:6px}
-.section-total {font-weight:bold;color:#0a6;margin-bottom:8px}
-.table-wrap {overflow-x:auto}
-
-table {width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px;min-width:900px}
-th, td {border:1px solid #000;padding:6px;vertical-align:middle;word-break:break-word;text-align:center}
-
-td input[type="text"], td input[type="number"] {width:100%;max-width:100%;padding:4px 5px;height:32px;font-size:13px;border:1px solid #aaa;border-radius:3px;box-sizing:border-box}
-
-.btn {padding:8px 12px;border-radius:6px;font-weight:bold;color:#fff;border:0;cursor:pointer}
-.add {background:#0b63c6}
-.lock {background:#28a745}
-.reset {background:#dc3545}
-.pdf {background:#6f42c1}
-.ghost {background:#fff;color:#0b63c6;border:1px solid #0b63c6}
-
-.saved-box {margin-top:15px}
-.saved-list {border:1px dashed #aaa;padding:8px;background:#fafcff;border-radius:6px;max-height:140px;overflow:auto;font-size:14px}
-
-.input-inline{display:flex;gap:8px;align-items:center}
-.checkbox-row{display:flex;flex-wrap:wrap;gap:10px}
-.checkbox-row label{display:flex;gap:6px;align-items:center;font-size:14px}
-
-.signature-row{display:flex;gap:12px;flex-wrap:wrap}
-.signature-row .sig{flex:1}
-
-.small-note{font-size:12px;color:#555;margin-top:6px}
+  :root{
+    --accent:#0b63c6;
+    --muted:#666;
+    --bg:#f4f6f8;
+    --card:#fff;
+    --danger:#dc3545;
+    --ok:#28a745;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter, Arial, sans-serif;margin:0;background:var(--bg);color:#111}
+  .wrap{max-width:1100px;margin:22px auto;padding:18px}
+  header{display:flex;align-items:center;gap:16px}
+  header h1{margin:0;font-size:20px}
+  .topbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+  .card{background:var(--card);border:1px solid #ddd;padding:12px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.03)}
+  .grid{display:grid;grid-template-columns:1fr 320px;gap:12px}
+  .btn{background:var(--accent);color:#fff;padding:8px 10px;border-radius:6px;border:0;cursor:pointer}
+  .btn.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+  .btn.danger{background:var(--danger)}
+  .small{font-size:13px;padding:6px 8px}
+  input,select,textarea{padding:8px;border-radius:6px;border:1px solid #ccc;width:100%}
+  table{width:100%;border-collapse:collapse}
+  th,td{border:1px solid #e6e6e6;padding:8px;text-align:left;font-size:13px}
+  th{background:#fafafa}
+  .muted{color:var(--muted);font-size:13px}
+  .flex{display:flex;gap:8px;align-items:center}
+  .right{text-align:right}
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  /* modal */
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);padding:16px}
+  .modal .modal-card{width:100%;max-width:760px}
+  .show{display:flex}
+  .file-item{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px;border-bottom:1px dashed #eee}
+  .inline-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  footer{margin-top:16px;color:#777;font-size:13px}
+  .badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eee;font-size:12px}
 </style>
 </head>
-
 <body>
-<div class="container">
-  <div class="sheet" id="sheet">
+<div class="wrap">
 
-    <!-- HEADER -->
-    <div class="header">
-      <img src="logo.png" alt="logo" id="logoImg">
-      <h1>Food Quality &amp; Taste Checking Report</h1>
+  <header>
+    <div style="width:56px;height:56px;border-radius:8px;background:#fff;border:1px solid #ddd;display:flex;align-items:center;justify-content:center">
+      <strong style="color:var(--accent)">KF</strong>
     </div>
-
-    <!-- TOP FIELDS -->
-    <div class="top-grid">
-      <div class="box"><label>Date</label><input id="date" type="date"></div>
-      <div class="box"><label>Time</label><input id="time" type="text" placeholder="e.g. 10:30 AM"></div>
-      <div class="box"><label>Building</label><input id="bld" type="text"></div>
-      <div class="box"><label>Floor</label><input id="flr" type="text"></div>
-      <div class="box"><label>Counter / Outlet</label><input id="ctr" type="text"></div>
-      <div class="box"><label>Vendor Name</label><input id="vendor" type="text"></div>
-      <div class="box"><label>Supervisor</label><input id="supervisor" type="text"></div>
-      <div class="box"><label>Checked By</label><input id="checkedby" type="text"></div>
+    <div>
+      <h1>Konarak F&B — HR System (Static)</h1>
+      <div class="muted">Client-side demo • store data in browser (localStorage)</div>
     </div>
+  </header>
 
-    <!-- QUALITY TABLE SECTION -->
-    <div class="section" id="quality-section">
-      <div class="section-title">1. Food Quality Check</div>
-      
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>S.No</th>
-              <th style="width:250px">Item Name</th>
-              <th>Temp (°C)</th>
-              <th>Freshness</th>
-              <th>Taste</th>
-              <th>Texture</th>
-              <th>Appearance</th>
-              <th>Portion</th>
-              <th>Remarks</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="quality-body"></tbody>
-        </table>
-      </div>
-      <button class="btn add" onclick="addRow()">+ Add Row</button>
+  <div class="topbar">
+    <div class="controls">
+      <button class="btn" id="btnAddStaff">+ Add Staff</button>
+      <button class="btn ghost" id="btnImport">Import JSON</button>
+      <button class="btn ghost" id="btnExport">Export JSON</button>
     </div>
-
-    <!-- HYGIENE CHECK -->
-    <div class="section">
-      <div class="section-title">2. Hygiene &amp; Handling Checklist</div>
-      <div class="checkbox-row">
-        <label><input type="checkbox" id="h_staff"> Staff Hygiene OK</label>
-        <label><input type="checkbox" id="h_gloves"> Gloves / Cap / Apron</label>
-        <label><input type="checkbox" id="h_covered"> Food Covered</label>
-        <label><input type="checkbox" id="h_utensils"> Utensils Clean</label>
-        <label><input type="checkbox" id="h_counter"> Counter Clean</label>
-        <label><input type="checkbox" id="h_handwash"> Handwash / Sanitizer</label>
-      </div>
-      
+    <div style="margin-left:auto" class="flex">
+      <input id="search" placeholder="Search by name / code" style="min-width:220px" />
+      <select id="filterDept"><option value="">All depts</option></select>
     </div>
-
-    <!-- TASTE / OBSERVATIONS -->
-    <div class="section">
-      <div class="section-title">3. Taste Validation Notes</div>
-      <textarea id="tasteNotes" placeholder="Describe the taste: Balanced / Too spicy / Less salt / Other..."></textarea>
-    </div>
-
-    <div class="section">
-      <div class="section-title">4. Special Observations</div>
-      <textarea id="observations" placeholder="Any deviation, poor quality, customer complaints, time of issue, etc."></textarea>
-    </div>
-
-    <div class="section">
-      <div class="section-title">5. Corrective Actions Taken</div>
-      <textarea id="actions" placeholder="Immediate action taken to fix the issue."></textarea>
-    </div>
-
-    <!-- SIGNATURES -->
-    <div class="section">
-      <div class="section-title">Signatures</div>
-      <div class="signature-row">
-        <div class="sig"><label>Quality Checker</label><input id="sign_checker" type="text" placeholder="Name / Sign"></div>
-        <div class="sig"><label>Vendor Supervisor</label><input id="sign_supervisor" type="text" placeholder="Name / Sign"></div>
-      </div>
-    </div>
-
-    <!-- ACTIONS -->
-    <div style="margin-top:15px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
-      <input id="savename" placeholder="Save name" style="padding:8px;border:1px solid #aaa;border-radius:6px;">
-      <button class="btn lock" id="saveAll">Save All</button>
-      <button class="btn pdf" id="pdfBtn">Download PDF</button>
-      <button class="btn reset" id="reset">Reset</button>
-    </div>
-
-    <!-- SAVED LIST -->
-    <div class="saved-box" id="saved-box">
-      <label>Saved Reports</label>
-      <div class="saved-list" id="savedList">— none —</div>
-    </div>
-
   </div>
+
+  <div class="grid" style="margin-top:12px">
+    <div>
+
+      <!-- Staff list -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="margin:0;font-size:16px">Staff Directory</h3>
+          <div class="muted" id="countStaff">0 staff</div>
+        </div>
+
+        <div style="margin-top:10px;overflow:auto;max-height:420px">
+          <table id="staffTable">
+            <thead><tr><th>Code</th><th>Name</th><th>Designation</th><th>Dept</th><th>Actions</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Attendance & Leaves -->
+      <div style="display:flex;gap:12px;margin-top:12px">
+        <div class="card" style="flex:1">
+          <h4 style="margin:0 0 8px 0">Attendance (Today)</h4>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <select id="attStaff"></select>
+            <select id="attStatus"><option value="present">Present</option><option value="absent">Absent</option></select>
+            <button class="btn small" id="markAttend">Mark</button>
+          </div>
+          <div style="max-height:160px;overflow:auto">
+            <table id="attTable"><thead><tr><th>Staff</th><th>Status</th><th>Date</th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+
+        <div class="card" style="width:320px">
+          <h4 style="margin:0 0 8px 0">Leaves</h4>
+          <div style="margin-bottom:8px">
+            <input id="leaveStaff" placeholder="Staff code or name" />
+            <select id="leaveType" style="margin-top:6px"><option>Casual</option><option>Sick</option><option>Paid</option></select>
+            <div class="inline-grid" style="margin-top:6px">
+              <input id="leaveStart" type="date" /><input id="leaveEnd" type="date" />
+            </div>
+            <button class="btn small" style="margin-top:8px" id="btnApplyLeave">Apply</button>
+          </div>
+          <div style="max-height:170px;overflow:auto">
+            <table id="leaveTable"><thead><tr><th>Staff</th><th>Range</th><th>Status</th></tr></thead><tbody></tbody></table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT column -->
+    <div>
+
+      <div class="card" style="margin-bottom:12px">
+        <h3 style="margin:0 0 8px 0">Selected Staff</h3>
+        <div id="selPanel" class="muted">Select a staff to view / edit</div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <h3 style="margin:0 0 8px 0">Salary & Documents</h3>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn" id="btnSalarySlip">Generate Salary Slip (PDF)</button>
+          <button class="btn ghost" id="btnUploadDoc">Upload Document</button>
+        </div>
+
+        <div id="docsList" style="margin-top:12px"></div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:0 0 8px 0">Quick Actions</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn ghost" id="btnSeed">Seed sample data</button>
+          <button class="btn ghost" id="btnClear">Clear all data</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="muted">This is a demo client-side HR system (do NOT store PII in localStorage for production). For production, use a server + DB + proper auth.</footer>
 </div>
 
+<!-- Modals -->
+<div id="modal" class="modal"><div class="modal-card card">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h3 id="modalTitle">Add staff</h3>
+    <button id="modalClose" class="btn ghost">Close</button>
+  </div>
+  <div style="margin-top:8px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><label>Employee Code</label><input id="m_code"></div>
+      <div><label>Designation</label><input id="m_design"></div>
+      <div><label>First name</label><input id="m_first"></div>
+      <div><label>Last name</label><input id="m_last"></div>
+      <div><label>Email</label><input id="m_email"></div>
+      <div><label>Phone</label><input id="m_phone"></div>
+      <div><label>Department</label><input id="m_dept"></div>
+      <div><label>Joining date</label><input id="m_join" type="date"></div>
+    </div>
+
+    <div style="margin-top:10px">
+      <label>Salary (Basic)</label>
+      <input id="m_salary" type="number" />
+      <small class="muted">You can edit salary components later.</small>
+    </div>
+
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn ghost" id="modalCancel">Cancel</button>
+      <button class="btn" id="modalSave">Save</button>
+    </div>
+  </div>
+</div></div>
+
+<!-- hidden file input for docs -->
+<input id="filePicker" type="file" style="display:none" />
+
 <script>
-/* -------------------------
-   ROW HANDLING
-------------------------- */
-function addRow(data={}){
-  const tbody=document.getElementById('quality-body');
-  const tr=document.createElement('tr');
-  tr.innerHTML=`
-    <td class="idx"></td>
-    <td><input class="item" type="text" value="${escapeHtml(data.item||'')}"></td>
-    <td><input class="temp" type="number" step="0.1" value="${data.temp||''}"></td>
-    <td><input class="fresh" type="text" value="${escapeHtml(data.fresh||'')}"></td>
-    <td><input class="taste" type="text" value="${escapeHtml(data.taste||'')}"></td>
-    <td><input class="texture" type="text" value="${escapeHtml(data.texture||'')}"></td>
-    <td><input class="appear" type="text" value="${escapeHtml(data.appear||'')}"></td>
-    <td><input class="portion" type="text" value="${escapeHtml(data.portion||'')}"></td>
-    <td><input class="remarks" type="text" value="${escapeHtml(data.remarks||'')}"></td>
-    <td><button class="btn ghost" onclick="this.closest('tr').remove(); updateIndex();">Del</button></td>
+/* ---------- Storage helpers ---------- */
+const STORAGE_KEY = 'konarak_hr_v1';
+function dbLoad(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {staff:[],attendance:[],leaves:[],docs:[]} } catch(e){ return {staff:[],attendance:[],leaves:[],docs:[]} } }
+function dbSave(state){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+/* ---------- app state ---------- */
+let state = dbLoad();
+let selectedStaffId = null;
+
+/* ---------- utils ---------- */
+function uid(prefix='id'){ return prefix + '_' + Math.random().toString(36).slice(2,9); }
+function fmtName(s){ return (s.first||'') + (s.last?(' '+s.last):''); }
+function findStaffById(id){ return state.staff.find(s=>s.id===id); }
+function updateUI(){ renderStaff(); renderCounts(); renderAttOptions(); renderLeaves(); renderDocs(); renderSelected(); updateDeptFilter(); }
+
+/* ---------- staff list ---------- */
+function renderStaff(){
+  const tbody = document.querySelector('#staffTable tbody'); tbody.innerHTML='';
+  const q = (document.getElementById('search').value||'').toLowerCase();
+  state.staff.forEach(s=>{
+    if(q && !(s.first+' '+(s.last||'')+' '+s.employee_code+' '+(s.designation||'')+' '+(s.department||'')).toLowerCase().includes(q)) return;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${s.employee_code||''}</td><td>${fmtName(s)}</td><td>${s.designation||''}</td><td>${s.department||''}</td>
+      <td style="min-width:160px">
+        <button class="btn small" onclick="selectStaff('${s.id}')">Open</button>
+        <button class="btn ghost small" onclick="editStaff('${s.id}')">Edit</button>
+        <button class="btn danger small" onclick="deleteStaff('${s.id}')">Delete</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ---------- counts ---------- */
+function renderCounts(){
+  document.getElementById('countStaff').textContent = state.staff.length + ' staff';
+}
+
+/* ---------- department filter ---------- */
+function updateDeptFilter(){
+  const set = new Set(state.staff.map(s=>s.department).filter(Boolean));
+  const sel = document.getElementById('filterDept');
+  const cur = sel.value||'';
+  sel.innerHTML = '<option value="">All depts</option>';
+  set.forEach(d=> sel.insertAdjacentHTML('beforeend', `<option value="${d}">${d}</option>`));
+  sel.value = cur;
+}
+
+/* ---------- select staff ---------- */
+function selectStaff(id){
+  selectedStaffId = id;
+  renderSelected();
+}
+function renderSelected(){
+  const panel = document.getElementById('selPanel');
+  if(!selectedStaffId){ panel.innerHTML = '<div class="muted">Select a staff to view / edit</div>'; return; }
+  const s = findStaffById(selectedStaffId);
+  if(!s){ panel.innerHTML = '<div class="muted">Select a staff to view / edit</div>'; return; }
+  panel.innerHTML = `
+    <div><strong>${fmtName(s)}</strong> <span class="muted">(${s.employee_code||''})</span></div>
+    <div class="muted" style="margin-top:6px">${s.designation||''} • ${s.department||''} • Joined ${s.join_date||s.joining_date||''}</div>
+    <div style="margin-top:8px">
+      <div class="muted">Email: ${s.email||'-'}</div>
+      <div class="muted">Phone: ${s.phone||'-'}</div>
+      <div style="margin-top:10px" class="flex">
+        <button class="btn small" onclick="openSalaryEditor()">Edit Salary</button>
+        <button class="btn ghost small" onclick="selectStaff(null)">Deselect</button>
+      </div>
+    </div>
   `;
-  tbody.appendChild(tr);
-  updateIndex();
-  bindRow(tr);
 }
 
-function updateIndex(){
-  [...document.querySelectorAll('#quality-body tr')].forEach((tr,i)=> tr.querySelector('.idx').textContent = i+1);
+/* ---------- add / edit staff modal ---------- */
+const modal = document.getElementById('modal');
+document.getElementById('btnAddStaff').addEventListener('click', ()=> openModal());
+document.getElementById('modalClose').addEventListener('click', ()=> closeModal());
+document.getElementById('modalCancel').addEventListener('click', ()=> closeModal());
+function openModal(staff=null){
+  document.getElementById('modalTitle').textContent = staff ? 'Edit staff' : 'Add staff';
+  document.getElementById('m_code').value = staff?staff.employee_code:'';
+  document.getElementById('m_design').value = staff?staff.designation:'';
+  document.getElementById('m_first').value = staff?staff.first:'';
+  document.getElementById('m_last').value = staff?staff.last:'';
+  document.getElementById('m_email').value = staff?staff.email:'';
+  document.getElementById('m_phone').value = staff?staff.phone:'';
+  document.getElementById('m_dept').value = staff?staff.department:'';
+  document.getElementById('m_join').value = staff?staff.join_date:'';
+  document.getElementById('m_salary').value = staff?staff.basic||0:'';
+  modal.classList.add('show');
+  modal.dataset.editId = staff ? staff.id : '';
 }
+function closeModal(){ modal.classList.remove('show'); modal.dataset.editId=''; }
 
-function bindRow(tr){
-  tr.querySelectorAll('input').forEach(inp=> inp.addEventListener('input', ()=>{}));
-}
-
-function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-/* RESET */
-document.getElementById('reset').onclick = ()=>{
-  if(!confirm('Reset the form?')) return; location.reload();
-};
-
-/* -------------------------
-   SAVE / LOAD
-------------------------- */
-document.getElementById('saveAll').onclick = function(){
-  const name = document.getElementById('savename').value.trim();
-  if(!name){ alert('Enter a name'); return; }
-  const data = collectAll();
-  localStorage.setItem('quality_'+name, JSON.stringify(data));
-  loadSavedList();
-  alert('Saved');
-};
-
-function collectAll(){
-  return {
-    meta: {
-      date: document.getElementById('date').value,
-      time: document.getElementById('time').value,
-      bld: document.getElementById('bld').value,
-      flr: document.getElementById('flr').value,
-      ctr: document.getElementById('ctr').value,
-      vendor: document.getElementById('vendor').value,
-      supervisor: document.getElementById('supervisor').value,
-      checkedby: document.getElementById('checkedby').value,
-      sign_checker: document.getElementById('sign_checker').value,
-      sign_supervisor: document.getElementById('sign_supervisor').value
-    },
-    hygiene: {
-      staff: document.getElementById('h_staff').checked,
-      gloves: document.getElementById('h_gloves').checked,
-      covered: document.getElementById('h_covered').checked,
-      utensils: document.getElementById('h_utensils').checked,
-      counter: document.getElementById('h_counter').checked,
-      handwash: document.getElementById('h_handwash').checked
-    },
-    notes: {
-      tasteNotes: document.getElementById('tasteNotes').value,
-      observations: document.getElementById('observations').value,
-      actions: document.getElementById('actions').value
-    },
-    items: [...document.querySelectorAll('#quality-body tr')].map(tr=>({
-      item: tr.querySelector('.item').value,
-      temp: tr.querySelector('.temp').value,
-      fresh: tr.querySelector('.fresh').value,
-      taste: tr.querySelector('.taste').value,
-      texture: tr.querySelector('.texture').value,
-      appear: tr.querySelector('.appear').value,
-      portion: tr.querySelector('.portion').value,
-      remarks: tr.querySelector('.remarks').value
-    }))
+document.getElementById('modalSave').addEventListener('click', ()=>{
+  const id = modal.dataset.editId;
+  const obj = {
+    employee_code: document.getElementById('m_code').value.trim(),
+    designation: document.getElementById('m_design').value.trim(),
+    first: document.getElementById('m_first').value.trim(),
+    last: document.getElementById('m_last').value.trim(),
+    email: document.getElementById('m_email').value.trim(),
+    phone: document.getElementById('m_phone').value.trim(),
+    department: document.getElementById('m_dept').value.trim(),
+    join_date: document.getElementById('m_join').value,
+    basic: Number(document.getElementById('m_salary').value||0)
   };
-}
+  if(!obj.first || !obj.employee_code){ alert('Please enter employee code & first name'); return; }
+  if(id){
+    const s = findStaffById(id);
+    Object.assign(s, obj);
+  } else {
+    obj.id = uid('st');
+    state.staff.push(obj);
+  }
+  dbSave(state); updateUI(); closeModal();
+});
 
-function loadSavedList(){
-  const div=document.getElementById('savedList');
-  const keys = Object.keys(localStorage).filter(k=>k.startsWith('quality_'));
-  if(!keys.length){ div.innerHTML='— none —'; return; }
-  div.innerHTML='';
-  keys.forEach(k=>{
-    const name = k.replace('quality_','');
-    const row = document.createElement('div');
-    row.style = 'display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dashed #ccc';
-    row.innerHTML = `<b>${name}</b><div style="display:flex;gap:6px"><button class="btn ghost" onclick="loadSaved('${name}')">Load</button><button class="btn reset" onclick="deleteSaved('${name}')">Del</button></div>`;
-    div.appendChild(row);
+/* ---------- edit / delete ---------- */
+function editStaff(id){ const s=findStaffById(id); openModal(s); }
+function deleteStaff(id){ if(!confirm('Delete staff?')) return; state.staff = state.staff.filter(x=>x.id!==id); dbSave(state); updateUI(); if(selectedStaffId===id) selectedStaffId=null; }
+
+/* ---------- attendance ---------- */
+function renderAttOptions(){
+  const sel = document.getElementById('attStaff'); sel.innerHTML = '';
+  state.staff.forEach(s=> sel.insertAdjacentHTML('beforeend', `<option value="${s.id}">${s.employee_code} • ${fmtName(s)}</option>`));
+}
+document.getElementById('markAttend').addEventListener('click', ()=>{
+  const sid = document.getElementById('attStaff').value;
+  if(!sid){ alert('Select staff'); return; }
+  const status = document.getElementById('attStatus').value;
+  state.attendance.unshift({id:uid('a'), staff_id:sid, status, date:new Date().toISOString().slice(0,10)});
+  dbSave(state); renderAttendance();
+});
+function renderAttendance(){
+  const tbody = document.querySelector('#attTable tbody'); tbody.innerHTML='';
+  state.attendance.slice(0,50).forEach(a=>{
+    const s = findStaffById(a.staff_id) || {first:'Unknown', employee_code:''};
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${s.employee_code} • ${fmtName(s)}</td><td>${a.status}</td><td>${a.date}</td>`;
+    tbody.appendChild(tr);
   });
 }
-loadSavedList();
 
-function loadSaved(name){
-  const d = JSON.parse(localStorage.getItem('quality_'+name));
-  if(!d){ alert('Not found'); return; }
-  const m = d.meta;
-  document.getElementById('date').value = m.date || '';
-  document.getElementById('time').value = m.time || '';
-  document.getElementById('bld').value = m.bld || '';
-  document.getElementById('flr').value = m.flr || '';
-  document.getElementById('ctr').value = m.ctr || '';
-  document.getElementById('vendor').value = m.vendor || '';
-  document.getElementById('supervisor').value = m.supervisor || '';
-  document.getElementById('checkedby').value = m.checkedby || '';
-  document.getElementById('sign_checker').value = m.sign_checker || '';
-  document.getElementById('sign_supervisor').value = m.sign_supervisor || '';
-
-  const h = d.hygiene || {};
-  document.getElementById('h_staff').checked = !!h.staff;
-  document.getElementById('h_gloves').checked = !!h.gloves;
-  document.getElementById('h_covered').checked = !!h.covered;
-  document.getElementById('h_utensils').checked = !!h.utensils;
-  document.getElementById('h_counter').checked = !!h.counter;
-  document.getElementById('h_handwash').checked = !!h.handwash;
-
-  document.getElementById('tasteNotes').value = (d.notes && d.notes.tasteNotes) || '';
-  document.getElementById('observations').value = (d.notes && d.notes.observations) || '';
-  document.getElementById('actions').value = (d.notes && d.notes.actions) || '';
-
-  const tbody = document.getElementById('quality-body'); tbody.innerHTML = '';
-  (d.items || []).forEach(it=> addRow(it));
-  updateIndex();
-  alert('Loaded');
+/* ---------- leaves ---------- */
+document.getElementById('btnApplyLeave').addEventListener('click', ()=>{
+  const who = document.getElementById('leaveStaff').value.trim();
+  if(!who){ alert('Enter staff code or name'); return; }
+  // find staff by code or name
+  const s = state.staff.find(st=> st.employee_code===who || (st.first+' '+(st.last||'')).toLowerCase()===who.toLowerCase() );
+  const staffId = s ? s.id : (state.staff.length ? state.staff[0].id : null);
+  if(!staffId){ alert('No staff found'); return; }
+  state.leaves.unshift({id:uid('lv'), staff_id:staffId, type: document.getElementById('leaveType').value, start: document.getElementById('leaveStart').value, end: document.getElementById('leaveEnd').value, status:'pending'});
+  dbSave(state); renderLeaves();
+});
+function renderLeaves(){
+  const tbody = document.querySelector('#leaveTable tbody'); tbody.innerHTML='';
+  state.leaves.forEach(l=>{
+    const s = findStaffById(l.staff_id) || {first:'Unknown'};
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${fmtName(s)}</td><td>${l.start||''} → ${l.end||''}</td><td>${l.status}</td>`;
+    tbody.appendChild(tr);
+  });
 }
 
-function deleteSaved(name){
-  if(!confirm('Delete saved report?')) return;
-  localStorage.removeItem('quality_'+name);
-  loadSavedList();
+/* ---------- documents ---------- */
+document.getElementById('btnUploadDoc').addEventListener('click', ()=> document.getElementById('filePicker').click());
+document.getElementById('filePicker').addEventListener('change', async (ev)=>{
+  const f = ev.target.files[0]; if(!f) return;
+  if(!selectedStaffId){ alert('Select a staff first'); return; }
+  const reader = new FileReader();
+  reader.onload = ()=> {
+    state.docs.push({id:uid('doc'), staff_id:selectedStaffId, name:f.name, data:reader.result, uploaded: new Date().toISOString()});
+    dbSave(state); renderDocs();
+    ev.target.value = '';
+  };
+  reader.readAsDataURL(f);
+});
+function renderDocs(){
+  const container = document.getElementById('docsList'); container.innerHTML='';
+  if(!selectedStaffId){ container.innerHTML = '<div class="muted">No staff selected</div>'; return; }
+  const ds = state.docs.filter(d=>d.staff_id===selectedStaffId);
+  if(!ds.length) { container.innerHTML = '<div class="muted">No documents</div>'; return; }
+  ds.forEach(d=>{
+    const div = document.createElement('div'); div.className='file-item';
+    div.innerHTML = `<div><strong>${d.name}</strong><div class="muted">${new Date(d.uploaded).toLocaleString()}</div></div>
+      <div style="display:flex;gap:6px"><button class="btn ghost small" onclick="downloadDoc('${d.id}')">Download</button><button class="btn danger small" onclick="deleteDoc('${d.id}')">Del</button></div>`;
+    container.appendChild(div);
+  });
+}
+function downloadDoc(id){
+  const d = state.docs.find(x=>x.id===id); if(!d) return;
+  const a = document.createElement('a'); a.href = d.data; a.download = d.name; a.click();
+}
+function deleteDoc(id){ if(!confirm('Delete?')) return; state.docs = state.docs.filter(x=>x.id!==id); dbSave(state); renderDocs(); }
+
+/* ---------- salary editor & payslip PDF ---------- */
+function openSalaryEditor(){
+  if(!selectedStaffId){ alert('Select staff'); return; }
+  const s = findStaffById(selectedStaffId);
+  const vals = prompt('Enter Basic salary for '+fmtName(s), s.basic||0);
+  if(vals===null) return;
+  s.basic = Number(vals||0); dbSave(state); updateUI();
 }
 
-/* -------------------------
-   PDF EXPORT
-   - remove saved list
-   - convert inputs to text
-   - convert checkboxes to Yes/No
-------------------------- */
+document.getElementById('btnSalarySlip').addEventListener('click', async ()=>{
+  if(!selectedStaffId){ alert('Select staff'); return; }
+  const staff = findStaffById(selectedStaffId);
+  // quick salary calculation: basic, hra 20%, allowance 10%, deduction 5% tax
+  const basic = Number(staff.basic||0);
+  const hra = +(basic * 0.2).toFixed(2);
+  const allowance = +(basic * 0.10).toFixed(2);
+  const gross = +(basic + hra + allowance).toFixed(2);
+  const deduction = +(gross * 0.05).toFixed(2);
+  const net = +(gross - deduction).toFixed(2);
 
-document.getElementById('pdfBtn').onclick = async function(){
+  // create HTML slip (offscreen)
+  const slip = document.createElement('div');
+  slip.style.width = '800px';
+  slip.style.padding = '18px';
+  slip.style.background = '#fff';
+  slip.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;border-bottom:1px solid #ddd;padding-bottom:8px;margin-bottom:8px">
+      <div style="width:80px;height:80px;background:#f7f7f7;display:flex;align-items:center;justify-content:center;"><strong>KF</strong></div>
+      <div style="flex:1">
+        <h2 style="margin:0">${fmtName(staff)}</h2>
+        <div class="muted">${staff.designation||''} • ${staff.department||''}</div>
+      </div>
+      <div style="text-align:right">
+        <strong>Salary Slip</strong><div class="muted">${new Date().toLocaleDateString()}</div>
+      </div>
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:8px">
+      <tr><td style="border:1px solid #ddd;padding:8px">Employee Code</td><td style="border:1px solid #ddd;padding:8px">${staff.employee_code||''}</td></tr>
+      <tr><td style="border:1px solid #ddd;padding:8px">Period</td><td style="border:1px solid #ddd;padding:8px">${new Date().toLocaleString('default',{month:'long',year:'numeric'})}</td></tr>
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      <tr><td style="border:1px solid #ddd;padding:8px">Basic</td><td style="border:1px solid #ddd;padding:8px">₹${basic.toFixed(2)}</td></tr>
+      <tr><td style="border:1px solid #ddd;padding:8px">HRA</td><td style="border:1px solid #ddd;padding:8px">₹${hra.toFixed(2)}</td></tr>
+      <tr><td style="border:1px solid #ddd;padding:8px">Allowance</td><td style="border:1px solid #ddd;padding:8px">₹${allowance.toFixed(2)}</td></tr>
+      <tr><td style="border:1px solid #ddd;padding:8px">Gross</td><td style="border:1px solid #ddd;padding:8px">₹${gross.toFixed(2)}</td></tr>
+      <tr><td style="border:1px solid #ddd;padding:8px">Deductions</td><td style="border:1px solid #ddd;padding:8px">₹${deduction.toFixed(2)}</td></tr>
+      <tr><td style="border:1px solid #ddd;padding:8px"><strong>Net Pay</strong></td><td style="border:1px solid #ddd;padding:8px"><strong>₹${net.toFixed(2)}</strong></td></tr>
+    </table>
+
+    <div style="margin-top:12px;font-size:12px;color:#666">This is a system generated payslip for Konarak F&amp;B.</div>
+  `;
+
+  // offscreen container
+  document.body.appendChild(slip);
+  // render to canvas & pdf with margins
+  const canvas = await html2canvas(slip, {scale:1.8, backgroundColor:'#fff', useCORS:true});
+  const img = canvas.toDataURL('image/jpeg',0.92);
   const { jsPDF } = window.jspdf;
-  const sheet = document.getElementById('sheet');
-  const clone = sheet.cloneNode(true);
-
-  // remove saved box from PDF
-  const savedBox = clone.querySelector('#saved-box'); if(savedBox) savedBox.remove();
-
-  // replace inputs & textareas
-  clone.querySelectorAll('input,textarea,button,select').forEach(el=>{
-    if(el.tagName === 'BUTTON') { el.remove(); return; }
-    let text = '';
-    if(el.type === 'checkbox') {
-      const mark = el.checked ? '✔' : '✖';
-      const color = el.checked ? 'green' : 'red';
-      const div = document.createElement('div');
-      div.textContent = mark;
-      div.style.padding = '2px 4px';
-      div.style.fontSize = '14px';
-      div.style.fontWeight = 'bold';
-      div.style.color = color;
-      el.parentNode.replaceChild(div, el);
-      return;
-    }
-    else text = el.value || el.textContent || '';
-
-    const div = document.createElement('div');
-    div.textContent = text;
-    div.style.padding = '2px 4px';
-    div.style.fontSize = '12px';
-    // keep width behavior for table cells
-    el.parentNode.replaceChild(div, el);
-  });
-
-  // ensure images loaded
-  await Promise.all([...clone.querySelectorAll('img')].map(img=> new Promise(res=>{ if(img.complete) return res(); img.onload=img.onerror=res; })));
-
-  // create container offscreen
-  const container = document.createElement('div');
-  container.style.position = 'fixed'; container.style.left='-9999px'; container.style.top='0'; container.style.width='1500px'; container.style.background='#fff';
-  container.appendChild(clone);
-  document.body.appendChild(container);
-
-  const canvas = await html2canvas(clone, {scale:2.5, backgroundColor:'#fff', useCORS:true});
-  const imgData = canvas.toDataURL('image/jpeg', 0.92);
-  const pdf = new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
-  const pageWidth = 297; const pageHeight = 210;
-  const pxPerMm = canvas.width / pageWidth; const imgHeightMm = canvas.height / pxPerMm;
-
-  if(imgHeightMm <= pageHeight){ pdf.addImage(imgData, 'JPEG', 10, 10, pageWidth - 20, imgHeightMm - 20); }
-  else {
-    let y = 0; const slicePx = pageHeight * pxPerMm;
+  const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const pageW = 210, pageH = 297;
+  const pxPerMm = canvas.width / pageW;
+  const imgH = canvas.height / pxPerMm;
+  const margin = 10;
+  if(imgH <= (pageH - 2*margin)){
+    pdf.addImage(img,'JPEG',margin,margin,pageW - 2*margin, imgH);
+  } else {
+    // slice
+    let y = 0, slicePx = (pageH - 2*margin) * pxPerMm;
     while(y < canvas.height){
-      const sliceCanvas = document.createElement('canvas');
-      sliceCanvas.width = canvas.width;
-      sliceCanvas.height = Math.min(slicePx, canvas.height - y);
-      sliceCanvas.getContext('2d').drawImage(canvas, 0, y, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
-      const sliceImg = sliceCanvas.toDataURL('image/jpeg', 0.92);
-      const sliceHeightMm = sliceCanvas.height / pxPerMm;
-      if(y > 0) pdf.addPage('a4', 'landscape');
-      pdf.addImage(sliceImg, 'JPEG', 10, 10, pageWidth - 20, sliceHeightMm - 20);
+      const slice = document.createElement('canvas');
+      slice.width = canvas.width;
+      slice.height = Math.min(slicePx, canvas.height - y);
+      slice.getContext('2d').drawImage(canvas,0,y,canvas.width,slice.height,0,0,canvas.width,slice.height);
+      const sliceImg = slice.toDataURL('image/jpeg',0.92);
+      const sliceH_mm = slice.height / pxPerMm;
+      if(y>0) pdf.addPage();
+      pdf.addImage(sliceImg,'JPEG',margin,margin,pageW - 2*margin, sliceH_mm);
       y += slicePx;
     }
   }
+  document.body.removeChild(slip);
+  pdf.save(`Payslip_${staff.employee_code||staff.id}_${new Date().toISOString().slice(0,10)}.pdf`);
+});
 
-  container.remove();
-  pdf.save('FoodQualityReport.pdf');
-};
+/* ---------- import / export ---------- */
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  const a = document.createElement('a'); a.href = 'data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(state)); a.download='konarak_hr_export.json'; a.click();
+});
+document.getElementById('btnImport').addEventListener('click', ()=>{
+  const input = document.createElement('input'); input.type='file'; input.accept='.json';
+  input.onchange = e=>{
+    const f = e.target.files[0]; if(!f) return;
+    const r = new FileReader(); r.onload = ()=> { try{ state = JSON.parse(r.result); dbSave(state); updateUI(); alert('Imported'); } catch(err){ alert('Invalid file'); } };
+    r.readAsText(f);
+  };
+  input.click();
+});
 
-// populate with a starter row
-if(!document.querySelector('#quality-body tr')) addRow();
+/* ---------- seed / clear ---------- */
+document.getElementById('btnSeed').addEventListener('click', ()=>{
+  if(!confirm('Seed sample demo data?')) return;
+  state.staff = [
+    {id:uid('st'),employee_code:'KF001',first:'Rahul',last:'K',designation:'Chef',department:'Kitchen',email:'rahul@konarak.com',phone:'999900001',basic:25000,join_date:'2023-01-10'},
+    {id:uid('st'),employee_code:'KF002',first:'Sana',last:'P',designation:'Counter Lead',department:'Sales',email:'sana@konarak.com',phone:'999900002',basic:18000,join_date:'2024-03-02'},
+  ];
+  state.attendance = [];
+  state.leaves = [];
+  state.docs = [];
+  dbSave(state); updateUI(); alert('Seeded');
+});
+document.getElementById('btnClear').addEventListener('click', ()=>{ if(!confirm('Clear ALL data?')) return; state={staff:[],attendance:[],leaves:[],docs:[]}; dbSave(state); updateUI(); });
 
+/* ---------- helper renderers ---------- */
+function renderLeaves(){ const tbody=document.querySelector('#leaveTable tbody'); tbody.innerHTML=''; state.leaves.forEach(l=>{ const s=findStaffById(l.staff_id); const tr=document.createElement('tr'); tr.innerHTML = `<td>${fmtName(s)}</td><td>${l.start} → ${l.end}</td><td>${l.status}</td>`; tbody.appendChild(tr); }); }
+function renderAttendance(){ const tbody=document.querySelector('#attTable tbody'); tbody.innerHTML=''; state.attendance.forEach(a=>{ const s=findStaffById(a.staff_id); const tr=document.createElement('tr'); tr.innerHTML = `<td>${fmtName(s)}</td><td>${a.status}</td><td>${a.date}</td>`; tbody.appendChild(tr); }); }
+
+/* ---------- docs render (again) ---------- */
+function renderDocs(){ const container=document.getElementById('docsList'); container.innerHTML=''; if(!selectedStaffId){ container.innerHTML='<div class="muted">Select staff to see docs</div>'; return; } const ds = state.docs.filter(x=>x.staff_id===selectedStaffId); if(!ds.length){ container.innerHTML='<div class="muted">No documents</div>'; return; } ds.forEach(d=>{ const div=document.createElement('div'); div.className='file-item'; div.innerHTML=`<div><strong>${d.name}</strong><div class="muted">${new Date(d.uploaded).toLocaleString()}</div></div><div style="display:flex;gap:6px"><button class="btn ghost small" onclick="downloadDoc('${d.id}')">Download</button><button class="btn danger small" onclick="deleteDoc('${d.id}')">Del</button></div>`; container.appendChild(div); }); }
+
+/* ---------- other UI wiring ---------- */
+document.getElementById('search').addEventListener('input', updateUI);
+document.getElementById('filterDept').addEventListener('change', ()=>{ const v=document.getElementById('filterDept').value; if(!v) return updateUI(); /* filter by dept */ const q = v; document.querySelectorAll('#staffTable tbody tr').forEach(tr=>{ tr.style.display = tr.children[3].textContent===q ? '' : 'none'; });});
+
+updateUI(); renderAttendance(); renderLeaves(); renderDocs();
 </script>
-
 </body>
 </html>
