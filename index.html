@@ -10,64 +10,79 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <style>
-  /* Mobile-friendly form styling */
-  :root { --sheet-width: 980px; }
+  /* Container & general */
+  :root { --container-max: 980px; }
   body { font-family: Arial, Helvetica, sans-serif; background:#f6f6f6; padding:12px; }
-  .container { max-width: 980px; margin: auto; background: #fff; border:1px solid #d0d0d0; padding:12px; box-sizing:border-box; }
-  h1 { font-size:18px; margin:6px 0 12px; text-align:center; }
+  .container { max-width: var(--container-max); margin:auto; background:#fff; border:1px solid #dcdcdc; padding:12px; box-sizing:border-box; }
 
+  /* Header: logo small left, title center */
   .header {
-    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
   }
-  .logo { flex:0 0 80px; display:flex; align-items:center; justify-content:center; }
-  .logo img { max-height:60px; width:auto; display:block; }
-  .header-title { flex:1; text-align:center; font-weight:700; font-size:18px; }
+  .logo { flex:0 0 72px; display:flex; align-items:center; justify-content:flex-start; }
+  .logo img { max-height:54px; width:auto; display:block; }
+  .title { flex:1; text-align:center; font-weight:700; font-size:18px; white-space:nowrap; }
+  /* keep an empty spacer for visual balance on mobile */
+  .spacer { flex:0 0 72px; }
 
-  .meta-grid {
-    display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;
-  }
-  .meta-item { flex:1 1 180px; min-width:140px; box-sizing:border-box; }
-  .meta-item label { display:block; font-weight:700; font-size:13px; margin-bottom:6px; }
-  .meta-item input { width:100%; padding:8px; font-size:14px; border:1px solid #999; border-radius:4px; box-sizing:border-box; }
+  /* Meta grid */
+  .meta-grid { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .meta-item { flex:1 1 180px; min-width:140px; }
+  .meta-item label { display:block; font-weight:700; margin-bottom:6px; font-size:13px; }
+  .meta-item input { width:100%; padding:8px; border:1px solid #999; border-radius:4px; font-size:14px; box-sizing:border-box; }
 
+  /* Table */
   .table-wrap { margin-top:12px; overflow-x:auto; }
-  table { width:100%; border-collapse:collapse; min-width:900px; }
-  th, td { border:1px solid #999; padding:6px; font-size:13px; text-align:center; }
-  th { background:#efefef; font-weight:700; }
+  table { width:100%; border-collapse:collapse; min-width:960px; }
+  th, td { border:1px solid #bbb; padding:6px; font-size:13px; text-align:center; vertical-align:middle; }
+  th { background:#f1f1f1; font-weight:700; }
+  table input, table select { width:96%; padding:6px; box-sizing:border-box; }
 
-  table input, table select { width:96%; padding:6px; font-size:13px; box-sizing:border-box; }
-
+  /* Controls */
   .controls { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
-  .controls button { flex:1; padding:10px; font-size:15px; border:none; color:#fff; border-radius:5px; cursor:pointer; }
-  .btn-add { background:#198754; }  /* green */
-  .btn-save{ background:#0d6efd; } /* blue */
-  .btn-pdf { background:#ff9800; }  /* orange */
-  .btn-del { background:#d9534f; color:#fff; border:none; padding:6px 8px; border-radius:4px; cursor:pointer; }
+  .controls button { padding:10px 12px; font-size:15px; border:none; color:#fff; border-radius:6px; cursor:pointer; }
+  .btn-add { background:#198754; }   /* green */
+  .btn-save{ background:#0d6efd; }   /* blue */
+  .btn-pdf { background:#ff9800; }    /* orange */
+  .btn-del { background:#d9534f; padding:6px 8px; border-radius:6px; }
 
-  .notes { margin-top:12px; }
-  .notes label { display:block; font-weight:700; margin-bottom:6px; }
-  .notes textarea { width:100%; min-height:70px; padding:8px; font-size:14px; border:1px solid #999; border-radius:4px; box-sizing:border-box; }
+  /* Notes boxes + footer */
+  .notes { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+  .note-box {
+    flex:1 1 300px; min-width:300px; border:1px solid #999; padding:8px; box-sizing:border-box;
+    background:#fff;
+  }
+  .note-box h4 { margin:0 0 6px 0; font-size:13px; font-weight:700; }
+  .note-box p { margin:0; font-size:12px; white-space:pre-wrap; }
 
   .footer-row { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
-  .footer-box { flex:1 1 240px; min-width:200px; border:1px solid #999; padding:8px; box-sizing:border-box; }
+  .footer-box { flex:1 1 300px; min-width:300px; border:1px solid #999; padding:10px; box-sizing:border-box; min-height:48px; }
 
-  /* bottom controls anchored last */
+  /* Bottom controls */
   .bottom-controls { display:flex; gap:8px; margin-top:14px; }
 
   /* Responsive tweaks */
-  @media (max-width:720px){
+  @media (max-width:760px){
     .meta-item { flex:1 1 100%; }
-    table { min-width:900px; } /* table horizontally scrollable on small screens */
+    table { min-width:880px; } /* horizontal scroll on small screens */
+  }
+  @media (max-width:420px){
+    .logo { flex-basis:60px; }
+    .logo img { max-height:44px; }
+    .title { font-size:16px; }
   }
 </style>
 </head>
 <body>
   <div class="container" role="main">
-    <div class="header" aria-hidden="false">
-      <div class="logo"><img src="logo.png" alt="Cognizant Logo" id="logoImg" onerror="this.style.display='none'"></div>
-      <div class="header-title">Daily Food Quality &amp; Taste Check Report</div>
+    <!-- Header -->
+    <div class="header" aria-label="header">
+      <div class="logo"><img id="logoImg" src="logo.png" alt="Cognizant Logo" onerror="this.style.display='none'"></div>
+      <div class="title">Daily Food Quality &amp; Taste Check Report</div>
+      <div class="spacer" aria-hidden="true"></div>
     </div>
 
+    <!-- Metadata -->
     <div class="meta-grid" aria-label="metadata">
       <div class="meta-item">
         <label for="date">Date</label>
@@ -91,19 +106,20 @@
       </div>
     </div>
 
-    <div class="table-wrap" style="margin-top:12px;">
-      <table id="foodTable" aria-label="food quality table">
+    <!-- Table -->
+    <div class="table-wrap" aria-label="food table">
+      <table id="foodTable">
         <thead>
           <tr>
             <th style="width:42px">S.No</th>
-            <th style="width:240px">Item</th>
-            <th style="width:70px">Temp (°C)</th>
+            <th style="width:260px">Item</th>
+            <th style="width:80px">Temp (°C)</th>
             <th style="width:110px">Freshness</th>
             <th style="width:90px">Taste</th>
             <th style="width:90px">Texture</th>
             <th style="width:90px">Appearance</th>
             <th style="width:80px">Portion</th>
-            <th style="width:200px">Remarks</th>
+            <th style="width:220px">Remarks</th>
             <th style="width:60px">Del</th>
           </tr>
         </thead>
@@ -134,386 +150,385 @@
       </table>
     </div>
 
-    <div class="controls" style="margin-top:10px;">
+    <!-- Controls near table (add/save) -->
+    <div class="controls">
       <button class="btn-add" onclick="addRow()">+ Add Row</button>
       <button class="btn-save" onclick="saveForm()">Save (local)</button>
-      <!-- PDF button moved to bottom per previous request (we'll duplicate here disabled) -->
     </div>
 
-    <div class="notes">
-      <label for="tasteNotes">Taste Validation Notes</label>
-      <textarea id="tasteNotes" placeholder="Taste, salt level, spice, texture notes..."></textarea>
-
-      <label for="obs" style="margin-top:8px;">Special Observations</label>
-      <textarea id="obs"></textarea>
-
-      <label for="actions" style="margin-top:8px;">Corrective Actions</label>
-      <textarea id="actions"></textarea>
+    <!-- Notes (boxed as requested A1) -->
+    <div class="notes" aria-label="notes boxes">
+      <div class="note-box">
+        <h4>Taste Validation Notes</h4>
+        <p id="tastePreview" style="min-height:34px; white-space:pre-wrap;"></p>
+      </div>
+      <div class="note-box">
+        <h4>Special Observations</h4>
+        <p id="obsPreview" style="min-height:34px; white-space:pre-wrap;"></p>
+      </div>
+      <div class="note-box">
+        <h4>Corrective Actions</h4>
+        <p id="actionsPreview" style="min-height:34px; white-space:pre-wrap;"></p>
+      </div>
     </div>
 
-    <div class="footer-row" style="margin-top:10px;">
+    <!-- Footer signature boxes side-by-side -->
+    <div class="footer-row">
       <div class="footer-box">Vendor PoC :</div>
       <div class="footer-box">Verified by F&amp;B Team :</div>
     </div>
 
-    <!-- Bottom controls (Save + Download placed at the very bottom) -->
+    <!-- Bottom controls: Download PDF (only at bottom as requested) -->
     <div class="bottom-controls" style="margin-top:14px;">
       <button class="btn-pdf" onclick="downloadPDF()" style="flex:1;">Download PDF</button>
     </div>
-
   </div>
 
-<!-- SCRIPT: Add/Delete rows, Save local, Build PDF (landscape, structured table) -->
 <script>
-  // Add a new row
-  function addRow() {
-    const tbody = document.querySelector("#foodTable tbody");
-    const idx = tbody.rows.length + 1;
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${idx}</td>
-      <td><input type="text" placeholder="Item name"></td>
-      <td><input type="text"></td>
-      <td>
-        <select><option>Good</option><option>Average</option><option>Poor</option></select>
-      </td>
-      <td>
-        <select><option>Good</option><option>Average</option><option>Poor</option></select>
-      </td>
-      <td>
-        <select><option>Soft</option><option>Normal</option><option>Hard</option></select>
-      </td>
-      <td>
-        <select><option>Good</option><option>Average</option><option>Poor</option></select>
-      </td>
-      <td>
-        <select><option>Std</option><option>Less</option></select>
-      </td>
-      <td><input type="text"></td>
-      <td><button class="btn-del" onclick="deleteRow(this)">X</button></td>
-    `;
-    tbody.appendChild(tr);
-  }
+/* ---------- Helpers: Add/Delete rows, Save, Load, Update previews ---------- */
 
-  // Delete a row
-  function deleteRow(btn) {
-    const tr = btn.closest("tr");
-    tr.remove();
-    // re-index serial numbers
-    document.querySelectorAll("#foodTable tbody tr").forEach((r, i) => r.cells[0].textContent = i + 1);
-  }
+function addRow(){
+  const tbody = document.querySelector("#foodTable tbody");
+  const idx = tbody.rows.length + 1;
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${idx}</td>
+    <td><input type="text" placeholder="Item name"></td>
+    <td><input type="text"></td>
+    <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+    <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+    <td><select><option>Soft</option><option>Normal</option><option>Hard</option></select></td>
+    <td><select><option>Good</option><option>Average</option><option>Poor</option></select></td>
+    <td><select><option>Std</option><option>Less</option></select></td>
+    <td><input type="text"></td>
+    <td><button class="btn-del" onclick="deleteRow(this)">X</button></td>
+  `;
+  tbody.appendChild(tr);
+  updatePreviews();
+}
 
-  // Save to localStorage
-  function saveForm() {
-    const data = {};
-    data.meta = {
-      date: document.getElementById("date").value,
-      building: document.getElementById("building").value,
-      floor: document.getElementById("floor").value,
-      supervisor: document.getElementById("supervisor").value,
-      cbre: document.getElementById("cbre").value
+function deleteRow(btn){
+  const tr = btn.closest("tr");
+  tr.remove();
+  const rows = document.querySelectorAll("#foodTable tbody tr");
+  rows.forEach((r,i)=> r.cells[0].textContent = i+1);
+  updatePreviews();
+}
+
+function saveForm(){
+  const data = {};
+  data.meta = {
+    date: document.getElementById("date").value || "",
+    building: document.getElementById("building").value || "",
+    floor: document.getElementById("floor").value || "",
+    supervisor: document.getElementById("supervisor").value || "",
+    cbre: document.getElementById("cbre").value || ""
+  };
+  data.rows = Array.from(document.querySelectorAll("#foodTable tbody tr")).map(tr=>{
+    const cells = tr.querySelectorAll("td");
+    return {
+      item: (cells[1].querySelector("input")||{}).value || "",
+      temp: (cells[2].querySelector("input")||{}).value || "",
+      freshness: (cells[3].querySelector("select")||{}).value || "",
+      taste: (cells[4].querySelector("select")||{}).value || "",
+      texture: (cells[5].querySelector("select")||{}).value || "",
+      appearance: (cells[6].querySelector("select")||{}).value || "",
+      portion: (cells[7].querySelector("select")||{}).value || "",
+      remarks: (cells[8].querySelector("input")||{}).value || ""
     };
-    data.rows = Array.from(document.querySelectorAll("#foodTable tbody tr")).map(tr => {
-      const cells = tr.querySelectorAll("td");
-      return {
-        item: (cells[1].querySelector("input") || {}).value || "",
-        temp: (cells[2].querySelector("input") || {}).value || "",
-        freshness: (cells[3].querySelector("select") || {}).value || "",
-        taste: (cells[4].querySelector("select") || {}).value || "",
-        texture: (cells[5].querySelector("select") || {}).value || "",
-        appearance: (cells[6].querySelector("select") || {}).value || "",
-        portion: (cells[7].querySelector("select") || {}).value || "",
-        remarks: (cells[8].querySelector("input") || {}).value || ""
+  });
+  data.notes = {
+    taste: document.getElementById("tastePreview").innerText || "",
+    obs: document.getElementById("obsPreview").innerText || "",
+    actions: document.getElementById("actionsPreview").innerText || ""
+  };
+  localStorage.setItem("foodQuality_final_v1", JSON.stringify(data));
+  alert("Saved locally (browser).");
+}
+
+/* load saved data */
+(function loadSaved(){
+  try{
+    const raw = localStorage.getItem("foodQuality_final_v1");
+    if(!raw) return;
+    const data = JSON.parse(raw);
+    if(data.meta){
+      document.getElementById("date").value = data.meta.date || "";
+      document.getElementById("building").value = data.meta.building || "";
+      document.getElementById("floor").value = data.meta.floor || "";
+      document.getElementById("supervisor").value = data.meta.supervisor || "";
+      document.getElementById("cbre").value = data.meta.cbre || "";
+    }
+    if(data.rows && data.rows.length){
+      const tbody = document.querySelector("#foodTable tbody");
+      tbody.innerHTML = "";
+      data.rows.forEach((r,i)=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i+1}</td>
+          <td><input type="text" value="${escapeHtml(r.item)}"></td>
+          <td><input type="text" value="${escapeHtml(r.temp)}"></td>
+          <td><select><option ${r.freshness==='Good'?'selected':''}>Good</option><option ${r.freshness==='Average'?'selected':''}>Average</option><option ${r.freshness==='Poor'?'selected':''}>Poor</option></select></td>
+          <td><select><option ${r.taste==='Good'?'selected':''}>Good</option><option ${r.taste==='Average'?'selected':''}>Average</option><option ${r.taste==='Poor'?'selected':''}>Poor</option></select></td>
+          <td><select><option ${r.texture==='Soft'?'selected':''}>Soft</option><option ${r.texture==='Normal'?'selected':''}>Normal</option><option ${r.texture==='Hard'?'selected':''}>Hard</option></select></td>
+          <td><select><option ${r.appearance==='Good'?'selected':''}>Good</option><option ${r.appearance==='Average'?'selected':''}>Average</option><option ${r.appearance==='Poor'?'selected':''}>Poor</option></select></td>
+          <td><select><option ${r.portion==='Std'?'selected':''}>Std</option><option ${r.portion==='Less'?'selected':''}>Less</option></select></td>
+          <td><input type="text" value="${escapeHtml(r.remarks)}"></td>
+          <td><button class="btn-del" onclick="deleteRow(this)">X</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    if(data.notes){
+      document.getElementById("tastePreview").innerText = data.notes.taste || "";
+      document.getElementById("obsPreview").innerText = data.notes.obs || "";
+      document.getElementById("actionsPreview").innerText = data.notes.actions || "";
+    }
+  }catch(e){ console.warn("Could not load saved data", e); }
+  // wire inputs to preview updates
+  bindPreviewUpdates();
+})();
+
+function escapeHtml(s){ return (s||'').toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+/* Bind inline edit for preview boxes: clicking note boxes opens prompt to edit (simple mobile-friendly) */
+function bindPreviewUpdates(){
+  const taste = document.getElementById("tastePreview");
+  const obs = document.getElementById("obsPreview");
+  const actions = document.getElementById("actionsPreview");
+
+  [taste, obs, actions].forEach(el=>{
+    el.setAttribute('tabindex','0');
+    el.addEventListener('click', ()=> {
+      const current = el.innerText || '';
+      const newv = prompt("Edit text:", current);
+      if(newv===null) return;
+      el.innerText = newv;
+    });
+  });
+}
+/* initial binding */
+bindPreviewUpdates();
+
+/* Update previews when table changes */
+document.querySelector("#foodTable").addEventListener('input', updatePreviews);
+document.querySelector("#foodTable").addEventListener('change', updatePreviews);
+function updatePreviews(){
+  // No dynamic content from table required; left for future if needed
+}
+
+/* ---------- PDF generation (A4 landscape) using jsPDF + autoTable ---------- */
+async function downloadPDF(){
+  // ensure date present
+  if(!document.getElementById("date").value) document.getElementById("date").value = new Date().toISOString().slice(0,10);
+
+  // Collect data
+  const meta = {
+    date: document.getElementById("date").value,
+    building: document.getElementById("building").value,
+    floor: document.getElementById("floor").value,
+    supervisor: document.getElementById("supervisor").value,
+    cbre: document.getElementById("cbre").value
+  };
+
+  const rows = Array.from(document.querySelectorAll("#foodTable tbody tr")).map((tr, idx)=>{
+    const cells = tr.querySelectorAll("td");
+    return {
+      s: String(idx+1),
+      item: (cells[1].querySelector('input')||{}).value || '',
+      temp: (cells[2].querySelector('input')||{}).value || '',
+      freshness: (cells[3].querySelector('select')||{}).value || '',
+      taste: (cells[4].querySelector('select')||{}).value || '',
+      texture: (cells[5].querySelector('select')||{}).value || '',
+      appearance: (cells[6].querySelector('select')||{}).value || '',
+      portion: (cells[7].querySelector('select')||{}).value || '',
+      remarks: (cells[8].querySelector('input')||{}).value || ''
+    };
+  });
+
+  const notes = {
+    taste: document.getElementById("tastePreview").innerText || '',
+    obs: document.getElementById("obsPreview").innerText || '',
+    actions: document.getElementById("actionsPreview").innerText || ''
+  };
+
+  // Prepare PDF
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'landscape', unit:'pt', format:'a4' });
+  const margin = 20; // C2 medium margins
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const usableWidth = pageWidth - margin*2;
+  let cursorY = margin;
+
+  // Logo (left) and Title (center)
+  const logoEl = document.getElementById("logoImg");
+  let logoData = null;
+  if(logoEl && logoEl.src && logoEl.style.display !== 'none'){
+    logoData = await toDataUrl(logoEl.src).catch(()=>null);
+  }
+
+  // Draw header single-row: logo left, title centered
+  const logoW = 72;
+  const logoH = 40;
+  if(logoData){
+    doc.addImage(logoData, 'PNG', margin, cursorY, logoW, logoH);
+  }
+  doc.setFontSize(16);
+  doc.setFont(undefined, 'bold');
+  doc.text("Daily Food Quality & Taste Check Report", pageWidth/2, cursorY + 28, { align: 'center' });
+
+  // header bottom rule
+  cursorY += Math.max(logoH, 36) + 6;
+  doc.setLineWidth(1);
+  doc.line(margin, cursorY-4, pageWidth - margin, cursorY-4);
+
+  // Metadata area: small cells with borders and labels
+  doc.setFontSize(10);
+  const metaCols = 5;
+  const colW = usableWidth / metaCols;
+  const metaLabels = ["Date","Building","Floor/Counter","Supervisor","CBRE Rep"];
+  const metaVals = [meta.date, meta.building, meta.floor, meta.supervisor, meta.cbre];
+
+  for(let i=0;i<metaCols;i++){
+    const x = margin + i*colW;
+    doc.rect(x, cursorY+4, colW, 28); // box
+    doc.setFont(undefined,'bold'); doc.setFontSize(9);
+    doc.text(metaLabels[i], x + 6, cursorY + 14);
+    doc.setFont(undefined,'normal'); doc.setFontSize(10);
+    const v = (metaVals[i]||'').toString();
+    doc.text(truncateToWidth(doc, v, colW - 12), x + 6, cursorY + 26);
+  }
+  cursorY += 38;
+
+  // Space before table
+  cursorY += 6;
+
+  // Prepare autoTable body and head
+  const head = [['S.No','Item','Temp (°C)','Freshness','Taste','Texture','Appearance','Portion','Remarks']];
+  const body = rows.length ? rows.map(r => [r.s, r.item, r.temp, r.freshness, r.taste, r.texture, r.appearance, r.portion, r.remarks]) : [['','','','','','','','','']];
+
+  // autoTable options (with margins)
+  doc.autoTable({
+    head: head,
+    body: body,
+    startY: cursorY,
+    margin: { left: margin, right: margin },
+    styles: { fontSize: 10, cellPadding: 6, halign:'center', valign:'middle' },
+    headStyles: { fillColor: [230,230,230], textColor: 0, fontStyle: 'bold' },
+    columnStyles: {
+      0: { cellWidth: 30 },
+      1: { cellWidth: 240, halign:'left' },
+      2: { cellWidth: 60 },
+      3: { cellWidth: 80 },
+      4: { cellWidth: 70 },
+      5: { cellWidth: 70 },
+      6: { cellWidth: 70 },
+      7: { cellWidth: 60 },
+      8: { cellWidth: 220, halign:'left' }
+    },
+    willDrawCell: function(data){ /* no-op */ },
+    didDrawPage: function(data){
+      // update cursor if needed
+    }
+  });
+
+  // update cursor to after table
+  cursorY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : cursorY + 10;
+
+  // Notes: draw big bordered boxes horizontally (each full width stacked)
+  const boxW = usableWidth;
+  const boxH = 54; // vertical size for each box
+  doc.setFontSize(11);
+  // Taste Notes box
+  doc.rect(margin, cursorY, boxW, boxH);
+  doc.setFont(undefined,'bold'); doc.text("Taste Validation Notes:", margin + 6, cursorY + 14);
+  doc.setFont(undefined,'normal'); doc.setFontSize(10);
+  doc.text(splitText(doc, notes.taste, boxW - 12), margin + 6, cursorY + 30);
+  cursorY += boxH + 8;
+
+  // Special Observations box
+  doc.rect(margin, cursorY, boxW, boxH);
+  doc.setFont(undefined,'bold'); doc.setFontSize(11);
+  doc.text("Special Observations:", margin + 6, cursorY + 14);
+  doc.setFont(undefined,'normal'); doc.setFontSize(10);
+  doc.text(splitText(doc, notes.obs, boxW - 12), margin + 6, cursorY + 30);
+  cursorY += boxH + 8;
+
+  // Corrective Actions box
+  doc.rect(margin, cursorY, boxW, boxH);
+  doc.setFont(undefined,'bold'); doc.setFontSize(11);
+  doc.text("Corrective Actions:", margin + 6, cursorY + 14);
+  doc.setFont(undefined,'normal'); doc.setFontSize(10);
+  doc.text(splitText(doc, notes.actions, boxW - 12), margin + 6, cursorY + 30);
+  cursorY += boxH + 12;
+
+  // Footer signature boxes - two side-by-side
+  const sigW = (usableWidth - 40) / 2; // gap 40
+  const sigH = 50;
+  const sigX1 = margin;
+  const sigX2 = margin + sigW + 40;
+  const sigY = cursorY;
+
+  doc.rect(sigX1, sigY, sigW, sigH);
+  doc.text("Vendor PoC :", sigX1 + 8, sigY + 18);
+
+  doc.rect(sigX2, sigY, sigW, sigH);
+  doc.text("Verified by F&B Team :", sigX2 + 8, sigY + 18);
+
+  // Save pdf
+  doc.save("Food_Quality_Check.pdf");
+
+  /* Helpers */
+  function toDataUrl(src){
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function(){
+        const canvas = document.createElement('canvas');
+        // scale down to reasonable size for PDF
+        const maxH = 60;
+        const ratio = img.width / img.height;
+        canvas.width = Math.round(maxH * ratio);
+        canvas.height = maxH;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        try { resolve(canvas.toDataURL('image/png')); }
+        catch(e){ resolve(null); }
       };
+      img.onerror = function(){ resolve(null); };
+      img.src = src + (src.indexOf('?') === -1 ? '?v=1' : '&v=1');
     });
-    data.notes = {
-      tasteNotes: document.getElementById("tasteNotes").value,
-      obs: document.getElementById("obs").value,
-      actions: document.getElementById("actions").value
-    };
-    localStorage.setItem("foodQuality_v2", JSON.stringify(data));
-    alert("Form saved locally (browser).");
   }
 
-  // load saved on start
-  (function loadSaved(){
-    try{
-      const raw = localStorage.getItem("foodQuality_v2");
-      if(!raw) return;
-      const data = JSON.parse(raw);
-      if(data.meta){
-        document.getElementById("date").value = data.meta.date || "";
-        document.getElementById("building").value = data.meta.building || "";
-        document.getElementById("floor").value = data.meta.floor || "";
-        document.getElementById("supervisor").value = data.meta.supervisor || "";
-        document.getElementById("cbre").value = data.meta.cbre || "";
+  // naive text wrap to lines within width (pt units)
+  function splitText(docRef, text, maxWidthPt){
+    if(!text) return "";
+    const words = text.split(/\s+/);
+    const lines = [];
+    let current = "";
+    for(let w of words){
+      const trial = current ? (current + " " + w) : w;
+      const wWidth = docRef.getTextWidth(trial);
+      if(wWidth <= maxWidthPt) current = trial;
+      else {
+        if(current) lines.push(current);
+        current = w;
       }
-      if(data.rows && data.rows.length){
-        const tbody = document.querySelector("#foodTable tbody");
-        tbody.innerHTML = "";
-        data.rows.forEach((r, i) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${i+1}</td>
-            <td><input type="text" value="${escapeHtml(r.item || '')}"></td>
-            <td><input type="text" value="${escapeHtml(r.temp || '')}"></td>
-            <td><select><option ${r.freshness==='Good'?'selected':''}>Good</option><option ${r.freshness==='Average'?'selected':''}>Average</option><option ${r.freshness==='Poor'?'selected':''}>Poor</option></select></td>
-            <td><select><option ${r.taste==='Good'?'selected':''}>Good</option><option ${r.taste==='Average'?'selected':''}>Average</option><option ${r.taste==='Poor'?'selected':''}>Poor</option></select></td>
-            <td><select><option ${r.texture==='Soft'?'selected':''}>Soft</option><option ${r.texture==='Normal'?'selected':''}>Normal</option><option ${r.texture==='Hard'?'selected':''}>Hard</option></select></td>
-            <td><select><option ${r.appearance==='Good'?'selected':''}>Good</option><option ${r.appearance==='Average'?'selected':''}>Average</option><option ${r.appearance==='Poor'?'selected':''}>Poor</option></select></td>
-            <td><select><option ${r.portion==='Std'?'selected':''}>Std</option><option ${r.portion==='Less'?'selected':''}>Less</option></select></td>
-            <td><input type="text" value="${escapeHtml(r.remarks || '')}"></td>
-            <td><button class="btn-del" onclick="deleteRow(this)">X</button></td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
-      if(data.notes){
-        document.getElementById("tasteNotes").value = data.notes.tasteNotes || "";
-        document.getElementById("obs").value = data.notes.obs || "";
-        document.getElementById("actions").value = data.notes.actions || "";
-      }
-    }catch(e){ console.warn("Failed to load saved form", e); }
-  })();
-
-  function escapeHtml(str){
-    return String(str)
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#039;");
+    }
+    if(current) lines.push(current);
+    return lines.join("\n");
   }
 
-  /* ===== Build PDF using jsPDF + AutoTable (not screenshot) =====
-     - A4 Landscape
-     - Header with logo + centered title
-     - Metadata in small table
-     - Data table using autoTable (handles pagination)
-     - Notes as text blocks
-     - Footer signature boxes
-  */
-  async function downloadPDF(){
-    // ensure a date exists
-    if(!document.getElementById("date").value){
-      document.getElementById("date").value = new Date().toISOString().slice(0,10);
-    }
-
-    // collect meta
-    const meta = {
-      date: document.getElementById("date").value || "",
-      building: document.getElementById("building").value || "",
-      floor: document.getElementById("floor").value || "",
-      supervisor: document.getElementById("supervisor").value || "",
-      cbre: document.getElementById("cbre").value || ""
-    };
-
-    // collect table rows
-    const rows = Array.from(document.querySelectorAll("#foodTable tbody tr")).map((tr, idx) => {
-      const cells = tr.querySelectorAll("td");
-      return [
-        String(idx+1),
-        (cells[1].querySelector("input") || {}).value || "",
-        (cells[2].querySelector("input") || {}).value || "",
-        (cells[3].querySelector("select") || {}).value || "",
-        (cells[4].querySelector("select") || {}).value || "",
-        (cells[5].querySelector("select") || {}).value || "",
-        (cells[6].querySelector("select") || {}).value || "",
-        (cells[7].querySelector("select") || {}).value || "",
-        (cells[8].querySelector("input") || {}).value || ""
-      ];
-    });
-
-    // notes
-    const notes = {
-      taste: document.getElementById("tasteNotes").value || "",
-      obs: document.getElementById("obs").value || "",
-      actions: document.getElementById("actions").value || ""
-    };
-
-    // Prepare jsPDF
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 28;
-    let cursorY = margin;
-
-    // load logo if exists and convert to dataURL
-    async function getLogoDataUrl() {
-      return new Promise((resolve) => {
-        const img = document.getElementById("logoImg");
-        if(!img || img.style.display === 'none' || !img.src) return resolve(null);
-
-        // load real image to ensure cross-origin okay
-        const image = new Image();
-        image.crossOrigin = 'anonymous';
-        image.onload = function(){
-          // draw to temp canvas to extract dataURL
-          const canvas = document.createElement('canvas');
-          const maxH = 60 * 2; // retina scale
-          const ratio = image.width / image.height;
-          canvas.width = Math.round(maxH * ratio);
-          canvas.height = maxH;
-          const ctx = canvas.getContext('2d');
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0,0,canvas.width,canvas.height);
-          ctx.drawImage(image,0,0,canvas.width,canvas.height);
-          try {
-            const dataUrl = canvas.toDataURL('image/png');
-            resolve(dataUrl);
-          } catch(e){
-            resolve(null);
-          }
-        };
-        image.onerror = function(){ resolve(null); };
-        image.src = img.src + (img.src.indexOf('?') === -1 ? '?v=1' : '&v=1');
-      });
-    }
-
-    const logoData = await getLogoDataUrl();
-
-    // HEADER: logo left + title center (single-row)
-    const logoBoxWidth = 90;
-    if(logoData){
-      doc.addImage(logoData, 'PNG', margin, cursorY, logoBoxWidth, 60);
-    }
-    // title centered
-    doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
-    const title = "Daily Food Quality & Taste Check Report";
-    doc.text(title, pageWidth / 2, cursorY + 36, { align: 'center' });
-
-    cursorY += 78; // leave space under header
-
-    // Draw a separator line (like boxed header minimal)
-    doc.setDrawColor(0);
-    doc.setLineWidth(1);
-    doc.line(margin, cursorY - 10, pageWidth - margin, cursorY - 10);
-
-    // METADATA: Draw simple two-column table-like area
-    const metaX = margin;
-    const metaColW = (pageWidth - margin*2) / 5; // 5 small columns
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-
-    const metaLabels = ["Date", "Building", "Floor/Counter", "Supervisor", "CBRE Rep"];
-    const metaVals = [meta.date, meta.building, meta.floor, meta.supervisor, meta.cbre];
-
-    // Draw cells with borders
-    for(let i=0;i<metaLabels.length;i++){
-      const x = metaX + i*metaColW;
-      // border rect
-      doc.rect(x, cursorY - 4, metaColW, 28);
-      // label (top-left)
-      doc.setFontSize(9);
-      doc.text(metaLabels[i], x + 6, cursorY + 6);
-      // value (below)
-      doc.setFontSize(11);
-      const val = metaVals[i] || '';
-      // trim if too long
-      const trimmed = (val.length > 40) ? val.slice(0,40) + '...' : val;
-      doc.text(trimmed, x + 6, cursorY + 20);
-    }
-    cursorY += 36;
-
-    // SPACE
-    cursorY += 6;
-
-    // DATA TABLE using autoTable
-    const head = [['S.No','Item','Temp (°C)','Freshness','Taste','Texture','Appearance','Portion','Remarks']];
-    // If no rows, show single blank row
-    const body = rows.length ? rows : [['','','','','','','','','']];
-
-    doc.autoTable({
-      head: head,
-      body: body,
-      startY: cursorY,
-      theme: 'grid',
-      headStyles: { fillColor: [230,230,230], textColor: 0, fontStyle: 'bold', halign:'center' },
-      styles: { fontSize: 10, cellPadding: 5, halign: 'center', valign: 'middle' },
-      columnStyles: {
-        0: { cellWidth: 30 },    // S.No
-        1: { cellWidth: 180, halign:'left' }, // Item
-        2: { cellWidth: 50 },
-        3: { cellWidth: 70 },
-        4: { cellWidth: 60 },
-        5: { cellWidth: 60 },
-        6: { cellWidth: 60 },
-        7: { cellWidth: 60 },
-        8: { cellWidth: 200, halign:'left' }
-      },
-      margin: { left: margin, right: margin },
-      didDrawPage: function(data){
-        // update cursorY after page draw
-      }
-    });
-
-    // After table, set cursor to final position
-    cursorY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : cursorY + 10;
-
-    // NOTES: Add three text blocks
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'bold');
-    doc.text("Taste Validation Notes:", margin, cursorY);
-    doc.setFont(undefined, 'normal');
-    doc.setFontSize(10);
-    doc.text(splitText(notes.taste, 110), margin, cursorY + 14);
-    cursorY += 14 + (countLines(notes.taste,110) * 12) + 6;
-
-    doc.setFont(undefined, 'bold');
-    doc.text("Special Observations:", margin, cursorY);
-    doc.setFont(undefined, 'normal');
-    doc.setFontSize(10);
-    doc.text(splitText(notes.obs, 110), margin, cursorY + 14);
-    cursorY += 14 + (countLines(notes.obs,110) * 12) + 6;
-
-    doc.setFont(undefined, 'bold');
-    doc.text("Corrective Actions:", margin, cursorY);
-    doc.setFont(undefined, 'normal');
-    doc.setFontSize(10);
-    doc.text(splitText(notes.actions, 110), margin, cursorY + 14);
-    cursorY += 14 + (countLines(notes.actions,110) * 12) + 18;
-
-    // FOOTER Signature boxes
-    const footH = 40;
-    const footW = 200;
-    const gap = 40;
-    const footX1 = margin;
-    const footX2 = margin + footW + gap;
-    const yBox = Math.max(cursorY, doc.internal.pageSize.getHeight() - 120);
-
-    doc.rect(footX1, yBox, footW, footH);
-    doc.text("Vendor PoC :", footX1 + 8, yBox + 14);
-    doc.rect(footX2, yBox, footW, footH);
-    doc.text("Verified by F&B Team :", footX2 + 8, yBox + 14);
-
-    // Save file
-    doc.save("Food_Quality_Check.pdf");
-
-    // helpers
-    function countLines(text, maxCharsPerLine){
-      if(!text) return 1;
-      const lines = splitText(text, maxCharsPerLine).split('\n');
-      return lines.length;
-    }
-    function splitText(text, maxCharsPerLine){
-      if(!text) return "";
-      // naive wrap: split into words, build lines with length up to maxCharsPerLine
-      const words = text.split(/\s+/);
-      const lines = [];
-      let line = "";
-      words.forEach(w => {
-        if((line + " " + w).trim().length <= maxCharsPerLine){
-          line = (line + " " + w).trim();
-        } else {
-          if(line) lines.push(line);
-          line = w;
-        }
-      });
-      if(line) lines.push(line);
-      return lines.join("\n");
-    }
+  function truncateToWidth(docRef, text, maxWidthPt){
+    if(!text) return "";
+    if(docRef.getTextWidth(text) <= maxWidthPt) return text;
+    // trim words until fits
+    let t = text;
+    while(t.length && docRef.getTextWidth(t + '...') > maxWidthPt) t = t.slice(0,-1);
+    return t + '...';
   }
+}
 </script>
 </body>
 </html>
