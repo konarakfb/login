@@ -16,29 +16,139 @@
         margin: 0;
         padding: 12px;
     }
-    .wrapper { max-width: 1200px; margin: auto; }
+
+    .wrapper {
+        max-width: 1200px;
+        margin: auto;
+    }
+
     .sheet {background:#fff;border:1px solid #000;padding:18px;border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,0.08);}
+
     .header-box {border:1px solid #000;padding:14px;border-radius:14px;background:#ffffff;margin-bottom:16px;}
+
     .header {display:flex;align-items:center;border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:10px;}
-    .header img { width: 130px; margin-right: 20px; }
-    .header-title {font-size: 20px;font-weight: bold;text-align: center;width: 100%;}
-    .top-table { width: 100%; border-collapse: collapse; }
-    .top-table td { border: 1px solid #000; padding: 6px; font-size: 14px; }
-    .top-table input { width: 100%; border: none; outline: none; font-size: 14px; padding: 2px 4px; box-sizing: border-box; }
-    .table-wrap { width:100%; overflow-x:auto; border:1px solid #000; padding:12px; border-radius:14px; background:#ffffff; margin-bottom:16px; box-sizing:border-box; }
-    .main-table { width:max-content; min-width:100%; border-collapse:collapse; background:#fff; margin:0; }
-    .main-table th, .main-table td { border:1px solid #000; padding:6px; text-align:center; font-size:12px; }
-    .main-table input { width:100%; border:none; outline:none; padding:2px; font-size:12px; text-align:center; box-sizing:border-box; }
-    .locked input { background: transparent; color: #111; }
-    .bottom-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    .bottom-table td { border:1px solid #000; padding:10px; font-size:14px; background:#ffffff; }
-    .controls { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
-    button { background: #007bff; color: #fff; font-size: 14px; padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; }
+
+    .header img {
+        width: 130px;
+        margin-right: 20px;
+    }
+
+    .header-title {
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+        width: 100%;
+    }
+
+    .top-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .top-table td {
+        border: 1px solid #000;
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .top-table input {
+        width: 100%;
+        border: none;
+        outline: none;
+        font-size: 14px;
+        padding: 2px 4px;
+        box-sizing: border-box;
+    }
+
+    .table-wrap {
+        width:100%;
+        overflow-x:auto;
+        border:1px solid #000;
+        padding:12px;
+        border-radius:14px;
+        background:#ffffff;
+        margin-bottom:16px;
+        box-sizing:border-box;
+    }
+
+    .main-table {
+        width:max-content;
+        min-width:100%;
+        border-collapse:collapse;
+        background:#fff;
+        margin:0;
+    }
+
+    .main-table th, .main-table td {
+        border:1px solid #000;
+        padding:6px;
+        text-align:center;
+        font-size:12px;
+    }
+
+    .main-table input {
+        width:100%;
+        border:none;
+        outline:none;
+        padding:2px;
+        font-size:12px;
+        text-align:center;
+        box-sizing:border-box;
+    }
+
+    .locked input {
+        background: transparent;
+        color: #111;
+    }
+
+    .bottom-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
+
+    .bottom-table td {
+        border:1px solid #000;
+        padding:10px;
+        font-size:14px;
+        background:#ffffff;
+    }
+
+    .controls {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    button {
+        background: #007bff;
+        color: #fff;
+        font-size: 14px;
+        padding: 10px 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
     .save { background: #28a745; }
     .pdf { background: #6f42c1; }
     .reset { background: #dc3545; }
-    #pdfPages { position: absolute; left: -9999px; top: -9999px; visibility: hidden; }
-    .page { width: 297mm; height: 210mm; padding: 12mm; box-sizing: border-box; background: #fff; }
+
+    #pdfPages {
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+        visibility: hidden;
+    }
+
+    .page {
+        width: 297mm;
+        height: 210mm;
+        padding: 12mm;
+        box-sizing: border-box;
+        background: #fff;
+    }
 </style>
 </head>
 
@@ -48,7 +158,6 @@
 
     <div class="sheet" id="sheet">
 
-        <!-- HEADER BOX -->
         <div class="header-box">
 
             <div class="header">
@@ -58,7 +167,6 @@
                 </div>
             </div>
 
-            <!-- TOP INPUT -->
             <table class="top-table">
                 <tr>
                     <td>Date: <input type="date" id="date"></td>
@@ -80,7 +188,8 @@
             <table class="main-table" id="mainTable">
                 <thead>
                     <tr>
-                        <th style="width:50px;">S.No</th>
+                        <th style="width:40px;">S.No</th>
+                        <th style="width:150px;">Barcode No</th> <!-- NEW COLUMN -->
                         <th style="width:220px;">Items</th>
                         <th style="width:160px;">Batch No</th>
                         <th style="width:150px;">Receiving Date</th>
@@ -113,7 +222,6 @@
 
 </div>
 
-<!-- PDF render container -->
 <div id="pdfPages"></div>
 
 <script>
@@ -121,22 +229,20 @@ let data=[];
 const STORAGE="cts_v5";
 const ROWS=13;
 
-/* RENUMBER AFTER DELETE */
 function renumberRows(){
     const rows=document.querySelectorAll("#tbody tr");
     rows.forEach((tr,i)=>{
-        tr.children[0].innerText = i + 1;
+        tr.children[0].innerText=i+1;
     });
 }
 
-/* ADD ROW */
 function addRow(v=null){
     let tbody=document.getElementById("tbody");
     let index=data.length+1;
 
     let r=v||{
-        item:"",batch:"",rec:"",mfg:"",exp:"",
-        shelf:"",qty:"",remarks:"",locked:false
+        barcode:"", item:"", batch:"", rec:"", mfg:"", exp:"",
+        shelf:"", qty:"", remarks:"", locked:false
     };
 
     data.push(r);
@@ -144,6 +250,7 @@ function addRow(v=null){
     let tr=document.createElement("tr");
     tr.innerHTML=`
 <td>${index}</td>
+<td><input value="${r.barcode}"></td>   <!-- NEW -->
 <td><input value="${r.item}"></td>
 <td><input value="${r.batch}"></td>
 <td><input type="date" value="${r.rec}"></td>
@@ -160,13 +267,7 @@ function addRow(v=null){
 </td>
 `;
 
-    if(r.locked){
-        tr.classList.add("locked");
-        tr.querySelectorAll("input").forEach(i=>i.disabled=true);
-        tr.querySelector('.editbtn').style.display="inline";
-        tr.querySelector('.savebtn').style.display="none";
-    }
-
+    /* DELETE ROW */
     tr.querySelector('.delbtn').addEventListener('click',()=>{
         let index=[...tbody.children].indexOf(tr);
         data.splice(index,1);
@@ -174,27 +275,29 @@ function addRow(v=null){
         renumberRows();
     });
 
+    /* EDIT */
     tr.querySelector('.editbtn').addEventListener('click',()=>{
         tr.classList.remove("locked");
         tr.querySelectorAll("input").forEach(i=>i.disabled=false);
-
         tr.querySelector('.editbtn').style.display="none";
         tr.querySelector('.savebtn').style.display="inline";
     });
 
+    /* SAVE SINGLE ROW */
     tr.querySelector('.savebtn').addEventListener('click',()=>{
         let inp=tr.querySelectorAll("input");
         let index=[...tbody.children].indexOf(tr);
 
         data[index]={
-            item:inp[0].value,
-            batch:inp[1].value,
-            rec:inp[2].value,
-            mfg:inp[3].value,
-            exp:inp[4].value,
-            shelf:inp[5].value,
-            qty:inp[6].value,
-            remarks:inp[7].value,
+            barcode:inp[0].value,
+            item:inp[1].value,
+            batch:inp[2].value,
+            rec:inp[3].value,
+            mfg:inp[4].value,
+            exp:inp[5].value,
+            shelf:inp[6].value,
+            qty:inp[7].value,
+            remarks:inp[8].value,
             locked:true
         };
 
@@ -210,7 +313,7 @@ function addRow(v=null){
     tbody.appendChild(tr);
 }
 
-/* SAVE BUTTON */
+/* MAIN SAVE */
 function saveRows(){
     let rows=document.querySelectorAll("#tbody tr");
 
@@ -221,14 +324,15 @@ function saveRows(){
 
         if(hasData){
             data[i]={
-                item:inp[0].value,
-                batch:inp[1].value,
-                rec:inp[2].value,
-                mfg:inp[3].value,
-                exp:inp[4].value,
-                shelf:inp[5].value,
-                qty:inp[6].value,
-                remarks:inp[7].value,
+                barcode:inp[0].value,
+                item:inp[1].value,
+                batch:inp[2].value,
+                rec:inp[3].value,
+                mfg:inp[4].value,
+                exp:inp[5].value,
+                shelf:inp[6].value,
+                qty:inp[7].value,
+                remarks:inp[8].value,
                 locked:true
             };
 
@@ -261,7 +365,7 @@ function resetAll(){
     localStorage.removeItem(STORAGE);
 }
 
-/* RESTORE + 17 FIXED ROWS */
+/* RESTORE */
 window.onload=()=>{
     const saved=localStorage.getItem(STORAGE);
     if(saved){
@@ -274,47 +378,37 @@ window.onload=()=>{
         counter.value=o.counter;
         o.rows.forEach(r=>addRow(r));
     } else {
-
-        /* ---- 17 EXACT ROWS INSERTED ---- */
-
-addRow({item:"Double horse",batch:"869.620.233.128.5",rec:"",mfg:"2025-11-15",exp:"2025-11-20",shelf:"10 months",qty:"4.5 kg",remarks:"",locked:false});
-addRow({item:"Suger free sago",batch:"869.620.239.49.4",rec:"",mfg:"2025-05-19",exp:"2025-11-15",shelf:"7 months",qty:"7 kg",remarks:"",locked:false});
-addRow({item:"Turmeric powder",batch:"13662013298.2",rec:"",mfg:"2025-05-11",exp:"2026-11-11",shelf:"18 months",qty:"1.12 kg",remarks:"",locked:false});
-addRow({item:"Coriander powder",batch:"136.620.110.1.580.76",rec:"",mfg:"2025-04-01",exp:"2026-04-10",shelf:"12 months",qty:"2 kg",remarks:"",locked:false});
-addRow({item:"K metui",batch:"869.620.133.28.25",rec:"",mfg:"2025-07-23",exp:"2026-02-13",shelf:"10 months",qty:"600 gm",remarks:"",locked:false});
-addRow({item:"Bambino",batch:"869.610.555.63.65.2",rec:"",mfg:"2025-04-08",exp:"2026-04-08",shelf:"12 months",qty:"2 kg",remarks:"",locked:false});
-addRow({item:"Rice flour",batch:"101.620.372.642.2",rec:"",mfg:"2025-11-15",exp:"2026-11-15",shelf:"12 months",qty:"1 kg",remarks:"",locked:false});
-addRow({item:"Ragi flour",batch:"101.203.2003.2462",rec:"",mfg:"2025-11-02",exp:"2026-11-02",shelf:"12 months",qty:"2 kg",remarks:"",locked:false});
-addRow({item:"S. Powder",batch:"892.265.542.14",rec:"",mfg:"2025-10-23",exp:"2026-10-23",shelf:"12 months",qty:"25 kg",remarks:"",locked:false});
-addRow({item:"White pepper",batch:"890.686.701.13",rec:"",mfg:"2025-11-02",exp:"2026-11-02",shelf:"12 months",qty:"1 kg",remarks:"",locked:false});
-addRow({item:"A salt",batch:"136623.12001.24",rec:"",mfg:"2025-09-17",exp:"2026-09-17",shelf:"12 months",qty:"300 g",remarks:"",locked:false});
-addRow({item:"K mettu",batch:"897.23.120.337.4",rec:"",mfg:"2025-07-11",exp:"2026-07-11",shelf:"12 months",qty:"94 months",remarks:"",locked:false});
-addRow({item:"Mida",batch:"136.220.3.100.25",rec:"",mfg:"2025-06-21",exp:"2026-06-21",shelf:"12 months",qty:"4 months",remarks:"",locked:false});
-addRow({item:"M salt",batch:"136.620.3.100.25",rec:"",mfg:"2025-07-01",exp:"2026-07-01",shelf:"12 months",qty:"5 months",remarks:"",locked:false});
-addRow({item:"Soya sauce",batch:"136.620.200.26",rec:"",mfg:"2025-10-02",exp:"2026-10-02",shelf:"12 months",qty:"5 LT",remarks:"",locked:false});
-addRow({item:"Venigar",batch:"136.620.3.100.25",rec:"",mfg:"2025-07-01",exp:"2026-07-01",shelf:"12 months",qty:"5 months",remarks:"",locked:false});
-addRow({item:"Tomato sauce",batch:"136.620.200.26",rec:"",mfg:"2025-10-02",exp:"2026-10-02",shelf:"12 months",qty:"5 LT",remarks:"",locked:false});
-
+        addRow();
+        addRow();
     }
 }
 
-/* PDF EXPORT — unchanged */
+/* PDF EXPORT */
 async function downloadPDF(){
     const { jsPDF }=window.jspdf;
 
+    // sync latest data
     document.querySelectorAll("#tbody tr").forEach((tr,i)=>{
         let inp=tr.querySelectorAll("input");
-        data[i].item=inp[0].value;
-        data[i].batch=inp[1].value;
-        data[i].rec=inp[2].value;
-        data[i].mfg=inp[3].value;
-        data[i].exp=inp[4].value;
-        data[i].shelf=inp[5].value;
-        data[i].qty=inp[6].value;
-        data[i].remarks=inp[7].value;
+        data[i].barcode=inp[0].value;
+        data[i].item=inp[1].value;
+        data[i].batch=inp[2].value;
+        data[i].rec=inp[3].value;
+        data[i].mfg=inp[4].value;
+        data[i].exp=inp[5].value;
+        data[i].shelf=inp[6].value;
+        data[i].qty=inp[7].value;
+        data[i].remarks=inp[8].value;
     });
 
-    const head={date:date.value,vendor:vendor.value,supervisor:supervisor.value,building:building.value,floor:floor.value,counter:counter.value};
+    const head={
+        date:date.value,
+        vendor:vendor.value,
+        supervisor:supervisor.value,
+        building:building.value,
+        floor:floor.value,
+        counter:counter.value
+    };
 
     let pages=[];
     for(let i=0;i<data.length;i+=ROWS){
@@ -367,6 +461,7 @@ async function downloadPDF(){
                 <thead>
                     <tr>
                         <th style="border:1px solid #000;padding:5px;">S.No</th>
+                        <th style="border:1px solid #000;padding:5px;">Barcode No</th>  <!-- NEW -->
                         <th style="border:1px solid #000;padding:5px;">Items</th>
                         <th style="border:1px solid #000;padding:5px;">Batch No</th>
                         <th style="border:1px solid #000;padding:5px;">Receiving Date</th>
@@ -381,6 +476,7 @@ async function downloadPDF(){
                     ${pages[p].map((r,i)=>`
                         <tr>
                             <td style="border:1px solid #000;padding:4px;">${(p*ROWS)+i+1}</td>
+                            <td style="border:1px solid #000;padding:4px;">${r.barcode}</td> <!-- NEW -->
                             <td style="border:1px solid #000;padding:4px;">${r.item}</td>
                             <td style="border:1px solid #000;padding:4px;">${r.batch}</td>
                             <td style="border:1px solid #000;padding:4px;">${r.rec}</td>
@@ -388,7 +484,7 @@ async function downloadPDF(){
                             <td style="border:1px solid #000;padding:4px;">${r.exp}</td>
                             <td style="border:1px solid #000;padding:4px;">${r.shelf}</td>
                             <td style="border:1px solid #000;padding:4px;">${r.qty}</td>
-                            <td style="border:1px solid#000;padding:4px;">${r.remarks}</td>
+                            <td style="border:1px solid #000;padding:4px;">${r.remarks}</td>
                         </tr>
                     `).join("")}
                 </tbody>
