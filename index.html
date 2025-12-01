@@ -16,145 +16,29 @@
         margin: 0;
         padding: 12px;
     }
-
-    .wrapper {
-        max-width: 1200px;
-        margin: auto;
-    }
-
+    .wrapper { max-width: 1200px; margin: auto; }
     .sheet {background:#fff;border:1px solid #000;padding:18px;border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,0.08);}
-
-    /* FULL HEADER BOX */
     .header-box {border:1px solid #000;padding:14px;border-radius:14px;background:#ffffff;margin-bottom:16px;}
-
-    /* HEADER */
     .header {display:flex;align-items:center;border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:10px;}
-
-    .header img {
-        width: 130px;
-        margin-right: 20px;
-    }
-
-    .header-title {
-        font-size: 20px;
-        font-weight: bold;
-        text-align: center;
-        width: 100%;
-    }
-
-    /* TOP FIELDS */
-    .top-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .top-table td {
-        border: 1px solid #000;
-        padding: 6px;
-        font-size: 14px;
-    }
-
-    .top-table input {
-        width: 100%;
-        border: none;
-        outline: none;
-        font-size: 14px;
-        padding: 2px 4px;
-        box-sizing: border-box;
-    }
-
-    /* TABLE WRAPPER */
-    .table-wrap {
-        width:100%;
-        overflow-x:auto;
-        border:1px solid #000;
-        padding:12px;
-        border-radius:14px;
-        background:#ffffff;
-        margin-bottom:16px;
-        box-sizing:border-box;
-    }
-
-    .main-table {
-        width:max-content;
-        min-width:100%;
-        border-collapse:collapse;
-        background:#fff;
-        margin:0;
-    }
-
-    .main-table th, .main-table td {
-        border:1px solid #000;
-        padding:6px;
-        text-align:center;
-        font-size:12px;
-    }
-
-    .main-table input {
-        width:100%;
-        border:none;
-        outline:none;
-        padding:2px;
-        font-size:12px;
-        text-align:center;
-        box-sizing:border-box;
-    }
-
-    .locked input {
-        background: transparent;
-        color: #111;
-    }
-
-    /* FOOTER */
-    .bottom-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 12px;
-    }
-
-    .bottom-table td {
-        border:1px solid #000;
-        padding:10px;
-        font-size:14px;
-        background:#ffffff;
-    }
-
-    /* BUTTONS */
-    .controls {
-        margin-top: 14px;
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    button {
-        background: #007bff;
-        color: #fff;
-        font-size: 14px;
-        padding: 10px 14px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-
+    .header img { width: 130px; margin-right: 20px; }
+    .header-title {font-size: 20px;font-weight: bold;text-align: center;width: 100%;}
+    .top-table { width: 100%; border-collapse: collapse; }
+    .top-table td { border: 1px solid #000; padding: 6px; font-size: 14px; }
+    .top-table input { width: 100%; border: none; outline: none; font-size: 14px; padding: 2px 4px; box-sizing: border-box; }
+    .table-wrap { width:100%; overflow-x:auto; border:1px solid #000; padding:12px; border-radius:14px; background:#ffffff; margin-bottom:16px; box-sizing:border-box; }
+    .main-table { width:max-content; min-width:100%; border-collapse:collapse; background:#fff; margin:0; }
+    .main-table th, .main-table td { border:1px solid #000; padding:6px; text-align:center; font-size:12px; }
+    .main-table input { width:100%; border:none; outline:none; padding:2px; font-size:12px; text-align:center; box-sizing:border-box; }
+    .locked input { background: transparent; color: #111; }
+    .bottom-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    .bottom-table td { border:1px solid #000; padding:10px; font-size:14px; background:#ffffff; }
+    .controls { margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap; }
+    button { background: #007bff; color: #fff; font-size: 14px; padding: 10px 14px; border: none; border-radius: 6px; cursor: pointer; }
     .save { background: #28a745; }
     .pdf { background: #6f42c1; }
     .reset { background: #dc3545; }
-
-    #pdfPages {
-        position: absolute;
-        left: -9999px;
-        top: -9999px;
-        visibility: hidden;
-    }
-
-    .page {
-        width: 297mm;
-        height: 210mm;
-        padding: 12mm;
-        box-sizing: border-box;
-        background: #fff;
-    }
+    #pdfPages { position: absolute; left: -9999px; top: -9999px; visibility: hidden; }
+    .page { width: 297mm; height: 210mm; padding: 12mm; box-sizing: border-box; background: #fff; }
 </style>
 </head>
 
@@ -276,7 +160,6 @@ function addRow(v=null){
 </td>
 `;
 
-    /* LOCKED MODE */
     if(r.locked){
         tr.classList.add("locked");
         tr.querySelectorAll("input").forEach(i=>i.disabled=true);
@@ -284,7 +167,6 @@ function addRow(v=null){
         tr.querySelector('.savebtn').style.display="none";
     }
 
-    /* DELETE ROW */
     tr.querySelector('.delbtn').addEventListener('click',()=>{
         let index=[...tbody.children].indexOf(tr);
         data.splice(index,1);
@@ -292,7 +174,6 @@ function addRow(v=null){
         renumberRows();
     });
 
-    /* EDIT ROW */
     tr.querySelector('.editbtn').addEventListener('click',()=>{
         tr.classList.remove("locked");
         tr.querySelectorAll("input").forEach(i=>i.disabled=false);
@@ -301,7 +182,6 @@ function addRow(v=null){
         tr.querySelector('.savebtn').style.display="inline";
     });
 
-    /* SAVE EDITED ROW */
     tr.querySelector('.savebtn').addEventListener('click',()=>{
         let inp=tr.querySelectorAll("input");
         let index=[...tbody.children].indexOf(tr);
@@ -330,7 +210,7 @@ function addRow(v=null){
     tbody.appendChild(tr);
 }
 
-/* SAVE BUTTON (MAIN) */
+/* SAVE BUTTON */
 function saveRows(){
     let rows=document.querySelectorAll("#tbody tr");
 
@@ -381,7 +261,7 @@ function resetAll(){
     localStorage.removeItem(STORAGE);
 }
 
-/* RESTORE SAVED DATA + ADD 17 ROWS */
+/* RESTORE + 17 FIXED ROWS */
 window.onload=()=>{
     const saved=localStorage.getItem(STORAGE);
     if(saved){
@@ -395,28 +275,30 @@ window.onload=()=>{
         o.rows.forEach(r=>addRow(r));
     } else {
 
-        addRow({item:"Double Horse",batch:"8646802331385",rec:"",mfg:"2025-11-21",exp:"2026-11-20",shelf:"4 months",qty:"4.5 kg",remarks:"",locked:false});
-        addRow({item:"TURMERIC",batch:"658620234914",rec:"",mfg:"2025-12-15",exp:"2026-12-14",shelf:"4 months",qty:"7 kg",remarks:"",locked:false});
-        addRow({item:"Fresh Soda",batch:"025670265962",rec:"",mfg:"2025-05-19",exp:"2026-05-18",shelf:"4 months",qty:"1.2 kg",remarks:"",locked:false});
-        addRow({item:"Coriander Powder",batch:"136201102003225",rec:"",mfg:"2025-11-11",exp:"2026-11-10",shelf:"6 months",qty:"1.12 kg",remarks:"",locked:false});
-        addRow({item:"K. New",batch:"896020628586",rec:"",mfg:"2025-09-14",exp:"2026-09-13",shelf:"10 months",qty:"600 gm",remarks:"",locked:false});
-        addRow({item:"Rice Flource",batch:"1362010324325",rec:"",mfg:"2025-11-15",exp:"2026-11-14",shelf:"10 months",qty:"2 kg",remarks:"",locked:false});
-        addRow({item:"Ragi Flour",batch:"8960206238235",rec:"",mfg:"2025-10-21",exp:"2026-10-20",shelf:"1 month",qty:"1 kg",remarks:"",locked:false});
-        addRow({item:"Sprouts",batch:"8501045234562",rec:"",mfg:"2025-11-23",exp:"2026-11-22",shelf:"1 month",qty:"1 kg",remarks:"",locked:false});
-        addRow({item:"White Pepper",batch:"9607010202362",rec:"",mfg:"2025-07-31",exp:"2026-07-30",shelf:"1 month",qty:"1 kg",remarks:"",locked:false});
-        addRow({item:"A-Salt",batch:"100203100362",rec:"",mfg:"2025-11-15",exp:"2026-11-14",shelf:"1 month",qty:"1 kg",remarks:"",locked:false});
-        addRow({item:"K-Mettu",batch:"980265457013",rec:"",mfg:"2025-10-21",exp:"2026-10-20",shelf:"300 gms",qty:"25 kg",remarks:"",locked:false});
-        addRow({item:"M Salt",batch:"87022312000124",rec:"",mfg:"2025-10-01",exp:"2026-07-01",shelf:"94 months",qty:"3 months",remarks:"",locked:false});
-        addRow({item:"NIDA",batch:"13622321033571",rec:"",mfg:"2025-01-01",exp:"2025-10-01",shelf:"1 month",qty:"6 months",remarks:"",locked:false});
-        addRow({item:"SCH Sauce",batch:"872721003372",rec:"",mfg:"2025-12-17",exp:"2026-12-17",shelf:"1 month",qty:"4 months",remarks:"",locked:false});
-        addRow({item:"VERLICAR",batch:"1366600120025A",rec:"",mfg:"2026-07-01",exp:"2026-07-01",shelf:"2100 kg",qty:"5 LT",remarks:"",locked:false});
-        addRow({item:"G Sauce",batch:"58072051178",rec:"",mfg:"2025-10-02",exp:"2026-10-02",shelf:"5 months",qty:"5 LT",remarks:"",locked:false});
-        addRow({item:"Vendor",batch:"13662001200328",rec:"",mfg:"2025-09-01",exp:"2026-09-01",shelf:"10 months",qty:"Spices",remarks:"",locked:false});
+        /* ---- 17 EXACT ROWS INSERTED ---- */
+
+addRow({item:"Double horse",batch:"869.620.233.128.5",rec:"",mfg:"2025-11-15",exp:"2025-11-20",shelf:"10 months",qty:"4.5 kg",remarks:"",locked:false});
+addRow({item:"Suger free sago",batch:"869.620.239.49.4",rec:"",mfg:"2025-05-19",exp:"2025-11-15",shelf:"7 months",qty:"7 kg",remarks:"",locked:false});
+addRow({item:"Turmeric powder",batch:"13662013298.2",rec:"",mfg:"2025-05-11",exp:"2026-11-11",shelf:"18 months",qty:"1.12 kg",remarks:"",locked:false});
+addRow({item:"Coriander powder",batch:"136.620.110.1.580.76",rec:"",mfg:"2025-04-01",exp:"2026-04-10",shelf:"12 months",qty:"2 kg",remarks:"",locked:false});
+addRow({item:"K metui",batch:"869.620.133.28.25",rec:"",mfg:"2025-07-23",exp:"2026-02-13",shelf:"10 months",qty:"600 gm",remarks:"",locked:false});
+addRow({item:"Bambino",batch:"869.610.555.63.65.2",rec:"",mfg:"2025-04-08",exp:"2026-04-08",shelf:"12 months",qty:"2 kg",remarks:"",locked:false});
+addRow({item:"Rice flour",batch:"101.620.372.642.2",rec:"",mfg:"2025-11-15",exp:"2026-11-15",shelf:"12 months",qty:"1 kg",remarks:"",locked:false});
+addRow({item:"Ragi flour",batch:"101.203.2003.2462",rec:"",mfg:"2025-11-02",exp:"2026-11-02",shelf:"12 months",qty:"2 kg",remarks:"",locked:false});
+addRow({item:"S. Powder",batch:"892.265.542.14",rec:"",mfg:"2025-10-23",exp:"2026-10-23",shelf:"12 months",qty:"25 kg",remarks:"",locked:false});
+addRow({item:"White pepper",batch:"890.686.701.13",rec:"",mfg:"2025-11-02",exp:"2026-11-02",shelf:"12 months",qty:"1 kg",remarks:"",locked:false});
+addRow({item:"A salt",batch:"136623.12001.24",rec:"",mfg:"2025-09-17",exp:"2026-09-17",shelf:"12 months",qty:"300 g",remarks:"",locked:false});
+addRow({item:"K mettu",batch:"897.23.120.337.4",rec:"",mfg:"2025-07-11",exp:"2026-07-11",shelf:"12 months",qty:"94 months",remarks:"",locked:false});
+addRow({item:"Mida",batch:"136.220.3.100.25",rec:"",mfg:"2025-06-21",exp:"2026-06-21",shelf:"12 months",qty:"4 months",remarks:"",locked:false});
+addRow({item:"M salt",batch:"136.620.3.100.25",rec:"",mfg:"2025-07-01",exp:"2026-07-01",shelf:"12 months",qty:"5 months",remarks:"",locked:false});
+addRow({item:"Soya sauce",batch:"136.620.200.26",rec:"",mfg:"2025-10-02",exp:"2026-10-02",shelf:"12 months",qty:"5 LT",remarks:"",locked:false});
+addRow({item:"Venigar",batch:"136.620.3.100.25",rec:"",mfg:"2025-07-01",exp:"2026-07-01",shelf:"12 months",qty:"5 months",remarks:"",locked:false});
+addRow({item:"Tomato sauce",batch:"136.620.200.26",rec:"",mfg:"2025-10-02",exp:"2026-10-02",shelf:"12 months",qty:"5 LT",remarks:"",locked:false});
 
     }
 }
 
-/* PDF EXPORT — (unchanged) */
+/* PDF EXPORT — unchanged */
 async function downloadPDF(){
     const { jsPDF }=window.jspdf;
 
@@ -432,14 +314,7 @@ async function downloadPDF(){
         data[i].remarks=inp[7].value;
     });
 
-    const head={
-        date:date.value,
-        vendor:vendor.value,
-        supervisor:supervisor.value,
-        building:building.value,
-        floor:floor.value,
-        counter:counter.value
-    };
+    const head={date:date.value,vendor:vendor.value,supervisor:supervisor.value,building:building.value,floor:floor.value,counter:counter.value};
 
     let pages=[];
     for(let i=0;i<data.length;i+=ROWS){
