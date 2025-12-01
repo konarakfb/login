@@ -22,10 +22,10 @@
         margin: auto;
     }
 
-    .sheet {background:#fff;border:1px solid #d0d0d0;padding:18px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.08);}
+    .sheet {background:#fff;border:1px solid #000;padding:18px;border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,0.08);}
 
     /* FULL HEADER BOX */
-    .header-box {border:1px solid #d0d0d0;padding:14px;border-radius:12px;background:#fafafa;margin-bottom:16px;}
+    .header-box {border:1px solid #000;padding:14px;border-radius:14px;background:#ffffff;margin-bottom:16px;}
 
     /* HEADER */
     .header {display:flex;align-items:center;border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:10px;}
@@ -71,11 +71,31 @@
     }
 
     /* BODY TABLE */
-    .table-wrap {width:100%;overflow-x:auto;border:1px solid #d0d0d0;padding:10px;border-radius:12px;background:#fafafa;box-sizing:border-box;margin-bottom:16px;}
+    .table-wrap {
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    border:1px solid #000;
+    padding:20px 20px; /* reduced left-right padding */
+    border-radius:14px;
+    background:#ffffff;
+    box-sizing:border-box;
+    margin-bottom:16px;
+}
 
-    .main-table {width:max-content;min-width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;background:#fff;}
+    .main-table {
+    width:max-content;
+    min-width:100%;
+    border-collapse:collapse;
+    border-radius:0;
+    overflow:hidden;
+    background:#fff;
+    margin-left:12px;  /* reduced side margin */
+    margin-right:12px;
+    margin-bottom:10px;
+}
 
-    .main-table th, .main-table td {border:1px solid #d0d0d0;padding:10px;text-align:center;font-size:13px;background:#fff;}
+    .main-table th, .main-table td {border:1px solid #000;padding:10px;text-align:center;font-size:13px;background:#fff;}
 
     .main-table input {
         width: 100%;
@@ -99,7 +119,7 @@
         margin-top: 12px;
     }
 
-    .bottom-table td {border:1px solid #d0d0d0;padding:10px;font-size:14px;border-radius:8px;background:#fafafa;}
+    .bottom-table td {border:1px solid #000;padding:10px;font-size:14px;border-radius:0;background:#ffffff;}
 
     /* BUTTONS */
     .controls {
@@ -184,18 +204,19 @@
         <div class="table-wrap">
             <table class="main-table" id="mainTable">
                 <thead>
-                    <tr>
-                        <th style="width:50px">S.No</th>
-                        <th style="width:220px">Items</th>
-                        <th style="width:160px">Batch No</th>
-                        <th style="width:150px">Receiving Date</th>
-                        <th style="width:150px">Manufacturing Date</th>
-                        <th style="width:140px">Expiry Date</th>
-                        <th style="width:100px">Shelf Life</th>
-                        <th style="width:130px">Stock Quantity</th>
-                        <th style="width:200px">Remarks</th>
-                    </tr>
-                </thead>
+<tr>
+<th style="width:50px;border:1px solid #000;">S.No</th>
+<th style="width:220px;border:1px solid #000;">Items</th>
+<th style="width:160px;border:1px solid #000;">Batch No</th>
+<th style="width:150px;border:1px solid #000;">Receiving Date</th>
+<th style="width:150px;border:1px solid #000;">Manufacturing Date</th>
+<th style="width:140px;border:1px solid #000;">Expiry Date</th>
+<th style="width:100px;border:1px solid #000;">Shelf Life</th>
+<th style="width:130px;border:1px solid #000;">Stock Quantity</th>
+<th style="width:200px;border:1px solid #000;">Remarks</th>
+<th style="width:60px;border:1px solid #000;">Del</th>
+</tr>
+</thead>
                 <tbody id="tbody"></tbody>
             </table>
         </div>
@@ -240,22 +261,24 @@ function addRow(v=null){
 
     let tr=document.createElement("tr");
     tr.innerHTML=`
-        <td>${index}</td>
-        <td><input value="${r.item}"></td>
-        <td><input value="${r.batch}"></td>
-        <td><input type="date" value="${r.rec}"></td>
-        <td><input type="date" value="${r.mfg}"></td>
-        <td><input type="date" value="${r.exp}"></td>
-        <td><input value="${r.shelf}"></td>
-        <td><input value="${r.qty}"></td>
-        <td><input value="${r.remarks}"></td>
-    `;
+<td>${index}</td>
+<td><input value="${r.item}"></td>
+<td><input value="${r.batch}"></td>
+<td><input type="date" value="${r.rec}"></td>
+<td><input type="date" value="${r.mfg}"></td>
+<td><input type="date" value="${r.exp}"></td>
+<td><input value="${r.shelf}"></td>
+<td><input value="${r.qty}"></td>
+<td><input value="${r.remarks}"></td>
+<td><button class='delbtn' style="background:none;border:none;font-size:20px;color:#dc3545;cursor:pointer;">✖</button></td>
+`;
 
     if(r.locked){
         tr.classList.add("locked");
         tr.querySelectorAll("input").forEach(i=>i.disabled=true);
     }
 
+    tr.querySelector('.delbtn').addEventListener('click',()=>{ tr.remove(); });
     tbody.appendChild(tr);
 }
 
