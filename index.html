@@ -1,66 +1,554 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Download Final Dry Store PDF</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 16px; background:#f6f6f6; }
-    .container { max-width:1100px; margin:0 auto; background:#fff; padding:16px; box-shadow:0 6px 18px rgba(0,0,0,.06); border-radius:6px; }
-    header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
-    h1 { font-size:18px; margin:0; }
-    .controls { display:flex; gap:8px; align-items:center; }
-    button { padding:8px 12px; font-size:14px; cursor:pointer; border:1px solid #1a73e8; background:#1a73e8; color:#fff; border-radius:4px; }
-    a.fallback { padding:8px 12px; font-size:14px; color:#1a73e8; text-decoration:none; border:1px solid #1a73e8; background:#fff; border-radius:4px; }
-    iframe { width:100%; height:850px; border:1px solid #ddd; border-radius:4px; }
-    .note { font-size:13px; color:#444; margin-top:10px; }
-  </style>
+<meta charset="utf-8">
+<title>Dry Store Stock Record</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- libs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+    body {
+        font-family: Arial;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 12px;
+    }
+
+    .wrapper {
+        max-width: 1200px;
+        margin: auto;
+    }
+
+    .sheet {background:#fff;border:1px solid #000;padding:18px;border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,0.08);}
+
+    /* FULL HEADER BOX */
+    .header-box {border:1px solid #000;padding:14px;border-radius:14px;background:#ffffff;margin-bottom:16px;}
+
+    /* HEADER */
+    .header {display:flex;align-items:center;border-bottom:1px solid #ccc;padding-bottom:10px;margin-bottom:10px;}
+
+    .header img {
+        width: 130px;
+        margin-right: 20px;
+    }
+
+    .header-title {
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+        width: 100%;
+    }
+
+    /* TOP FIELDS */
+    .top-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .top-table td {
+        border: 1px solid #000;
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .top-table input {
+        width: 100%;
+        border: none;
+        outline: none;
+        font-size: 14px;
+        padding: 2px 4px;
+        box-sizing: border-box;
+    }
+
+    /* TABLE WRAPPER */
+    .table-wrap {
+        width:100%;
+        overflow-x:auto;
+        border:1px solid #000;
+        padding:12px;
+        border-radius:14px;
+        background:#ffffff;
+        margin-bottom:16px;
+        box-sizing:border-box;
+    }
+
+    .main-table {
+        width:max-content;
+        min-width:100%;
+        border-collapse:collapse;
+        background:#fff;
+        margin:0;
+    }
+
+    .main-table th, .main-table td {
+        border:1px solid #000;
+        padding:6px;
+        text-align:center;
+        font-size:12px;
+    }
+
+    .main-table input {
+        width:100%;
+        border:none;
+        outline:none;
+        padding:2px;
+        font-size:12px;
+        text-align:center;
+        box-sizing:border-box;
+    }
+
+    .locked input {
+        background: transparent;
+        color: #111;
+    }
+
+    /* FOOTER */
+    .bottom-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+    }
+
+    .bottom-table td {
+        border:1px solid #000;
+        padding:10px;
+        font-size:14px;
+        background:#ffffff;
+    }
+
+    /* BUTTONS */
+    .controls {
+        margin-top: 14px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    button {
+        background: #007bff;
+        color: #fff;
+        font-size: 14px;
+        padding: 10px 14px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .save { background: #28a745; }
+    .pdf { background: #6f42c1; }
+    .reset { background: #dc3545; }
+
+    #pdfPages {
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+        visibility: hidden;
+    }
+
+    .page {
+        width: 297mm;
+        height: 210mm;
+        padding: 12mm;
+        box-sizing: border-box;
+        background: #fff;
+    }
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <header>
-      <h1>Dry Store — Final PDF Viewer & Download</h1>
-      <div class="controls">
-        <!-- Change pdfPath below if PDF is hosted at a different URL -->
-        <button id="downloadBtn">Download PDF</button>
-        <a id="fallbackLink" class="fallback" href="Dry_Store_Record (18).pdf" download>Direct download (fallback)</a>
-      </div>
-    </header>
 
-    <!-- PDF embed (will preserve all content visually) -->
-    <iframe id="pdfViewer" src="Dry_Store_Record (18).pdf" title="Dry Store Final PDF"></iframe>
+<div class="wrapper">
 
-    <p class="note">
-      PDF source used: uploaded file. If your PDF is hosted elsewhere, replace the path
-      <code>Dry_Store_Record (18).pdf</code> in the code with its URL. The "Download PDF" button uses JS to force download as <strong>Dry_Store_Final.pdf</strong>.
-    </p>
-  </div>
+    <div class="sheet" id="sheet">
 
-  <script>
-    // path to the PDF file (change if needed)
-    const pdfPath = 'Dry_Store_Record (18).pdf'; // <-- put the exact filename or URL here
+        <!-- HEADER BOX -->
+        <div class="header-box">
 
-    document.getElementById('pdfViewer').src = pdfPath;
-    document.getElementById('fallbackLink').href = pdfPath;
+            <div class="header">
+                <img src="logo.png" alt="logo">
+                <div style="width:100%;">
+                    <div class="header-title">Dry Store Stock Record</div>
+                </div>
+            </div>
 
-    document.getElementById('downloadBtn').addEventListener('click', async () => {
-      try {
-        // fetch the PDF as blob then download with a friendly name
-        const resp = await fetch(pdfPath, {cache: "no-cache"});
-        if (!resp.ok) throw new Error('Failed to fetch PDF. Check path/URL.');
-        const blob = await resp.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'Dry_Store_Final.pdf'; // filename that will be downloaded
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        alert('Could not download PDF: ' + err.message + '\n\nYou can use the fallback direct link below the button.');
-      }
+            <!-- TOP INPUT -->
+            <table class="top-table">
+                <tr>
+                    <td>Date: <input type="date" id="date"></td>
+                    <td>Vendor Name: <input id="vendor"></td>
+                    <td>Vendor Supervisor Name: <input id="supervisor"></td>
+                </tr>
+
+                <tr>
+                    <td>Building: <input id="building"></td>
+                    <td>Floor: <input id="floor"></td>
+                    <td>Counter: <input id="counter"></td>
+                </tr>
+            </table>
+
+        </div>
+
+        <!-- MAIN TABLE -->
+        <div class="table-wrap">
+            <table class="main-table" id="mainTable">
+                <thead>
+                    <tr>
+                        <th style="width:50px;">S.No</th>
+                        <th style="width:220px;">Items</th>
+                        <th style="width:160px;">Batch No</th>
+                        <th style="width:150px;">Receiving Date</th>
+                        <th style="width:150px;">Manufacturing Date</th>
+                        <th style="width:140px;">Expiry Date</th>
+                        <th style="width:100px;">Shelf Life</th>
+                        <th style="width:130px;">Stock Quantity</th>
+                        <th style="width:200px;">Remarks</th>
+                        <th style="width:90px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+
+        <table class="bottom-table">
+            <tr>
+                <td>Vendor PoC :</td>
+                <td>Verified by F&B team :</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="controls">
+        <button onclick="addRow()">Add Row</button>
+        <button class="save" onclick="saveRows()">Save (Lock)</button>
+        <button class="pdf" onclick="downloadPDF()">Download PDF</button>
+        <button class="reset" onclick="resetAll()">Reset</button>
+    </div>
+
+</div>
+
+<!-- PDF render container -->
+<div id="pdfPages"></div>
+
+<script>
+let data=[];
+const STORAGE="cts_v5";
+const ROWS=13;
+
+/* RENUMBER AFTER DELETE */
+function renumberRows(){
+    const rows=document.querySelectorAll("#tbody tr");
+    rows.forEach((tr,i)=>{
+        tr.children[0].innerText = i + 1;
     });
-  </script>
+}
+
+/* ADD ROW */
+function addRow(v=null){
+    let tbody=document.getElementById("tbody");
+    let index=data.length+1;
+
+    let r=v||{
+        item:"",batch:"",rec:"",mfg:"",exp:"",
+        shelf:"",qty:"",remarks:"",locked:false
+    };
+
+    data.push(r);
+
+    let tr=document.createElement("tr");
+    tr.innerHTML=`
+<td>${index}</td>
+<td><input value="${r.item}"></td>
+<td><input value="${r.batch}"></td>
+<td><input type="date" value="${r.rec}"></td>
+<td><input type="date" value="${r.mfg}"></td>
+<td><input type="date" value="${r.exp}"></td>
+<td><input value="${r.shelf}"></td>
+<td><input value="${r.qty}"></td>
+<td><input value="${r.remarks}"></td>
+
+<td>
+    <button class="editbtn" style="background:none;border:none;font-size:18px;color:#007bff;cursor:pointer;">✎</button>
+    <button class="savebtn" style="display:none;background:none;border:none;font-size:18px;color:#28a745;cursor:pointer;">✔</button>
+    <button class="delbtn" style="background:none;border:none;font-size:20px;color:#dc3545;cursor:pointer;">✖</button>
+</td>
+`;
+
+    /* LOCKED MODE */
+    if(r.locked){
+        tr.classList.add("locked");
+        tr.querySelectorAll("input").forEach(i=>i.disabled=true);
+        tr.querySelector('.editbtn').style.display="inline";
+        tr.querySelector('.savebtn').style.display="none";
+    }
+
+    /* DELETE ROW */
+    tr.querySelector('.delbtn').addEventListener('click',()=>{
+        let index=[...tbody.children].indexOf(tr);
+        data.splice(index,1);
+        tr.remove();
+        renumberRows();
+    });
+
+    /* EDIT ROW */
+    tr.querySelector('.editbtn').addEventListener('click',()=>{
+        tr.classList.remove("locked");
+        tr.querySelectorAll("input").forEach(i=>i.disabled=false);
+
+        tr.querySelector('.editbtn').style.display="none";
+        tr.querySelector('.savebtn').style.display="inline";
+    });
+
+    /* SAVE EDITED ROW */
+    tr.querySelector('.savebtn').addEventListener('click',()=>{
+        let inp=tr.querySelectorAll("input");
+        let index=[...tbody.children].indexOf(tr);
+
+        data[index]={
+            item:inp[0].value,
+            batch:inp[1].value,
+            rec:inp[2].value,
+            mfg:inp[3].value,
+            exp:inp[4].value,
+            shelf:inp[5].value,
+            qty:inp[6].value,
+            remarks:inp[7].value,
+            locked:true
+        };
+
+        tr.classList.add("locked");
+        inp.forEach(i=>i.disabled=true);
+
+        tr.querySelector('.editbtn').style.display="inline";
+        tr.querySelector('.savebtn').style.display="none";
+
+        renumberRows();
+    });
+
+    tbody.appendChild(tr);
+}
+
+/* SAVE BUTTON (MAIN) */
+function saveRows(){
+    let rows=document.querySelectorAll("#tbody tr");
+
+    rows.forEach((tr,i)=>{
+        let inp=tr.querySelectorAll("input");
+
+        let hasData=[...inp].some(x=>x.value.trim()!== "");
+
+        if(hasData){
+            data[i]={
+                item:inp[0].value,
+                batch:inp[1].value,
+                rec:inp[2].value,
+                mfg:inp[3].value,
+                exp:inp[4].value,
+                shelf:inp[5].value,
+                qty:inp[6].value,
+                remarks:inp[7].value,
+                locked:true
+            };
+
+            tr.classList.add("locked");
+            inp.forEach(a=>a.disabled=true);
+
+            tr.querySelector('.editbtn').style.display="inline";
+            tr.querySelector('.savebtn').style.display="none";
+        }
+    });
+
+    localStorage.setItem(STORAGE, JSON.stringify({
+        date:date.value,
+        vendor:vendor.value,
+        supervisor:supervisor.value,
+        building:building.value,
+        floor:floor.value,
+        counter:counter.value,
+        rows:data
+    }));
+
+    alert("Saved & locked!");
+}
+
+/* RESET */
+function resetAll(){
+    if(!confirm("Clear all?"))return;
+    data=[];
+    document.getElementById("tbody").innerHTML="";
+    localStorage.removeItem(STORAGE);
+}
+
+/* RESTORE SAVED DATA + ADD 17 ROWS */
+window.onload=()=>{
+    const saved=localStorage.getItem(STORAGE);
+    if(saved){
+        let o=JSON.parse(saved);
+        date.value=o.date;
+        vendor.value=o.vendor;
+        supervisor.value=o.supervisor;
+        building.value=o.building;
+        floor.value=o.floor;
+        counter.value=o.counter;
+        o.rows.forEach(r=>addRow(r));
+    } else {
+
+        addRow({item:"Double Horse",batch:"8646802331385",rec:"",mfg:"2025-11-21",exp:"2026-11-20",shelf:"4 months",qty:"4.5 kg",remarks:"",locked:false});
+        addRow({item:"TURMERIC",batch:"658620234914",rec:"",mfg:"2025-12-15",exp:"2026-12-14",shelf:"4 months",qty:"7 kg",remarks:"",locked:false});
+        addRow({item:"Fresh Soda",batch:"025670265962",rec:"",mfg:"2025-05-19",exp:"2026-05-18",shelf:"4 months",qty:"1.2 kg",remarks:"",locked:false});
+        addRow({item:"Coriander Powder",batch:"136201102003225",rec:"",mfg:"2025-11-11",exp:"2026-11-10",shelf:"6 months",qty:"1.12 kg",remarks:"",locked:false});
+        addRow({item:"K. New",batch:"896020628586",rec:"",mfg:"2025-09-14",exp:"2026-09-13",shelf:"10 months",qty:"600 gm",remarks:"",locked:false});
+        addRow({item:"Rice Flource",batch:"1362010324325",rec:"",mfg:"2025-11-15",exp:"2026-11-14",shelf:"10 months",qty:"2 kg",remarks:"",locked:false});
+        addRow({item:"Ragi Flour",batch:"8960206238235",rec:"",mfg:"2025-10-21",exp:"2026-10-20",shelf:"1 month",qty:"1 kg",remarks:"",locked:false});
+        addRow({item:"Sprouts",batch:"8501045234562",rec:"",mfg:"2025-11-23",exp:"2026-11-22",shelf:"1 month",qty:"1 kg",remarks:"",locked:false});
+        addRow({item:"White Pepper",batch:"9607010202362",rec:"",mfg:"2025-07-31",exp:"2026-07-30",shelf:"1 month",qty:"1 kg",remarks:"",locked:false});
+        addRow({item:"A-Salt",batch:"100203100362",rec:"",mfg:"2025-11-15",exp:"2026-11-14",shelf:"1 month",qty:"1 kg",remarks:"",locked:false});
+        addRow({item:"K-Mettu",batch:"980265457013",rec:"",mfg:"2025-10-21",exp:"2026-10-20",shelf:"300 gms",qty:"25 kg",remarks:"",locked:false});
+        addRow({item:"M Salt",batch:"87022312000124",rec:"",mfg:"2025-10-01",exp:"2026-07-01",shelf:"94 months",qty:"3 months",remarks:"",locked:false});
+        addRow({item:"NIDA",batch:"13622321033571",rec:"",mfg:"2025-01-01",exp:"2025-10-01",shelf:"1 month",qty:"6 months",remarks:"",locked:false});
+        addRow({item:"SCH Sauce",batch:"872721003372",rec:"",mfg:"2025-12-17",exp:"2026-12-17",shelf:"1 month",qty:"4 months",remarks:"",locked:false});
+        addRow({item:"VERLICAR",batch:"1366600120025A",rec:"",mfg:"2026-07-01",exp:"2026-07-01",shelf:"2100 kg",qty:"5 LT",remarks:"",locked:false});
+        addRow({item:"G Sauce",batch:"58072051178",rec:"",mfg:"2025-10-02",exp:"2026-10-02",shelf:"5 months",qty:"5 LT",remarks:"",locked:false});
+        addRow({item:"Vendor",batch:"13662001200328",rec:"",mfg:"2025-09-01",exp:"2026-09-01",shelf:"10 months",qty:"Spices",remarks:"",locked:false});
+
+    }
+}
+
+/* PDF EXPORT — (unchanged) */
+async function downloadPDF(){
+    const { jsPDF }=window.jspdf;
+
+    document.querySelectorAll("#tbody tr").forEach((tr,i)=>{
+        let inp=tr.querySelectorAll("input");
+        data[i].item=inp[0].value;
+        data[i].batch=inp[1].value;
+        data[i].rec=inp[2].value;
+        data[i].mfg=inp[3].value;
+        data[i].exp=inp[4].value;
+        data[i].shelf=inp[5].value;
+        data[i].qty=inp[6].value;
+        data[i].remarks=inp[7].value;
+    });
+
+    const head={
+        date:date.value,
+        vendor:vendor.value,
+        supervisor:supervisor.value,
+        building:building.value,
+        floor:floor.value,
+        counter:counter.value
+    };
+
+    let pages=[];
+    for(let i=0;i<data.length;i+=ROWS){
+        pages.push(data.slice(i,i+ROWS));
+    }
+
+    const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:"a4",compress:true});
+    const container=document.getElementById("pdfPages");
+
+    container.style.visibility="visible";
+    container.style.left="0px";
+    container.style.top="0px";
+    container.innerHTML="";
+
+    for(let p=0;p<pages.length;p++){
+        const page=document.createElement("div");
+        page.className="page";
+        container.appendChild(page);
+
+        page.innerHTML=`
+            <div style="border:1px solid #000;padding:8px;margin-bottom:8px;">
+
+                <div style="display:flex;align-items:center;border-bottom:1px solid #000;padding-bottom:6px;margin-bottom:6px;">
+                    <img src="logo.png" style="width:115px;margin-right:18px;">
+                    <div style="width:100%;text-align:center;">
+                        <div style="font-size:16px;font-weight:bold;">Dry Store Stock Record</div>
+                        <div style="font-size:11px;line-height:1.2;margin-top:3px;">
+                            Release ID: CQAG-DSSR / 1.1.0 / 01-Jan-2023 | C3: Private | Controlled Copy<br>
+                            Project ID: &lt;Project ID&gt; / &lt;SCL-ID&gt; / Ver - &lt;No&gt;
+                        </div>
+                    </div>
+                </div>
+
+                <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:4px;">
+                    <tr>
+                        <td style="border:1px solid #000;padding:5px;">Date: ${head.date}</td>
+                        <td style="border:1px solid #000;padding:5px;">Vendor: ${head.vendor}</td>
+                        <td style="border:1px solid #000;padding:5px;">Supervisor: ${head.supervisor}</td>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #000;padding:5px;">Building: ${head.building}</td>
+                        <td style="border:1px solid #000;padding:5px;">Floor: ${head.floor}</td>
+                        <td style="border:1px solid #000;padding:5px;">Counter: ${head.counter}</td>
+                    </tr>
+                </table>
+
+            </div>
+
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead>
+                    <tr>
+                        <th style="border:1px solid #000;padding:5px;">S.No</th>
+                        <th style="border:1px solid #000;padding:5px;">Items</th>
+                        <th style="border:1px solid #000;padding:5px;">Batch No</th>
+                        <th style="border:1px solid #000;padding:5px;">Receiving Date</th>
+                        <th style="border:1px solid #000;padding:5px;">Manufacturing Date</th>
+                        <th style="border:1px solid #000;padding:5px;">Expiry Date</th>
+                        <th style="border:1px solid #000;padding:5px;">Shelf Life</th>
+                        <th style="border:1px solid #000;padding:5px;">Qty</th>
+                        <th style="border:1px solid #000;padding:5px;">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${pages[p].map((r,i)=>`
+                        <tr>
+                            <td style="border:1px solid #000;padding:4px;">${(p*ROWS)+i+1}</td>
+                            <td style="border:1px solid #000;padding:4px;">${r.item}</td>
+                            <td style="border:1px solid #000;padding:4px;">${r.batch}</td>
+                            <td style="border:1px solid #000;padding:4px;">${r.rec}</td>
+                            <td style="border:1px solid #000;padding:4px;">${r.mfg}</td>
+                            <td style="border:1px solid #000;padding:4px;">${r.exp}</td>
+                            <td style="border:1px solid #000;padding:4px;">${r.shelf}</td>
+                            <td style="border:1px solid #000;padding:4px;">${r.qty}</td>
+                            <td style="border:1px solid#000;padding:4px;">${r.remarks}</td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+
+            <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;">
+                <tr>
+                    <td style="border:1px solid #000;padding:5px;">Vendor PoC :</td>
+                    <td style="border:1px solid #000;padding:5px;">Verified by F&B team :</td>
+                </tr>
+            </table>
+        `;
+
+        await new Promise(res=>{
+            const img=page.querySelector("img");
+            if(!img||img.complete)res();
+            else img.onload=res;
+        });
+
+        const canvas=await html2canvas(page,{scale:2.2});
+        const img=canvas.toDataURL("image/jpeg",0.85);
+
+        if(p>0) pdf.addPage();
+        pdf.addImage(img,"JPEG",0,0,297,210);
+
+        page.remove();
+    }
+
+    container.style.visibility="hidden";
+    container.style.left="-9999px";
+    container.style.top="-9999px";
+
+    pdf.save("Dry_Store_Record.pdf");
+}
+</script>
+
 </body>
 </html>
