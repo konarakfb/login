@@ -42,12 +42,7 @@
         width: 100%;
     }
 
-    .header-sub {
-        text-align: center;
-        margin-top: 3px;
-        font-size: 12px;
-        line-height: 1.2;
-    }
+    .header-sub {display:none;}
 
     /* TOP FIELDS */
     .top-table {
@@ -95,17 +90,9 @@
     margin-bottom:10px;
 }
 
-    .main-table th, .main-table td {border:1px solid #000;padding:10px;text-align:center;font-size:13px;background:#fff;}
+    .main-table th, .main-table td {border:1px solid #000;padding:6px;text-align:center;font-size:12px;background:#fff;}
 
-    .main-table input {
-        width: 100%;
-        border: none;
-        outline: none;
-        padding: 4px;
-        font-size: 13px;
-        text-align: center;
-        box-sizing: border-box;
-    }
+    .main-table input {width:100%;border:none;outline:none;padding:2px;font-size:12px;text-align:center;box-sizing:border-box;}
 
     .locked input {
         background: transparent;
@@ -175,10 +162,7 @@
                 <img src="logo.png" alt="logo">
                 <div style="width:100%;">
                     <div class="header-title">Dry Store Stock Record</div>
-                    <div class="header-sub">
-                        Release ID: CQAG-DSSR / 1.1.0 / 01-Jan-2023 | C3: Private | Controlled Copy <br>
-                        Project ID: &lt;Project ID&gt; / &lt;SCL-ID&gt; / Ver - &lt;No&gt;
-                    </div>
+                    <div class="header-sub" style="display:none;"></div>
                 </div>
             </div>
 
