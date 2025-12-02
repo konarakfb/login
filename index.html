@@ -225,6 +225,7 @@
       justify-content:center;
       margin-top:14px;
       gap:10px;
+      flex-wrap:wrap;
     }
 
     .btn{
@@ -234,16 +235,13 @@
       border:1px solid var(--accent);
       font-weight:600;
       font-size:13px;
+      background:#fff;
+      color:var(--accent);
     }
 
     .btn-primary{
       background:var(--accent);
       color:#fff;
-    }
-
-    .btn-outline{
-      background:#fff;
-      color:var(--accent);
     }
 
     /* RESPONSIVE */
@@ -273,7 +271,7 @@
     <div class="header-box">
       <div class="header-row">
         <div class="logo-box">
-          <img src="logo1.png">
+          <img src="logo1.png" alt="Logo">
         </div>
         <div class="title-block">
           <h1 class="company-name">CTS CAFETERIA</h1>
@@ -286,44 +284,44 @@
       <div class="meta-row">
 
         <div class="meta-item">
-          <label>Food Item Name</label>
-          <input type="text" placeholder="Item name">
+          <label for="food-item">Food Item Name</label>
+          <input id="food-item" type="text" placeholder="Item name">
         </div>
 
         <div class="meta-item">
-          <label>Building</label>
-          <input type="text" placeholder="Building">
+          <label for="building">Building</label>
+          <input id="building" type="text" placeholder="Building">
         </div>
 
         <div class="meta-item">
-          <label>Floor</label>
-          <input type="text" placeholder="Floor">
+          <label for="floor">Floor</label>
+          <input id="floor" type="text" placeholder="Floor">
         </div>
 
         <div class="meta-item">
-          <label>Counter</label>
-          <input type="text" placeholder="Counter">
+          <label for="counter">Counter</label>
+          <input id="counter" type="text" placeholder="Counter">
         </div>
 
         <div class="meta-item">
-          <label>Employee Name</label>
-          <input type="text" placeholder="Enter your name">
+          <label for="emp-name">Employee Name</label>
+          <input id="emp-name" type="text" placeholder="Enter your name">
         </div>
 
         <div class="meta-item">
-          <label>Employee ID</label>
-          <input type="text" placeholder="Badge / ID No">
+          <label for="emp-id">Employee ID</label>
+          <input id="emp-id" type="text" placeholder="Badge / ID No">
         </div>
 
         <div class="meta-item">
-          <label>Department</label>
-          <input type="text" placeholder="Department / Project">
+          <label for="dept">Department</label>
+          <input id="dept" type="text" placeholder="Department / Project">
         </div>
 
         <div class="meta-item">
-          <label>Meal Type</label>
-          <select>
-            <option>Select</option>
+          <label for="meal-type">Meal Type</label>
+          <select id="meal-type">
+            <option value="">Select</option>
             <option>Breakfast</option>
             <option>Lunch</option>
             <option>Dinner</option>
@@ -419,7 +417,7 @@
     </table>
 
     <!-- SECTION: HYGIENE & SERVICE -->
-    <div class="section-title">Hygiene & Service</div>
+    <div class="section-title">Hygiene &amp; Service</div>
 
     <table class="question-table">
       <tbody>
@@ -475,13 +473,13 @@
     <div class="section-title">Additional Comments</div>
 
     <div class="text-row">
-      <label>What did you like most?</label>
-      <textarea placeholder="Share positive feedback, items you liked, etc."></textarea>
+      <label for="likes">What did you like most?</label>
+      <textarea id="likes" placeholder="Share positive feedback, items you liked, etc."></textarea>
     </div>
 
     <div class="text-row">
-      <label>Suggestions for improvement</label>
-      <textarea placeholder="Share any suggestions or concerns."></textarea>
+      <label for="improve">Suggestions for improvement</label>
+      <textarea id="improve" placeholder="Share any suggestions or concerns."></textarea>
     </div>
 
     <!-- OVERALL RATING -->
@@ -500,11 +498,11 @@
 
     <div class="text-row">
       <label>Signature (optional)</label>
-      <textarea placeholder="You may type your name here for acknowledgment."></textarea>
+      <textarea id="signature" placeholder="You may type your name here for acknowledgment."></textarea>
     </div>
 
     <div class="footer-note">
-      <div>Thank you for your valuable feedback. It helps us improve food quality & service.</div>
+      <div>Thank you for your valuable feedback. It helps us improve food quality &amp; service.</div>
       <div><b>Form Code: KFB-001</b></div>
     </div>
 
@@ -512,39 +510,100 @@
 
   <!-- BUTTONS -->
   <div class="actions">
-    <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
-    <button class="btn btn-primary" onclick="downloadPDF()">⬇️ Download PDF</button>
+    <button class="btn btn-primary" type="button" onclick="saveForm()">Save (Lock)</button>
+    <button class="btn" type="button" onclick="resetForm()">Reset</button>
+    <button class="btn" type="button" onclick="window.print()">Print</button>
+    <button class="btn btn-primary" type="button" onclick="downloadPDF()">Download PDF</button>
   </div>
 
 </div>
 
 <script>
-document.getElementById("today-span").textContent =
-  new Date().toLocaleDateString("en-GB");
+  // Set today's date
+  document.getElementById("today-span").textContent =
+    new Date().toLocaleDateString("en-GB");
 
-// PDF (Single page, JPEG, <2MB)
-function downloadPDF(){
-  const { jsPDF } = window.jspdf;
-
-  html2canvas(document.getElementById('pdf-area'), {
-    scale: 1.5,
-    useCORS: true,
-    scrollY: -window.scrollY
-  }).then(canvas => {
-
-    const imgData = canvas.toDataURL("image/jpeg", 0.90);
-
-    const pdf = new jsPDF({
-      orientation: "p",
-      unit: "px",
-      format: [canvas.width, canvas.height]
+  // SAVE: lock all inputs
+  function saveForm(){
+    const controls = document.querySelectorAll(
+      "#pdf-area input, #pdf-area textarea, #pdf-area select"
+    );
+    controls.forEach(el => {
+      el.setAttribute("disabled","disabled");
     });
+    alert("Form saved and locked. You can still print or download PDF.");
+  }
 
-    pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height, null, "FAST");
+  // RESET: clear & unlock
+  function resetForm(){
+    const controls = document.querySelectorAll(
+      "#pdf-area input, #pdf-area textarea, #pdf-area select"
+    );
+    controls.forEach(el => {
+      el.removeAttribute("disabled");
+      if(el.tagName === "TEXTAREA"){
+        el.value = "";
+      }else if(el.tagName === "SELECT"){
+        el.selectedIndex = 0;
+      }else if(el.type === "radio" || el.type === "checkbox"){
+        el.checked = false;
+      }else{
+        el.value = "";
+      }
+    });
+    alert("Form reset. All fields are editable again.");
+  }
 
-    pdf.save("Food_Feedback_Form_KFB-001.pdf");
-  });
-}
+  // DOWNLOAD HD MULTI-PAGE A4 PDF
+  function downloadPDF(){
+    const { jsPDF } = window.jspdf;
+    const pdfArea = document.getElementById("pdf-area");
+
+    html2canvas(pdfArea, {
+      scale: 3,             // HD quality
+      useCORS: true,
+      scrollY: -window.scrollY,
+      backgroundColor:"#ffffff"
+    }).then(canvas => {
+
+      const pdf = new jsPDF("p","mm","a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const imgWidth = pageWidth;
+      const pxPerMm = canvas.width / pageWidth;
+      const pageHeightPx = pageHeight * pxPerMm;
+
+      let y = 0;
+      let page = 0;
+
+      while (y < canvas.height) {
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = Math.min(pageHeightPx, canvas.height - y);
+
+        const ctx = pageCanvas.getContext("2d");
+        ctx.drawImage(
+          canvas,
+          0, y,
+          canvas.width, pageCanvas.height,
+          0, 0,
+          canvas.width, pageCanvas.height
+        );
+
+        const imgData = pageCanvas.toDataURL("image/jpeg", 0.95); // sharp & smaller
+        const imgHeight = (pageCanvas.height / pxPerMm); // mm
+
+        if (page > 0) pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight, undefined, "FAST");
+
+        y += pageHeightPx;
+        page++;
+      }
+
+      pdf.save("Food_Feedback_Form_KFB-001.pdf");
+    });
+  }
 </script>
 
 </body>
