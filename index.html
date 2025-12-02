@@ -9,9 +9,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+  <!-- Firebase Libraries -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
+
   <style>
     :root{
-      --accent:#f28c2b;          /* KONARAK ORANGE */
+      --accent:#f28c2b;
       --accent-soft:#fff3e6;
       --border:#000;
       --bg:#f4f4f4;
@@ -23,10 +27,10 @@
 
     body{
       margin:0;
-      font-family: Arial, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Arial, system-ui, sans-serif;
       background:var(--bg);
-      color:var(--text);
       padding:12px;
+      color:var(--text);
     }
 
     .wrapper{
@@ -34,28 +38,67 @@
       margin:0 auto;
     }
 
-    .top-bar{
+    /* ADMIN LOGIN BAR */
+    .admin-bar{
+      max-width:1100px;
+      margin:0 auto 10px;
+      padding:8px 10px;
+      background:#fff7ef;
+      border:1px solid #f2d1a8;
+      border-radius:8px;
       display:flex;
       justify-content:space-between;
       align-items:center;
-      margin-bottom:10px;
+      font-size:12px;
+    }
+
+    .admin-controls{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+
+    .admin-controls input{
+      padding:6px 8px;
+      border:1px solid #ddd;
+      border-radius:6px;
+      font-size:12px;
+    }
+
+    .admin-controls button{
+      padding:6px 12px;
+      background:var(--accent);
+      border-radius:999px;
+      border:1px solid var(--accent);
+      color:#fff;
+      cursor:pointer;
+      font-size:12px;
+      font-weight:bold;
+    }
+
+    .admin-controls button.secondary{
+      background:#fff;
+      color:var(--accent);
+    }
+
+    .top-bar{
+      display:flex;
+      justify-content:space-between;
       font-size:13px;
-      color:var(--muted);
+      margin-bottom:10px;
     }
 
     .sheet{
       background:#fff;
+      padding:20px;
       border:1px solid var(--border);
       border-radius:10px;
-      padding:20px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.08);
     }
 
-    /* HEADER BOX */
     .header-box{
-      border:1px solid var(--border);
-      border-radius:10px;
+      border:1px solid #000;
       padding:14px;
+      border-radius:10px;
       margin-bottom:14px;
     }
 
@@ -66,260 +109,239 @@
     }
 
     .logo-box{
-      flex:0 0 auto;
-      display:flex;
-      align-items:center;
-      justify-content:center;
       width:70px;
       height:70px;
-      border:1px solid var(--border);
+      border:1px solid #000;
       border-radius:8px;
-      overflow:hidden;
+      display:flex;
+      justify-content:center;
+      align-items:center;
     }
 
     .logo-box img{
-      max-width:100%;
-      max-height:100%;
+      width:100%;
+      height:100%;
       object-fit:contain;
     }
 
-    .title-block{flex:1;}
-
     .company-name{
-      margin:0;
       font-size:18px;
       font-weight:bold;
-      text-transform:uppercase;
+      margin:0;
       color:var(--accent);
     }
 
     .sub-title{
-      margin:2px 0 6px;
-      font-size:14px;
+      margin:2px 0;
       font-weight:bold;
-      color:#333;
+      font-size:14px;
     }
 
     .form-title{
-      margin:0;
-      font-size:16px;
-      font-weight:bold;
       text-align:center;
-      text-transform:uppercase;
-      border-top:1px solid #000;
       margin-top:6px;
       padding-top:6px;
+      border-top:1px solid #000;
       color:var(--accent);
+      font-weight:bold;
+      text-transform:uppercase;
     }
 
-    /* META INFO GRID */
     .meta-row{
       display:grid;
-      grid-template-columns:repeat(4, minmax(0,1fr));
+      grid-template-columns:repeat(4,1fr);
       gap:10px;
       margin-top:10px;
-      font-size:12px;
     }
 
     .meta-item label{
-      display:block;
+      font-size:12px;
       font-weight:bold;
-      margin-bottom:2px;
     }
 
-    .meta-item input,
-    .meta-item select{
+    .meta-item input, .meta-item select{
       width:100%;
       padding:6px;
       border:1px solid #000;
-      border-radius:4px;
+      border-radius:5px;
+      margin-top:3px;
       font-size:12px;
     }
 
-    /* SECTION TITLE */
     .section-title{
-      margin:16px 0 6px;
-      padding:6px 8px;
-      font-weight:bold;
-      font-size:13px;
+      padding:6px;
       background:var(--accent-soft);
       border-left:4px solid var(--accent);
+      margin-top:14px;
+      font-weight:bold;
       text-transform:uppercase;
+      font-size:13px;
     }
 
-    /* TABLE STYLING */
     .question-table{
       width:100%;
       border-collapse:collapse;
       font-size:12px;
-      margin-bottom:12px;
+      margin-bottom:10px;
     }
-
-    .question-table th,
-    .question-table td{
+    .question-table th, .question-table td{
       border:1px solid #000;
       padding:6px;
       vertical-align:top;
     }
-
     .question-table th{
       background:#fff7ef;
-      font-weight:bold;
       text-align:center;
-    }
-
-    .question-label{
-      font-weight:bold;
-      display:block;
-      margin-bottom:3px;
     }
 
     .option-group{
       display:flex;
       flex-wrap:wrap;
-      gap:10px 16px;
-      margin-top:4px;
+      gap:12px;
     }
 
-    .option-group label{
-      display:flex;
-      align-items:center;
-      gap:4px;
-    }
-
-    /* TEXTAREAS */
     .text-row{
       display:flex;
-      gap:8px;
-      font-size:12px;
+      gap:10px;
       margin-bottom:10px;
     }
-
     .text-row label{
-      flex:0 0 150px;
+      width:140px;
+      font-size:12px;
       font-weight:bold;
-      padding-top:4px;
     }
-
     .text-row textarea{
       flex:1;
       min-height:60px;
       border:1px solid #000;
-      border-radius:4px;
+      border-radius:5px;
       padding:6px;
     }
 
-    /* FOOTER */
     .footer-note{
       border-top:1px solid #000;
-      margin-top:10px;
-      padding-top:6px;
-      font-size:11px;
+      padding-top:8px;
+      margin-top:12px;
       display:flex;
       justify-content:space-between;
+      font-size:11px;
     }
 
-    /* BUTTONS */
     .actions{
       display:flex;
       justify-content:center;
-      margin-top:14px;
       gap:10px;
+      margin-top:16px;
       flex-wrap:wrap;
     }
 
     .btn{
       padding:8px 20px;
       border-radius:999px;
-      cursor:pointer;
       border:1px solid var(--accent);
-      font-weight:600;
-      font-size:13px;
       background:#fff;
       color:var(--accent);
+      font-weight:bold;
+      cursor:pointer;
     }
-
     .btn-primary{
       background:var(--accent);
       color:#fff;
     }
 
-    /* RESPONSIVE */
-    @media (max-width:768px){
+    /* ADMIN ONLY BUTTONS */
+    .admin-only{ display:none; }
+    body.is-admin .admin-only{ display:inline-flex; }
+
+    @media(max-width:768px){
       .meta-row{grid-template-columns:repeat(2,1fr);}
-      .text-row{flex-direction:column;}
-      .text-row label{flex:none;}
-      .footer-note{flex-direction:column;gap:4px;}
+      .admin-bar{flex-direction:column;gap:8px;}
     }
-    @media (max-width:480px){
+    @media(max-width:480px){
       .meta-row{grid-template-columns:1fr;}
     }
   </style>
 </head>
 
 <body>
+
+<!-- ADMIN LOGIN BAR -->
+<div class="admin-bar">
+  <div id="admin-status"><b>Mode:</b> Public (Employee)</div>
+
+  <div class="admin-controls" id="login-box">
+    <input type="email" id="email" placeholder="Admin email">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="adminLogin()">Login</button>
+  </div>
+
+  <div class="admin-controls" id="logout-box" style="display:none;">
+    <span>Logged in as Admin</span>
+    <button class="secondary" onclick="adminLogout()">Logout</button>
+  </div>
+</div>
+
 <div class="wrapper">
 
   <div class="top-bar">
-    <div>Food Feedback Form</div>
-    <div>Date: <span id="today-span"></span></div>
+    <span>Food Feedback Form</span>
+    <span id="today-span"></span>
   </div>
 
+  <!-- START FORM AREA -->
   <div id="pdf-area" class="sheet">
 
-    <!-- HEADER -->
     <div class="header-box">
       <div class="header-row">
         <div class="logo-box">
-          <img src="logo1.png" alt="Logo">
+          <img src="logo1.png">
         </div>
-        <div class="title-block">
+        <div>
           <h1 class="company-name">CTS CAFETERIA</h1>
           <p class="sub-title">Operated by Konarak Food & Beverages</p>
           <p class="form-title">FOOD FEEDBACK FORM</p>
         </div>
       </div>
 
-      <!-- META FIELDS -->
       <div class="meta-row">
 
         <div class="meta-item">
-          <label for="food-item">Food Item Name</label>
-          <input id="food-item" type="text" placeholder="Item name">
+          <label>Food Item Name</label>
+          <input id="food-item" type="text">
         </div>
 
         <div class="meta-item">
-          <label for="building">Building</label>
-          <input id="building" type="text" placeholder="Building">
+          <label>Building</label>
+          <input id="building" type="text">
         </div>
 
         <div class="meta-item">
-          <label for="floor">Floor</label>
-          <input id="floor" type="text" placeholder="Floor">
+          <label>Floor</label>
+          <input id="floor" type="text">
         </div>
 
         <div class="meta-item">
-          <label for="counter">Counter</label>
-          <input id="counter" type="text" placeholder="Counter">
+          <label>Counter</label>
+          <input id="counter" type="text">
         </div>
 
         <div class="meta-item">
-          <label for="emp-name">Employee Name</label>
-          <input id="emp-name" type="text" placeholder="Enter your name">
+          <label>Employee Name</label>
+          <input id="emp-name" type="text">
         </div>
 
         <div class="meta-item">
-          <label for="emp-id">Employee ID</label>
-          <input id="emp-id" type="text" placeholder="Badge / ID No">
+          <label>Employee ID</label>
+          <input id="emp-id" type="text">
         </div>
 
         <div class="meta-item">
-          <label for="dept">Department</label>
-          <input id="dept" type="text" placeholder="Department / Project">
+          <label>Department</label>
+          <input id="dept" type="text">
         </div>
 
         <div class="meta-item">
-          <label for="meal-type">Meal Type</label>
+          <label>Meal Type</label>
           <select id="meal-type">
             <option value="">Select</option>
             <option>Breakfast</option>
@@ -332,7 +354,7 @@
       </div>
     </div>
 
-    <!-- SECTION: FOOD QUALITY -->
+    <!-- FOOD QUALITY -->
     <div class="section-title">Food Quality</div>
 
     <table class="question-table">
@@ -340,12 +362,8 @@
         <tr><th>Parameter</th><th>Feedback</th></tr>
       </thead>
       <tbody>
-
         <tr>
-          <td>
-            <span class="question-label">Taste</span>
-            <small>Overall taste of the food served.</small>
-          </td>
+          <td><b>Taste</b><br><small>Overall taste of the food served.</small></td>
           <td>
             <div class="option-group">
               <label><input type="radio" name="taste"> Excellent</label>
@@ -357,10 +375,7 @@
         </tr>
 
         <tr>
-          <td>
-            <span class="question-label">Freshness</span>
-            <small>Did the food feel fresh and properly cooked?</small>
-          </td>
+          <td><b>Freshness</b><br><small>Was the food fresh?</small></td>
           <td>
             <div class="option-group">
               <label><input type="radio" name="fresh"> Yes</label>
@@ -371,10 +386,7 @@
         </tr>
 
         <tr>
-          <td>
-            <span class="question-label">Temperature</span>
-            <small>Food served at appropriate temperature.</small>
-          </td>
+          <td><b>Temperature</b><br><small>Hot / Warm / Cold</small></td>
           <td>
             <div class="option-group">
               <label><input type="radio" name="temp"> Hot</label>
@@ -385,10 +397,7 @@
         </tr>
 
         <tr>
-          <td>
-            <span class="question-label">Portion Size</span>
-            <small>Quantity served for each portion.</small>
-          </td>
+          <td><b>Portion Size</b><br><small>Quantity served</small></td>
           <td>
             <div class="option-group">
               <label><input type="radio" name="portion"> Adequate</label>
@@ -399,10 +408,7 @@
         </tr>
 
         <tr>
-          <td>
-            <span class="question-label">Variety</span>
-            <small>Menu variety and options.</small>
-          </td>
+          <td><b>Variety</b><br><small>Menu options</small></td>
           <td>
             <div class="option-group">
               <label><input type="radio" name="variety"> Very Good</label>
@@ -416,17 +422,13 @@
       </tbody>
     </table>
 
-    <!-- SECTION: HYGIENE & SERVICE -->
-    <div class="section-title">Hygiene &amp; Service</div>
+    <!-- HYGIENE -->
+    <div class="section-title">Hygiene & Service</div>
 
     <table class="question-table">
       <tbody>
-
         <tr>
-          <td>
-            <span class="question-label">Staff Behaviour</span>
-            <small>Politeness & support of cafeteria staff.</small>
-          </td>
+          <td><b>Staff Behaviour</b><br><small>Politeness & support</small></td>
           <td>
             <div class="option-group">
               <label><input type="radio" name="staff"> Excellent</label>
@@ -438,10 +440,7 @@
         </tr>
 
         <tr>
-          <td>
-            <span class="question-label">Cafeteria Cleanliness</span>
-            <small>Dining area, counters, and surroundings.</small>
-          </td>
+          <td><b>Cafeteria Cleanliness</b><br><small>Environment hygiene</small></td>
           <td>
             <div class="option-group">
               <label><input type="radio" name="clean"> Very Clean</label>
@@ -453,10 +452,7 @@
         </tr>
 
         <tr>
-          <td>
-            <span class="question-label">Food Handling Hygiene</span>
-            <small>Use of gloves, apron, cap, etc.</small>
-          </td>
+          <td><b>Food Handling Hygiene</b><br><small>Gloves, apron, cap</small></td>
           <td>
             <div class="option-group">
               <label><input type="radio" name="hygiene"> Good</label>
@@ -473,20 +469,20 @@
     <div class="section-title">Additional Comments</div>
 
     <div class="text-row">
-      <label for="likes">What did you like most?</label>
-      <textarea id="likes" placeholder="Share positive feedback, items you liked, etc."></textarea>
+      <label>What did you like most?</label>
+      <textarea id="likes"></textarea>
     </div>
 
     <div class="text-row">
-      <label for="improve">Suggestions for improvement</label>
-      <textarea id="improve" placeholder="Share any suggestions or concerns."></textarea>
+      <label>Suggestions for improvement</label>
+      <textarea id="improve"></textarea>
     </div>
 
-    <!-- OVERALL RATING -->
+    <!-- OVERALL -->
     <div class="section-title">Overall Rating</div>
 
     <div class="text-row">
-      <label>Overall Rating</label>
+      <label>Rating</label>
       <div class="option-group">
         <label><input type="radio" name="overall"> 1</label>
         <label><input type="radio" name="overall"> 2</label>
@@ -497,113 +493,158 @@
     </div>
 
     <div class="text-row">
-      <label>Signature (optional)</label>
-      <textarea id="signature" placeholder="You may type your name here for acknowledgment."></textarea>
+      <label>Signature</label>
+      <textarea id="signature"></textarea>
     </div>
 
     <div class="footer-note">
-      <div>Thank you for your valuable feedback. It helps us improve food quality &amp; service.</div>
-      <div><b>Form Code: KFB-001</b></div>
+      <span>Thank you for your valuable feedback.</span>
+      <span><b>Form Code: KFB-001</b></span>
     </div>
 
   </div>
 
   <!-- BUTTONS -->
   <div class="actions">
-    <button class="btn btn-primary" type="button" onclick="saveForm()">Save (Lock)</button>
-    <button class="btn" type="button" onclick="resetForm()">Reset</button>
-    <button class="btn" type="button" onclick="window.print()">Print</button>
-    <button class="btn btn-primary" type="button" onclick="downloadPDF()">Download PDF</button>
+    <button class="btn btn-primary" onclick="saveForm()">Save (Lock)</button>
+    <button class="btn" onclick="resetForm()">Reset</button>
+
+    <!-- ADMIN ONLY -->
+    <button class="btn admin-only" onclick="window.print()">Print</button>
+    <button class="btn btn-primary admin-only" onclick="downloadPDF()">Download PDF</button>
   </div>
 
 </div>
 
 <script>
-  // Set today's date
-  document.getElementById("today-span").textContent =
-    new Date().toLocaleDateString("en-GB");
+/* ------------------- SHOW TODAY DATE ------------------- */
+document.getElementById("today-span").textContent =
+  new Date().toLocaleDateString("en-GB");
 
-  // SAVE: lock all inputs
-  function saveForm(){
-    const controls = document.querySelectorAll(
-      "#pdf-area input, #pdf-area textarea, #pdf-area select"
-    );
-    controls.forEach(el => {
-      el.setAttribute("disabled","disabled");
-    });
-    alert("Form saved and locked. You can still print or download PDF.");
+/* ------------------- SAVE (LOCK FIELDS) ------------------- */
+function saveForm(){
+  document.querySelectorAll("#pdf-area input, #pdf-area textarea, #pdf-area select")
+    .forEach(el => el.setAttribute("disabled","disabled"));
+
+  alert("Saved! Form locked.");
+}
+
+/* ------------------- RESET (UNLOCK + CLEAR) ------------------- */
+function resetForm(){
+  const fields = document.querySelectorAll("#pdf-area input, #pdf-area textarea, #pdf-area select");
+
+  fields.forEach(el=>{
+    el.removeAttribute("disabled");
+
+    if(el.tagName==="TEXTAREA") el.value="";
+    if(el.tagName==="SELECT") el.selectedIndex=0;
+    if(el.type==="radio") el.checked=false;
+    if(el.type==="text") el.value="";
+  });
+
+  alert("Form cleared & unlocked.");
+}
+
+/* ------------------- HD MULTI-PAGE PDF (Margin Fix) ------------------- */
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const pdfArea = document.getElementById("pdf-area");
+
+  html2canvas(pdfArea, {
+    scale: 3,
+    useCORS: true,
+    scrollY: -window.scrollY,
+    backgroundColor: "#ffffff"
+  }).then(canvas => {
+
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const margin = 10;  
+    const imgWidth = pageWidth - margin * 2;
+
+    const pxPerMm = canvas.width / imgWidth;
+    const imgHeight = canvas.height / pxPerMm;
+
+    let y = 0;
+    let page = 0;
+
+    const pagePixelHeight = (pageHeight - margin * 2) * pxPerMm;
+
+    while (y < canvas.height) {
+      const pageCanvas = document.createElement("canvas");
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = Math.min(pagePixelHeight, canvas.height - y);
+
+      const context = pageCanvas.getContext("2d");
+      context.drawImage(
+        canvas,
+        0, y,
+        canvas.width, pageCanvas.height,
+        0, 0,
+        canvas.width, pageCanvas.height
+      );
+
+      const image = pageCanvas.toDataURL("image/png", 1.0);
+      const imageHeightMm = pageCanvas.height / pxPerMm;
+
+      if (page > 0) pdf.addPage();
+
+      pdf.addImage(image, "PNG", margin, margin, imgWidth, imageHeightMm);
+      y += pagePixelHeight;
+      page++;
+    }
+
+    pdf.save("Food_Feedback_Form_KFB-001.pdf");
+  });
+}
+
+/* ------------------- FIREBASE ADMIN LOGIN ------------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyDrbNwfwumTWXhAs6ZZ_ulcb5mO0NKeKso",
+  authDomain: "konarak-feedback.firebaseapp.com",
+  projectId: "konarak-feedback",
+  storageBucket: "konarak-feedback.firebasestorage.app",
+  messagingSenderId: "203063167708",
+  appId: "1:203063167708:web:d5662effdfdf1815000219"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+function adminLogin(){
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  auth.signInWithEmailAndPassword(email, password)
+    .then(()=>{})
+    .catch(err => alert("Login failed: " + err.message));
+}
+
+function adminLogout(){
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(user => {
+  const status = document.getElementById("admin-status");
+  const loginBox = document.getElementById("login-box");
+  const logoutBox = document.getElementById("logout-box");
+
+  if(user){
+    document.body.classList.add("is-admin");
+    status.innerHTML = "<b>Mode:</b> ADMIN";
+    loginBox.style.display="none";
+    logoutBox.style.display="flex";
+  }else{
+    document.body.classList.remove("is-admin");
+    status.innerHTML = "<b>Mode:</b> Public (Employee)";
+    loginBox.style.display="flex";
+    logoutBox.style.display="none";
   }
+});
 
-  // RESET: clear & unlock
-  function resetForm(){
-    const controls = document.querySelectorAll(
-      "#pdf-area input, #pdf-area textarea, #pdf-area select"
-    );
-    controls.forEach(el => {
-      el.removeAttribute("disabled");
-      if(el.tagName === "TEXTAREA"){
-        el.value = "";
-      }else if(el.tagName === "SELECT"){
-        el.selectedIndex = 0;
-      }else if(el.type === "radio" || el.type === "checkbox"){
-        el.checked = false;
-      }else{
-        el.value = "";
-      }
-    });
-    alert("Form reset. All fields are editable again.");
-  }
-
-  // DOWNLOAD HD MULTI-PAGE A4 PDF
-  function downloadPDF(){
-    const { jsPDF } = window.jspdf;
-    const pdfArea = document.getElementById("pdf-area");
-
-    html2canvas(pdfArea, {
-      scale: 3,             // HD quality
-      useCORS: true,
-      scrollY: -window.scrollY,
-      backgroundColor:"#ffffff"
-    }).then(canvas => {
-
-      const pdf = new jsPDF("p","mm","a4");
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-
-      const imgWidth = pageWidth;
-      const pxPerMm = canvas.width / pageWidth;
-      const pageHeightPx = pageHeight * pxPerMm;
-
-      let y = 0;
-      let page = 0;
-
-      while (y < canvas.height) {
-        const pageCanvas = document.createElement("canvas");
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = Math.min(pageHeightPx, canvas.height - y);
-
-        const ctx = pageCanvas.getContext("2d");
-        ctx.drawImage(
-          canvas,
-          0, y,
-          canvas.width, pageCanvas.height,
-          0, 0,
-          canvas.width, pageCanvas.height
-        );
-
-        const imgData = pageCanvas.toDataURL("image/jpeg", 0.95); // sharp & smaller
-        const imgHeight = (pageCanvas.height / pxPerMm); // mm
-
-        if (page > 0) pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight, undefined, "FAST");
-
-        y += pageHeightPx;
-        page++;
-      }
-
-      pdf.save("Food_Feedback_Form_KFB-001.pdf");
-    });
-  }
 </script>
 
 </body>
