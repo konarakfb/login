@@ -254,6 +254,14 @@
     @media (max-width:480px){
       .meta-row{grid-template-columns:1fr;}
     }
+
+    /* EXTRA PADDING ONLY FOR PDF (does NOT change website) */
+    .pdf-padding input,
+    .pdf-padding textarea,
+    .pdf-padding select {
+      padding:10px !important;
+    }
+
   </style>
 </head>
 
@@ -561,6 +569,9 @@
     const { jsPDF } = window.jspdf;
     const pdfArea = document.getElementById("pdf-area");
 
+    // ADD EXTRA PADDING ONLY FOR PDF
+    pdfArea.classList.add("pdf-padding");
+
     html2canvas(pdfArea, {
       scale: 3,
       useCORS: true,
@@ -573,12 +584,11 @@
       const pageWidth  = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
-      const margin = 10; // clear border all around
+      const margin = 10;
 
       const maxWidth  = pageWidth  - margin * 2;
       const maxHeight = pageHeight - margin * 2;
 
-      // ratio so that whole canvas fits into one page
       const ratio = Math.min(
         maxWidth  / canvas.width,
         maxHeight / canvas.height
@@ -587,13 +597,15 @@
       const imgWidth  = canvas.width  * ratio;
       const imgHeight = canvas.height * ratio;
 
-      // center inside page with margins
       const x = (pageWidth  - imgWidth)  / 2;
       const y = (pageHeight - imgHeight) / 2;
 
       const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
       pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight, undefined, "FAST");
+
+      // REMOVE EXTRA PADDING AFTER PDF
+      pdfArea.classList.remove("pdf-padding");
 
       pdf.save("Food_Feedback_Form_KFB-001.pdf");
     });
