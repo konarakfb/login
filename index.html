@@ -5,14 +5,14 @@
   <title>CTS Cafeteria - Food Feedback Form</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- PDF LIBS -->
+  <!-- PDF LIBRARIES -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
     :root{
-      --accent:#f28c2b;                   /* KONARAK ORANGE */
-      --accent-soft:#fff3e6;              /* LIGHT ORANGE */
+      --accent:#f28c2b;          /* KONARAK ORANGE */
+      --accent-soft:#fff3e6;
       --border:#000;
       --bg:#f4f4f4;
       --text:#111;
@@ -23,7 +23,7 @@
 
     body{
       margin:0;
-      font-family: Arial, system-ui;
+      font-family: Arial, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:var(--bg);
       color:var(--text);
       padding:12px;
@@ -38,9 +38,8 @@
       display:flex;
       justify-content:space-between;
       align-items:center;
-      margin-bottom:8px;
-      padding:4px 2px;
-      font-size:12px;
+      margin-bottom:10px;
+      font-size:13px;
       color:var(--muted);
     }
 
@@ -48,7 +47,7 @@
       background:#fff;
       border:1px solid var(--border);
       border-radius:10px;
-      padding:18px;
+      padding:20px;
       box-shadow:0 2px 6px rgba(0,0,0,0.08);
     }
 
@@ -56,7 +55,7 @@
     .header-box{
       border:1px solid var(--border);
       border-radius:10px;
-      padding:12px 14px;
+      padding:14px;
       margin-bottom:14px;
     }
 
@@ -67,14 +66,15 @@
     }
 
     .logo-box{
+      flex:0 0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       width:70px;
       height:70px;
       border:1px solid var(--border);
       border-radius:8px;
       overflow:hidden;
-      display:flex;
-      align-items:center;
-      justify-content:center;
     }
 
     .logo-box img{
@@ -90,7 +90,6 @@
       font-size:18px;
       font-weight:bold;
       text-transform:uppercase;
-      letter-spacing:0.05em;
       color:var(--accent);
     }
 
@@ -113,85 +112,104 @@
       color:var(--accent);
     }
 
-    /* META INFO */
+    /* META INFO GRID */
     .meta-row{
       display:grid;
       grid-template-columns:repeat(4, minmax(0,1fr));
-      gap:8px;
+      gap:10px;
       margin-top:10px;
       font-size:12px;
     }
 
     .meta-item label{
-      font-weight:bold;
       display:block;
+      font-weight:bold;
       margin-bottom:2px;
     }
 
     .meta-item input,
     .meta-item select{
       width:100%;
-      padding:4px 6px;
+      padding:6px;
       border:1px solid #000;
       border-radius:4px;
       font-size:12px;
     }
 
+    /* SECTION TITLE */
     .section-title{
-      margin:14px 0 6px;
+      margin:16px 0 6px;
       padding:6px 8px;
       font-weight:bold;
       font-size:13px;
       background:var(--accent-soft);
-      border-left:5px solid var(--accent);
+      border-left:4px solid var(--accent);
       text-transform:uppercase;
-      color:#222;
     }
 
+    /* TABLE STYLING */
     .question-table{
       width:100%;
       border-collapse:collapse;
       font-size:12px;
-      margin-bottom:10px;
+      margin-bottom:12px;
     }
 
     .question-table th,
     .question-table td{
       border:1px solid #000;
       padding:6px;
+      vertical-align:top;
     }
 
     .question-table th{
       background:#fff7ef;
-      color:#222;
+      font-weight:bold;
+      text-align:center;
+    }
+
+    .question-label{
+      font-weight:bold;
+      display:block;
+      margin-bottom:3px;
     }
 
     .option-group{
       display:flex;
       flex-wrap:wrap;
-      gap:6px 14px;
+      gap:10px 16px;
+      margin-top:4px;
     }
 
+    .option-group label{
+      display:flex;
+      align-items:center;
+      gap:4px;
+    }
+
+    /* TEXTAREAS */
     .text-row{
       display:flex;
       gap:8px;
-      margin-bottom:8px;
       font-size:12px;
+      margin-bottom:10px;
     }
 
     .text-row label{
       flex:0 0 150px;
       font-weight:bold;
+      padding-top:4px;
     }
 
     .text-row textarea{
       flex:1;
-      min-height:55px;
+      min-height:60px;
       border:1px solid #000;
       border-radius:4px;
       padding:6px;
     }
 
+    /* FOOTER */
     .footer-note{
       border-top:1px solid #000;
       margin-top:10px;
@@ -201,19 +219,21 @@
       justify-content:space-between;
     }
 
+    /* BUTTONS */
     .actions{
       display:flex;
       justify-content:center;
-      margin-top:12px;
+      margin-top:14px;
       gap:10px;
     }
 
     .btn{
       padding:8px 20px;
       border-radius:999px;
-      font-weight:600;
       cursor:pointer;
       border:1px solid var(--accent);
+      font-weight:600;
+      font-size:13px;
     }
 
     .btn-primary{
@@ -226,19 +246,22 @@
       color:var(--accent);
     }
 
+    /* RESPONSIVE */
     @media (max-width:768px){
       .meta-row{grid-template-columns:repeat(2,1fr);}
       .text-row{flex-direction:column;}
       .text-row label{flex:none;}
+      .footer-note{flex-direction:column;gap:4px;}
     }
     @media (max-width:480px){
       .meta-row{grid-template-columns:1fr;}
     }
   </style>
 </head>
-<body>
 
+<body>
 <div class="wrapper">
+
   <div class="top-bar">
     <div>Food Feedback Form</div>
     <div>Date: <span id="today-span"></span></div>
@@ -255,7 +278,7 @@
         <div class="title-block">
           <h1 class="company-name">CTS CAFETERIA</h1>
           <p class="sub-title">Operated by Konarak Food & Beverages</p>
-          <p class="form-title">Food Feedback Form</p>
+          <p class="form-title">FOOD FEEDBACK FORM</p>
         </div>
       </div>
 
@@ -264,42 +287,42 @@
 
         <div class="meta-item">
           <label>Food Item Name</label>
-          <input type="text" id="food-item">
+          <input type="text" placeholder="Item name">
         </div>
 
         <div class="meta-item">
           <label>Building</label>
-          <input type="text" id="building">
+          <input type="text" placeholder="Building">
         </div>
 
         <div class="meta-item">
           <label>Floor</label>
-          <input type="text" id="floor">
+          <input type="text" placeholder="Floor">
         </div>
 
         <div class="meta-item">
           <label>Counter</label>
-          <input type="text" id="counter">
+          <input type="text" placeholder="Counter">
         </div>
 
         <div class="meta-item">
           <label>Employee Name</label>
-          <input type="text" id="emp-name">
+          <input type="text" placeholder="Enter your name">
         </div>
 
         <div class="meta-item">
           <label>Employee ID</label>
-          <input type="text" id="emp-id">
+          <input type="text" placeholder="Badge / ID No">
         </div>
 
         <div class="meta-item">
           <label>Department</label>
-          <input type="text" id="dept">
+          <input type="text" placeholder="Department / Project">
         </div>
 
         <div class="meta-item">
           <label>Meal Type</label>
-          <select id="meal-type">
+          <select>
             <option>Select</option>
             <option>Breakfast</option>
             <option>Lunch</option>
@@ -311,81 +334,205 @@
       </div>
     </div>
 
-    <!-- FOOD QUALITY -->
+    <!-- SECTION: FOOD QUALITY -->
     <div class="section-title">Food Quality</div>
 
     <table class="question-table">
-      <tr>
-        <th>Parameter</th>
-        <th>Feedback</th>
-      </tr>
+      <thead>
+        <tr><th>Parameter</th><th>Feedback</th></tr>
+      </thead>
+      <tbody>
 
-      <tr>
-        <td><b>Taste</b><br><small>Overall taste.</small></td>
-        <td>
-          <div class="option-group">
-            <label><input type="radio" name="taste" value="Excellent"> Excellent</label>
-            <label><input type="radio" name="taste" value="Good"> Good</label>
-            <label><input type="radio" name="taste" value="Average"> Average</label>
-            <label><input type="radio" name="taste" value="Poor"> Poor</label>
-          </div>
-        </td>
-      </tr>
+        <tr>
+          <td>
+            <span class="question-label">Taste</span>
+            <small>Overall taste of the food served.</small>
+          </td>
+          <td>
+            <div class="option-group">
+              <label><input type="radio" name="taste"> Excellent</label>
+              <label><input type="radio" name="taste"> Good</label>
+              <label><input type="radio" name="taste"> Average</label>
+              <label><input type="radio" name="taste"> Poor</label>
+            </div>
+          </td>
+        </tr>
 
-      <tr>
-        <td><b>Freshness</b><br><small>Fresh and properly cooked?</small></td>
-        <td>
-          <div class="option-group">
-            <label><input type="radio" name="fresh" value="Yes"> Yes</label>
-            <label><input type="radio" name="fresh" value="Partially"> Partially</label>
-            <label><input type="radio" name="fresh" value="No"> No</label>
-          </div>
-        </td>
-      </tr>
+        <tr>
+          <td>
+            <span class="question-label">Freshness</span>
+            <small>Did the food feel fresh and properly cooked?</small>
+          </td>
+          <td>
+            <div class="option-group">
+              <label><input type="radio" name="fresh"> Yes</label>
+              <label><input type="radio" name="fresh"> Partially</label>
+              <label><input type="radio" name="fresh"> No</label>
+            </div>
+          </td>
+        </tr>
 
+        <tr>
+          <td>
+            <span class="question-label">Temperature</span>
+            <small>Food served at appropriate temperature.</small>
+          </td>
+          <td>
+            <div class="option-group">
+              <label><input type="radio" name="temp"> Hot</label>
+              <label><input type="radio" name="temp"> Warm</label>
+              <label><input type="radio" name="temp"> Cold</label>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="question-label">Portion Size</span>
+            <small>Quantity served for each portion.</small>
+          </td>
+          <td>
+            <div class="option-group">
+              <label><input type="radio" name="portion"> Adequate</label>
+              <label><input type="radio" name="portion"> More</label>
+              <label><input type="radio" name="portion"> Less</label>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="question-label">Variety</span>
+            <small>Menu variety and options.</small>
+          </td>
+          <td>
+            <div class="option-group">
+              <label><input type="radio" name="variety"> Very Good</label>
+              <label><input type="radio" name="variety"> Good</label>
+              <label><input type="radio" name="variety"> Needs Improvement</label>
+              <label><input type="radio" name="variety"> Poor</label>
+            </div>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+
+    <!-- SECTION: HYGIENE & SERVICE -->
+    <div class="section-title">Hygiene & Service</div>
+
+    <table class="question-table">
+      <tbody>
+
+        <tr>
+          <td>
+            <span class="question-label">Staff Behaviour</span>
+            <small>Politeness & support of cafeteria staff.</small>
+          </td>
+          <td>
+            <div class="option-group">
+              <label><input type="radio" name="staff"> Excellent</label>
+              <label><input type="radio" name="staff"> Good</label>
+              <label><input type="radio" name="staff"> Average</label>
+              <label><input type="radio" name="staff"> Poor</label>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="question-label">Cafeteria Cleanliness</span>
+            <small>Dining area, counters, and surroundings.</small>
+          </td>
+          <td>
+            <div class="option-group">
+              <label><input type="radio" name="clean"> Very Clean</label>
+              <label><input type="radio" name="clean"> Clean</label>
+              <label><input type="radio" name="clean"> Needs Improvement</label>
+              <label><input type="radio" name="clean"> Poor</label>
+            </div>
+          </td>
+        </tr>
+
+        <tr>
+          <td>
+            <span class="question-label">Food Handling Hygiene</span>
+            <small>Use of gloves, apron, cap, etc.</small>
+          </td>
+          <td>
+            <div class="option-group">
+              <label><input type="radio" name="hygiene"> Good</label>
+              <label><input type="radio" name="hygiene"> Satisfactory</label>
+              <label><input type="radio" name="hygiene"> Needs Improvement</label>
+            </div>
+          </td>
+        </tr>
+
+      </tbody>
     </table>
 
     <!-- COMMENTS -->
     <div class="section-title">Additional Comments</div>
 
     <div class="text-row">
-      <label>What did you like?</label>
-      <textarea></textarea>
+      <label>What did you like most?</label>
+      <textarea placeholder="Share positive feedback, items you liked, etc."></textarea>
     </div>
 
     <div class="text-row">
-      <label>Suggestions</label>
-      <textarea></textarea>
+      <label>Suggestions for improvement</label>
+      <textarea placeholder="Share any suggestions or concerns."></textarea>
+    </div>
+
+    <!-- OVERALL RATING -->
+    <div class="section-title">Overall Rating</div>
+
+    <div class="text-row">
+      <label>Overall Rating</label>
+      <div class="option-group">
+        <label><input type="radio" name="overall"> 1</label>
+        <label><input type="radio" name="overall"> 2</label>
+        <label><input type="radio" name="overall"> 3</label>
+        <label><input type="radio" name="overall"> 4</label>
+        <label><input type="radio" name="overall"> 5</label>
+      </div>
+    </div>
+
+    <div class="text-row">
+      <label>Signature (optional)</label>
+      <textarea placeholder="You may type your name here for acknowledgment."></textarea>
     </div>
 
     <div class="footer-note">
-      <div>Thank you for your feedback.</div>
-      <div>Form Code: FFF-01</div>
+      <div>Thank you for your valuable feedback. It helps us improve food quality & service.</div>
+      <div><b>Form Code: KFB-001</b></div>
     </div>
 
   </div>
 
+  <!-- BUTTONS -->
   <div class="actions">
-    <button class="btn btn-outline" onclick="window.print()">Print</button>
-    <button class="btn btn-primary" onclick="downloadPDF()">Download PDF</button>
+    <button class="btn btn-outline" onclick="window.print()">🖨️ Print</button>
+    <button class="btn btn-primary" onclick="downloadPDF()">⬇️ Download PDF</button>
   </div>
+
 </div>
 
 <script>
 document.getElementById("today-span").textContent =
   new Date().toLocaleDateString("en-GB");
 
+// PDF (Single page, JPEG, <2MB)
 function downloadPDF(){
   const { jsPDF } = window.jspdf;
-  const pdfArea = document.getElementById('pdf-area');
 
-  html2canvas(pdfArea, {
-    scale: 2,
+  html2canvas(document.getElementById('pdf-area'), {
+    scale: 1.5,
     useCORS: true,
     scrollY: -window.scrollY
-  }).then(function(canvas){
+  }).then(canvas => {
 
-    const imgData = canvas.toDataURL('image/png');
+    const imgData = canvas.toDataURL("image/jpeg", 0.90);
 
     const pdf = new jsPDF({
       orientation: "p",
@@ -393,8 +540,9 @@ function downloadPDF(){
       format: [canvas.width, canvas.height]
     });
 
-    pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
-    pdf.save("Food_Feedback_Form.pdf");
+    pdf.addImage(imgData, "JPEG", 0, 0, canvas.width, canvas.height, null, "FAST");
+
+    pdf.save("Food_Feedback_Form_KFB-001.pdf");
   });
 }
 </script>
