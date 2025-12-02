@@ -555,7 +555,7 @@
   }
 
   // -------------------------------
-  //     FIXED HD PDF WITH MARGINS
+  //   SINGLE-PAGE PDF WITH MARGIN
   // -------------------------------
   function downloadPDF(){
     const { jsPDF } = window.jspdf;
@@ -570,53 +570,30 @@
 
       const pdf = new jsPDF("p","mm","a4");
 
-      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageWidth  = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
-      const margin = 10;  // <<< SAFE MARGIN ON ALL SIDES
+      const margin = 10; // clear border all around
 
-      const usableWidth = pageWidth - margin * 2;
+      const maxWidth  = pageWidth  - margin * 2;
+      const maxHeight = pageHeight - margin * 2;
 
-      const pxPerMm = canvas.width / usableWidth;
-      const pageHeightPx = (pageHeight - margin * 2) * pxPerMm;
+      // ratio so that whole canvas fits into one page
+      const ratio = Math.min(
+        maxWidth  / canvas.width,
+        maxHeight / canvas.height
+      );
 
-      let y = 0;
-      let page = 0;
+      const imgWidth  = canvas.width  * ratio;
+      const imgHeight = canvas.height * ratio;
 
-      while (y < canvas.height) {
+      // center inside page with margins
+      const x = (pageWidth  - imgWidth)  / 2;
+      const y = (pageHeight - imgHeight) / 2;
 
-        const pageCanvas = document.createElement("canvas");
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = Math.min(pageHeightPx, canvas.height - y);
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
-        const ctx = pageCanvas.getContext("2d");
-        ctx.drawImage(
-          canvas,
-          0, y,
-          canvas.width, pageCanvas.height,
-          0, 0,
-          canvas.width, pageCanvas.height
-        );
-
-        const imgData = pageCanvas.toDataURL("image/jpeg", 0.95);
-        const imgHeightMM = pageCanvas.height / pxPerMm;
-
-        if (page > 0) pdf.addPage();
-
-        pdf.addImage(
-          imgData,
-          "JPEG",
-          margin,
-          margin,
-          usableWidth,
-          imgHeightMM,
-          undefined,
-          "FAST"
-        );
-
-        y += pageHeightPx;
-        page++;
-      }
+      pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight, undefined, "FAST");
 
       pdf.save("Food_Feedback_Form_KFB-001.pdf");
     });
