@@ -554,30 +554,37 @@
     alert("Form reset. All fields are editable again.");
   }
 
-  // DOWNLOAD HD MULTI-PAGE A4 PDF
+  // -------------------------------
+  //     FIXED HD PDF WITH MARGINS
+  // -------------------------------
   function downloadPDF(){
     const { jsPDF } = window.jspdf;
     const pdfArea = document.getElementById("pdf-area");
 
     html2canvas(pdfArea, {
-      scale: 3,             // HD quality
+      scale: 3,
       useCORS: true,
       scrollY: -window.scrollY,
       backgroundColor:"#ffffff"
     }).then(canvas => {
 
       const pdf = new jsPDF("p","mm","a4");
+
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
 
-      const imgWidth = pageWidth;
-      const pxPerMm = canvas.width / pageWidth;
-      const pageHeightPx = pageHeight * pxPerMm;
+      const margin = 10;  // <<< SAFE MARGIN ON ALL SIDES
+
+      const usableWidth = pageWidth - margin * 2;
+
+      const pxPerMm = canvas.width / usableWidth;
+      const pageHeightPx = (pageHeight - margin * 2) * pxPerMm;
 
       let y = 0;
       let page = 0;
 
       while (y < canvas.height) {
+
         const pageCanvas = document.createElement("canvas");
         pageCanvas.width = canvas.width;
         pageCanvas.height = Math.min(pageHeightPx, canvas.height - y);
@@ -591,11 +598,21 @@
           canvas.width, pageCanvas.height
         );
 
-        const imgData = pageCanvas.toDataURL("image/jpeg", 0.95); // sharp & smaller
-        const imgHeight = (pageCanvas.height / pxPerMm); // mm
+        const imgData = pageCanvas.toDataURL("image/jpeg", 0.95);
+        const imgHeightMM = pageCanvas.height / pxPerMm;
 
         if (page > 0) pdf.addPage();
-        pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight, undefined, "FAST");
+
+        pdf.addImage(
+          imgData,
+          "JPEG",
+          margin,
+          margin,
+          usableWidth,
+          imgHeightMM,
+          undefined,
+          "FAST"
+        );
 
         y += pageHeightPx;
         page++;
