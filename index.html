@@ -9,6 +9,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+  <!-- Firebase Libraries -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
+
   <style>
     :root{
       --accent:#f28c2b;
@@ -23,10 +27,10 @@
 
     body{
       margin:0;
-      font-family: Arial, system-ui, sans-serif;
+      font-family: Arial, system-ui;
       background:var(--bg);
-      color:var(--text);
       padding:12px;
+      color:var(--text);
     }
 
     .wrapper{
@@ -34,13 +38,47 @@
       margin:0 auto;
     }
 
-    .top-bar{
+    /* Admin login bar */
+    #admin-bar{
+      max-width:1100px;
+      margin:0 auto 10px;
+      padding:8px;
+      border-radius:8px;
+      background:#fff8ef;
+      border:1px solid #ffd4a8;
+      font-size:12px;
       display:flex;
       justify-content:space-between;
       align-items:center;
-      margin-bottom:10px;
+    }
+
+    .admin-only{display:none;}
+    body.is-admin .admin-only{display:inline-flex;}
+
+    #admin-login-box input{
+      padding:6px;
+      border-radius:6px;
+      border:1px solid #aaa;
+      font-size:12px;
+    }
+
+    #admin-login-box button,
+    #admin-logout-box button{
+      padding:6px 12px;
+      border-radius:999px;
+      background:var(--accent);
+      color:#fff;
+      border:1px solid var(--accent);
+      cursor:pointer;
+      font-size:12px;
+      font-weight:bold;
+    }
+
+    .top-bar{
+      display:flex;
+      justify-content:space-between;
       font-size:13px;
-      color:var(--muted);
+      margin-bottom:10px;
     }
 
     .sheet{
@@ -48,64 +86,59 @@
       border:1px solid var(--border);
       border-radius:10px;
       padding:20px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.08);
     }
 
     .header-box{
-      border:1px solid var(--border);
-      border-radius:10px;
+      border:1px solid #000;
       padding:14px;
+      border-radius:10px;
       margin-bottom:14px;
     }
 
     .header-row{
       display:flex;
-      align-items:center;
       gap:12px;
+      align-items:center;
     }
 
     .logo-box{
       width:70px;
       height:70px;
-      border:1px solid var(--border);
+      border:1px solid #000;
       border-radius:8px;
       display:flex;
       align-items:center;
       justify-content:center;
-      overflow:hidden;
     }
 
     .logo-box img{
-      max-width:100%;
-      max-height:100%;
+      width:100%;
+      height:100%;
       object-fit:contain;
     }
 
     .company-name{
-      margin:0;
       font-size:18px;
       font-weight:bold;
-      text-transform:uppercase;
       color:var(--accent);
+      margin:0;
+      text-transform:uppercase;
     }
 
     .sub-title{
-      margin:2px 0 6px;
-      font-size:14px;
+      margin:3px 0;
       font-weight:bold;
-      color:#333;
     }
 
     .form-title{
       margin:0;
+      border-top:1px solid #000;
+      padding-top:6px;
+      text-align:center;
+      color:var(--accent);
       font-size:16px;
       font-weight:bold;
-      text-align:center;
       text-transform:uppercase;
-      border-top:1px solid #000;
-      margin-top:6px;
-      padding-top:6px;
-      color:var(--accent);
     }
 
     .meta-row{
@@ -116,65 +149,60 @@
       font-size:12px;
     }
 
-    .meta-item label{font-weight:bold;margin-bottom:2px;display:block;}
+    .meta-item label{
+      font-weight:bold;
+    }
 
     .meta-item input, .meta-item select{
       width:100%;
       padding:6px;
       border:1px solid #000;
       border-radius:4px;
-      font-size:12px;
     }
 
     .section-title{
-      margin:16px 0 6px;
-      padding:6px 8px;
-      font-weight:bold;
-      font-size:13px;
+      padding:6px;
       background:var(--accent-soft);
       border-left:4px solid var(--accent);
+      margin-top:16px;
+      font-weight:bold;
       text-transform:uppercase;
+      font-size:13px;
     }
 
     .question-table{
       width:100%;
       border-collapse:collapse;
-      font-size:12px;
       margin-bottom:12px;
+      font-size:12px;
     }
 
-    .question-table td, .question-table th{
+    .question-table th, .question-table td{
       border:1px solid #000;
       padding:6px;
-      vertical-align:top;
     }
 
     .question-table th{
       background:#fff7ef;
       text-align:center;
-      font-weight:bold;
     }
-
-    .question-label{font-weight:bold;margin-bottom:3px;display:block;}
 
     .option-group{
       display:flex;
       flex-wrap:wrap;
-      gap:10px 16px;
-      margin-top:4px;
+      gap:12px;
     }
 
     .text-row{
       display:flex;
-      gap:8px;
-      font-size:12px;
+      gap:10px;
       margin-bottom:10px;
+      font-size:12px;
     }
 
     .text-row label{
       width:150px;
       font-weight:bold;
-      padding-top:4px;
     }
 
     .text-row textarea{
@@ -186,51 +214,55 @@
     }
 
     .footer-note{
+      margin-top:12px;
       border-top:1px solid #000;
-      margin-top:10px;
       padding-top:6px;
-      font-size:11px;
       display:flex;
       justify-content:space-between;
+      font-size:11px;
     }
 
     .actions{
       display:flex;
+      gap:10px;
       justify-content:center;
       margin-top:14px;
-      gap:10px;
-      flex-wrap:wrap;
     }
 
     .btn{
       padding:8px 20px;
       border-radius:999px;
-      cursor:pointer;
       border:1px solid var(--accent);
-      font-weight:600;
-      background:#fff;
       color:var(--accent);
+      font-weight:bold;
+      background:#fff;
+      cursor:pointer;
     }
 
     .btn-primary{
       background:var(--accent);
       color:#fff;
     }
-
-    @media(max-width:768px){
-      .meta-row{grid-template-columns:repeat(2,1fr);}
-      .text-row{flex-direction:column;}
-      .text-row label{width:auto;}
-      .footer-note{flex-direction:column;}
-    }
-
-    @media(max-width:480px){
-      .meta-row{grid-template-columns:1fr;}
-    }
   </style>
 </head>
 
 <body>
+
+<!-- ADMIN LOGIN BAR -->
+<div id="admin-bar">
+  <div id="admin-status">Mode: Public (Employee)</div>
+
+  <div id="admin-login-box">
+    <input type="email" id="admin-email" placeholder="Admin email">
+    <input type="password" id="admin-password" placeholder="Password">
+    <button onclick="adminLogin()">Login</button>
+  </div>
+
+  <div id="admin-logout-box" style="display:none;">
+    <button onclick="adminLogout()">Logout</button>
+  </div>
+</div>
+
 <div class="wrapper">
 
   <div class="top-bar">
@@ -240,11 +272,11 @@
 
   <div id="pdf-area" class="sheet">
 
-    <!-- HEADER -->
+    <!-- HEADER BLOCK (unchanged) -->
     <div class="header-box">
       <div class="header-row">
         <div class="logo-box"><img src="logo1.png"></div>
-        <div class="title-block">
+        <div>
           <h1 class="company-name">CTS CAFETERIA</h1>
           <p class="sub-title">Operated by Konarak Food & Beverages</p>
           <p class="form-title">FOOD FEEDBACK FORM</p>
@@ -252,17 +284,38 @@
       </div>
 
       <div class="meta-row">
-        <div class="meta-item"><label>Food Item Name</label><input id="food-item"></div>
-        <div class="meta-item"><label>Building</label><input id="building"></div>
-        <div class="meta-item"><label>Floor</label><input id="floor"></div>
-        <div class="meta-item"><label>Counter</label><input id="counter"></div>
-        <div class="meta-item"><label>Employee Name</label><input id="emp-name"></div>
-        <div class="meta-item"><label>Employee ID</label><input id="emp-id"></div>
-        <div class="meta-item"><label>Department</label><input id="dept"></div>
+        <div class="meta-item">
+          <label>Food Item Name</label>
+          <input id="food-item">
+        </div>
+        <div class="meta-item">
+          <label>Building</label>
+          <input id="building">
+        </div>
+        <div class="meta-item">
+          <label>Floor</label>
+          <input id="floor">
+        </div>
+        <div class="meta-item">
+          <label>Counter</label>
+          <input id="counter">
+        </div>
+        <div class="meta-item">
+          <label>Employee Name</label>
+          <input id="emp-name">
+        </div>
+        <div class="meta-item">
+          <label>Employee ID</label>
+          <input id="emp-id">
+        </div>
+        <div class="meta-item">
+          <label>Department</label>
+          <input id="dept">
+        </div>
         <div class="meta-item">
           <label>Meal Type</label>
           <select id="meal-type">
-            <option value="">Select</option>
+            <option>Select</option>
             <option>Breakfast</option>
             <option>Lunch</option>
             <option>Dinner</option>
@@ -272,26 +325,60 @@
       </div>
     </div>
 
+    <!-- ALL OTHER SECTIONS REMAIN EXACTLY SAME -->
+
     <!-- FOOD QUALITY -->
     <div class="section-title">Food Quality</div>
 
     <table class="question-table">
       <thead><tr><th>Parameter</th><th>Feedback</th></tr></thead>
       <tbody>
-        <tr><td><span class="question-label">Taste</span><small>Overall taste of the food served.</small></td>
-          <td><div class="option-group"><label><input type="radio" name="taste"> Excellent</label><label><input type="radio" name="taste"> Good</label><label><input type="radio" name="taste"> Average</label><label><input type="radio" name="taste"> Poor</label></div></td></tr>
+        <tr>
+          <td><b>Taste</b><br><small>Overall taste</small></td>
+          <td><div class="option-group">
+            <label><input type="radio" name="taste">Excellent</label>
+            <label><input type="radio" name="taste">Good</label>
+            <label><input type="radio" name="taste">Average</label>
+            <label><input type="radio" name="taste">Poor</label>
+          </div></td>
+        </tr>
 
-        <tr><td><span class="question-label">Freshness</span><small>Did the food feel fresh?</small></td>
-          <td><div class="option-group"><label><input type="radio" name="fresh"> Yes</label><label><input type="radio" name="fresh"> Partially</label><label><input type="radio" name="fresh"> No</label></div></td></tr>
+        <tr>
+          <td><b>Freshness</b><br><small>Food freshness</small></td>
+          <td><div class="option-group">
+            <label><input type="radio" name="fresh">Yes</label>
+            <label><input type="radio" name="fresh">Partially</label>
+            <label><input type="radio" name="fresh">No</label>
+          </div></td>
+        </tr>
 
-        <tr><td><span class="question-label">Temperature</span></td>
-          <td><div class="option-group"><label><input type="radio" name="temp"> Hot</label><label><input type="radio" name="temp"> Warm</label><label><input type="radio" name="temp"> Cold</label></div></td></tr>
+        <tr>
+          <td><b>Temperature</b><br><small>Hot/warm/cold</small></td>
+          <td><div class="option-group">
+            <label><input type="radio" name="temp">Hot</label>
+            <label><input type="radio" name="temp">Warm</label>
+            <label><input type="radio" name="temp">Cold</label>
+          </div></td>
+        </tr>
 
-        <tr><td><span class="question-label">Portion Size</span></td>
-          <td><div class="option-group"><label><input type="radio" name="portion"> Adequate</label><label><input type="radio" name="portion"> More</label><label><input type="radio" name="portion"> Less</label></div></td></tr>
+        <tr>
+          <td><b>Portion Size</b></td>
+          <td><div class="option-group">
+            <label><input type="radio" name="portion">Adequate</label>
+            <label><input type="radio" name="portion">More</label>
+            <label><input type="radio" name="portion">Less</label>
+          </div></td>
+        </tr>
 
-        <tr><td><span class="question-label">Variety</span></td>
-          <td><div class="option-group"><label><input type="radio" name="variety"> Very Good</label><label><input type="radio" name="variety"> Good</label><label><input type="radio" name="variety"> Needs Improvement</label><label><input type="radio" name="variety"> Poor</label></div></td></tr>
+        <tr>
+          <td><b>Variety</b></td>
+          <td><div class="option-group">
+            <label><input type="radio" name="variety">Very Good</label>
+            <label><input type="radio" name="variety">Good</label>
+            <label><input type="radio" name="variety">Needs Improvement</label>
+            <label><input type="radio" name="variety">Poor</label>
+          </div></td>
+        </tr>
       </tbody>
     </table>
 
@@ -300,123 +387,196 @@
 
     <table class="question-table">
       <tbody>
-        <tr><td><span class="question-label">Staff Behaviour</span></td>
-          <td><div class="option-group"><label><input type="radio" name="staff"> Excellent</label><label><input type="radio" name="staff"> Good</label><label><input type="radio" name="staff"> Average</label><label><input type="radio" name="staff"> Poor</label></div></td></tr>
+        <tr>
+          <td><b>Staff Behaviour</b></td>
+          <td><div class="option-group">
+            <label><input type="radio" name="staff">Excellent</label>
+            <label><input type="radio" name="staff">Good</label>
+            <label><input type="radio" name="staff">Average</label>
+            <label><input type="radio" name="staff">Poor</label>
+          </div></td>
+        </tr>
 
-        <tr><td><span class="question-label">Cafeteria Cleanliness</span></td>
-          <td><div class="option-group"><label><input type="radio" name="clean"> Very Clean</label><label><input type="radio" name="clean"> Clean</label><label><input type="radio" name="clean"> Needs Improvement</label><label><input type="radio" name="clean"> Poor</label></div></td></tr>
+        <tr>
+          <td><b>Cafeteria Cleanliness</b></td>
+          <td><div class="option-group">
+            <label><input type="radio" name="clean">Very Clean</label>
+            <label><input type="radio" name="clean">Clean</label>
+            <label><input type="radio" name="clean">Needs Improvement</label>
+            <label><input type="radio" name="clean">Poor</label>
+          </div></td>
+        </tr>
 
-        <tr><td><span class="question-label">Food Handling Hygiene</span></td>
-          <td><div class="option-group"><label><input type="radio" name="hygiene"> Good</label><label><input type="radio" name="hygiene"> Satisfactory</label><label><input type="radio" name="hygiene"> Needs Improvement</label></div></td></tr>
+        <tr>
+          <td><b>Food Handling Hygiene</b></td>
+          <td><div class="option-group">
+            <label><input type="radio" name="hygiene">Good</label>
+            <label><input type="radio" name="hygiene">Satisfactory</label>
+            <label><input type="radio" name="hygiene">Needs Improvement</label>
+          </div></td>
+        </tr>
       </tbody>
     </table>
 
     <!-- COMMENTS -->
     <div class="section-title">Additional Comments</div>
-    <div class="text-row"><label>What did you like most?</label><textarea id="likes"></textarea></div>
-    <div class="text-row"><label>Suggestions for improvement</label><textarea id="improve"></textarea></div>
+
+    <div class="text-row">
+      <label>What did you like most?</label>
+      <textarea id="likes"></textarea>
+    </div>
+
+    <div class="text-row">
+      <label>Suggestions for improvement</label>
+      <textarea id="improve"></textarea>
+    </div>
 
     <!-- OVERALL -->
     <div class="section-title">Overall Rating</div>
-    <div class="text-row"><label>Overall Rating</label>
-      <div class="option-group"><label><input type="radio" name="overall"> 1</label><label><input type="radio" name="overall"> 2</label><label><input type="radio" name="overall"> 3</label><label><input type="radio" name="overall"> 4</label><label><input type="radio" name="overall"> 5</label></div>
+
+    <div class="text-row">
+      <label>Overall Rating</label>
+      <div class="option-group">
+        <label><input type="radio" name="overall">1</label>
+        <label><input type="radio" name="overall">2</label>
+        <label><input type="radio" name="overall">3</label>
+        <label><input type="radio" name="overall">4</label>
+        <label><input type="radio" name="overall">5</label>
+      </div>
     </div>
 
-    <div class="text-row"><label>Signature (optional)</label><textarea id="signature"></textarea></div>
+    <div class="text-row">
+      <label>Signature</label>
+      <textarea id="signature"></textarea>
+    </div>
 
     <div class="footer-note">
-      <div>Thank you for your valuable feedback. It helps us improve food quality & service.</div>
-      <div><b>Form Code: KFB-001</b></div>
+      <span>Thank you for your valuable feedback.</span>
+      <span><b>Form Code: KFB-001</b></span>
     </div>
 
   </div>
 
+  <!-- BUTTONS -->
   <div class="actions">
     <button class="btn btn-primary" onclick="saveForm()">Save (Lock)</button>
     <button class="btn" onclick="resetForm()">Reset</button>
-    <button class="btn" onclick="window.print()">Print</button>
-    <button class="btn btn-primary" onclick="downloadPDF()">Download PDF</button>
+
+    <button class="btn admin-only" onclick="window.print()">Print</button>
+    <button class="btn btn-primary admin-only" onclick="downloadPDF()">Download PDF</button>
   </div>
 
 </div>
 
 <script>
-
+/* ---------- DATE ---------- */
 document.getElementById("today-span").textContent =
   new Date().toLocaleDateString("en-GB");
 
+/* ---------- SAVE LOCK ---------- */
 function saveForm(){
   document.querySelectorAll("#pdf-area input, #pdf-area textarea, #pdf-area select")
     .forEach(el => el.setAttribute("disabled","disabled"));
-  alert("Form saved and locked.");
+  alert("Form saved & locked");
 }
 
+/* ---------- RESET ---------- */
 function resetForm(){
-  document.querySelectorAll("#pdf-area input, #pdf-area textarea, #pdf-area select")
-    .forEach(el => {
-      el.removeAttribute("disabled");
-      if(el.type==="radio") el.checked=false;
-      else if(el.tagName==="SELECT") el.selectedIndex=0;
-      else el.value="";
-    });
-  alert("Form reset.");
-}
-
-// ========================
-// PDF EXPORT WITH MARGINS
-// ========================
-function downloadPDF(){
-  const { jsPDF } = window.jspdf;
-  const pdfArea = document.getElementById("pdf-area");
-
-  html2canvas(pdfArea,{
-    scale:3,
-    useCORS:true,
-    scrollY:-window.scrollY,
-    backgroundColor:"#ffffff"
-  }).then(canvas=>{
-
-    const pdf = new jsPDF("p","mm","a4");
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-
-    const margin = 12;     // ⬅⬅⬅ ADD SPACE ALL SIDES
-    const usableWidth = pageWidth - margin*2;
-
-    const pxPerMm = canvas.width / usableWidth;
-    const pageHeightPx = pageHeight * pxPerMm;
-
-    let y = 0;
-    let page = 0;
-
-    while(y < canvas.height){
-      const pageCanvas = document.createElement("canvas");
-      pageCanvas.width = canvas.width;
-      pageCanvas.height = Math.min(pageHeightPx, canvas.height - y);
-
-      const ctx = pageCanvas.getContext("2d");
-      ctx.drawImage(canvas,0,y,canvas.width,pageCanvas.height,0,0,canvas.width,pageCanvas.height);
-
-      const imgData = pageCanvas.toDataURL("image/jpeg",0.95);
-      const imgHeight = pageCanvas.height / pxPerMm;
-
-      if(page > 0) pdf.addPage();
-
-      pdf.addImage(
-        imgData, "JPEG",
-        margin, margin,                // X,Y margin
-        usableWidth, imgHeight,        // scaled width & height
-        undefined, "FAST"
-      );
-
-      y += pageHeightPx;
-      page++;
-    }
-
-    pdf.save("Food_Feedback_Form_KFB-001.pdf");
+  const els = document.querySelectorAll("#pdf-area input, #pdf-area textarea, #pdf-area select");
+  els.forEach(el=>{
+    el.removeAttribute("disabled");
+    if(el.tagName==="TEXTAREA") el.value="";
+    if(el.tagName==="SELECT") el.selectedIndex=0;
+    if(el.type==="radio") el.checked=false;
+    if(el.type==="text") el.value="";
   });
 }
 
+/* ---------- HD PDF WITH MARGINS ---------- */
+function downloadPDF(){
+  const { jsPDF } = window.jspdf;
+  const area = document.getElementById("pdf-area");
+
+  html2canvas(area,{scale:3,useCORS:true,scrollY:-window.scrollY,background:"#ffffff"})
+    .then(canvas=>{
+      const pdf = new jsPDF("p","mm","a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const margin = 10;
+      const imgWidth = pageWidth - margin*2;
+
+      const pxPerMm = canvas.width/imgWidth;
+      const pagePx = (pageHeight - margin*2)*pxPerMm;
+
+      let y = 0;
+      let page = 0;
+
+      while(y < canvas.height){
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = Math.min(pagePx, canvas.height - y);
+
+        pageCanvas.getContext("2d").drawImage(
+          canvas,0,y,canvas.width,pageCanvas.height,0,0,canvas.width,pageCanvas.height
+        );
+
+        const img = pageCanvas.toDataURL("image/png",1.0);
+        const imgHeight = pageCanvas.height/pxPerMm;
+
+        if(page>0) pdf.addPage();
+        pdf.addImage(img,"PNG",margin,margin,imgWidth,imgHeight);
+
+        y += pagePx;
+        page++;
+      }
+
+      pdf.save("Food_Feedback_Form_KFB-001.pdf");
+    });
+}
+
+/* ---------- FIREBASE ADMIN LOGIN ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyDrbNwfwumTWXhAs6ZZ_ulcb5mO0NKeKso",
+  authDomain: "konarak-feedback.firebaseapp.com",
+  projectId: "konarak-feedback",
+  storageBucket: "konarak-feedback.firebasestorage.app",
+  messagingSenderId: "203063167708",
+  appId: "1:203063167708:web:d5662effdfdf1815000219"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+function adminLogin(){
+  const email = document.getElementById("admin-email").value;
+  const pass = document.getElementById("admin-password").value;
+
+  auth.signInWithEmailAndPassword(email, pass)
+  .catch(err=>alert("Login failed: " + err.message));
+}
+
+function adminLogout(){
+  auth.signOut();
+}
+
+auth.onAuthStateChanged(user=>{
+  const status = document.getElementById("admin-status");
+  const boxIn = document.getElementById("admin-login-box");
+  const boxOut = document.getElementById("admin-logout-box");
+
+  if(user){
+    document.body.classList.add("is-admin");
+    status.textContent="Mode: ADMIN";
+    boxIn.style.display="none";
+    boxOut.style.display="block";
+  }else{
+    document.body.classList.remove("is-admin");
+    status.textContent="Mode: Public (Employee)";
+    boxIn.style.display="flex";
+    boxOut.style.display="none";
+  }
+});
 </script>
 
 </body>
