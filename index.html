@@ -1,616 +1,987 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>CTS Cafeteria - Food Feedback Form</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8" />
+<title>Konarak Reports — Supabase</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- PDF LIBRARIES -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --accent:#f28c2b;
+    --accent-soft:#fff3e6;
+    --dark:#2b2b2b;
+    --muted:#666;
+    --card:#fff;
+    --bg:#f5f3f0;
+    --border:#e3ded7;
+    --danger:#d9534f;
+    --success:#2e7d32;
+    --shadow-soft:0 6px 18px rgba(0,0,0,.06);
+    --radius-lg:18px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--dark);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  button,input,select{font-family:inherit;}
 
-  <style>
-    :root{
-      --accent:#f28c2b;          /* KONARAK ORANGE */
-      --accent-soft:#fff3e6;
-      --border:#000;
-      --bg:#f4f4f4;
-      --text:#111;
-      --muted:#666;
-    }
+  body.noselect{
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+  }
 
-    *{box-sizing:border-box;}
+  /* TOP BAR */
+  .topbar{
+    background:var(--accent);
+    color:#fff;
+    padding:10px 16px;
+    position:sticky;
+    top:0;
+    z-index:40;
+    box-shadow:0 2px 10px rgba(0,0,0,.18);
+  }
+  .topbar-inner{
+    max-width:1120px;
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .brand img{
+    width:40px;height:40px;
+    border-radius:10px;
+    object-fit:contain;
+    background:#fff;
+    padding:4px;
+  }
+  .brand-text h1{
+    margin:0;
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:.02em;
+  }
+  .brand-text span{
+    font-size:12px;
+    opacity:.9;
+  }
+  .pill{
+    padding:4px 10px;
+    border-radius:999px;
+    background:rgba(0,0,0,.16);
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:11px;
+  }
 
-    body{
-      margin:0;
-      font-family: Arial, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      padding:12px;
-    }
+  .page{
+    max-width:1120px;
+    margin:18px auto 40px;
+    padding:0 14px;
+  }
+  .hero{
+    margin-bottom:16px;
+  }
+  .hero-title{
+    font-size:20px;
+    font-weight:700;
+    letter-spacing:.02em;
+  }
+  .hero-sub{
+    font-size:13px;
+    color:var(--muted);
+    max-width:520px;
+  }
+  .tag-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:6px;
+  }
+  .tag{
+    font-size:11px;
+    padding:3px 8px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid var(--border);
+  }
 
-    .wrapper{
-      max-width:1100px;
-      margin:0 auto;
-    }
+  .card{
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-soft);
+    border:1px solid rgba(0,0,0,.04);
+    padding:14px 16px 16px;
+    margin-bottom:16px;
+  }
+  .card-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .card-title{
+    font-size:15px;
+    font-weight:600;
+  }
+  .badge{
+    font-size:11px;
+    border-radius:999px;
+    padding:2px 8px;
+    border:1px solid var(--border);
+    background:var(--bg);
+  }
+  .card-body{
+    font-size:13px;
+  }
 
-    .top-bar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:10px;
-      font-size:13px;
-      color:var(--muted);
-    }
+  .auth-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:16px;
+  }
+  .auth-form{flex:1 1 260px;}
+  .auth-status{flex:1 1 220px;font-size:12px;color:var(--muted);}
 
-    .sheet{
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:20px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.08);
-    }
+  .field{
+    margin-bottom:10px;
+  }
+  .field label{
+    display:block;
+    font-size:12px;
+    font-weight:500;
+    margin-bottom:4px;
+  }
+  .field input,
+  .field select{
+    width:100%;
+    padding:7px 9px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    font-size:13px;
+    outline:none;
+  }
+  .field input:focus,
+  .field select:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 1px rgba(242,140,43,.25);
+  }
 
-    /* HEADER BOX */
-    .header-box{
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:14px;
-      margin-bottom:14px;
-    }
+  .btn{
+    border:none;
+    outline:none;
+    border-radius:999px;
+    padding:7px 14px;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    transition:transform .08s ease,box-shadow .08s ease,background .12s ease;
+  }
+  .btn-primary{
+    background:var(--accent);
+    color:#fff;
+    box-shadow:0 4px 12px rgba(0,0,0,.16);
+  }
+  .btn-primary:active{
+    transform:translateY(1px);
+    box-shadow:0 2px 8px rgba(0,0,0,.2);
+  }
+  .btn-ghost{
+    background:#fdf7f1;
+    color:var(--dark);
+    border:1px dashed rgba(0,0,0,.08);
+  }
+  .btn-sm{padding:5px 10px;font-size:11px;}
 
-    .header-row{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
+  .pill-status{
+    padding:4px 9px;
+    border-radius:999px;
+    font-size:11px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .pill-status.online{
+    background:rgba(46,125,50,.08);
+    color:var(--success);
+    border:1px solid rgba(46,125,50,.25);
+  }
+  .pill-status.offline{
+    background:rgba(217,83,79,.06);
+    color:var(--danger);
+    border:1px solid rgba(217,83,79,.23);
+  }
 
-    .logo-box{
-      flex:0 0 auto;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      width:70px;
-      height:70px;
-      border:1px solid var(--border);
-      border-radius:8px;
-      overflow:hidden;
-    }
+  .tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:10px;
+    border-bottom:1px solid var(--border);
+    padding-bottom:4px;
+  }
+  .tab{
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:12px;
+    cursor:pointer;
+    display:inline-flex;
+    gap:6px;
+    align-items:center;
+  }
+  .tab.active{
+    background:var(--accent-soft);
+    color:#b05100;
+    font-weight:600;
+  }
 
-    .logo-box img{
-      max-width:100%;
-      max-height:100%;
-      object-fit:contain;
-    }
+  .two-col{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .col{flex:1 1 260px;}
 
-    .title-block{flex:1;}
+  .section-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
 
-    .company-name{
-      margin:0;
-      font-size:18px;
-      font-weight:bold;
-      text-transform:uppercase;
-      color:var(--accent);
-    }
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:4px;
+  }
+  .chip{
+    font-size:11px;
+    padding:4px 9px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:#faf7f3;
+    cursor:pointer;
+  }
+  .chip.active{
+    background:var(--accent);
+    color:#fff;
+    border-color:var(--accent);
+  }
+  .chip.muted{
+    opacity:.6;
+    cursor:default;
+  }
 
-    .sub-title{
-      margin:2px 0 6px;
-      font-size:14px;
-      font-weight:bold;
-      color:#333;
-    }
+  .report-list{
+    font-size:13px;
+    max-height:310px;
+    overflow:auto;
+    padding-right:6px;
+  }
+  .report-item{
+    border-radius:12px;
+    border:1px solid rgba(0,0,0,.04);
+    background:#fdfaf7;
+    padding:8px 10px;
+    margin-bottom:6px;
+    cursor:pointer;
+  }
+  .report-item:hover{
+    border-color:var(--accent-soft);
+    background:#fff8ee;
+  }
+  .report-title{font-weight:600;font-size:13px;}
+  .report-meta{font-size:11px;color:var(--muted);margin-top:2px;}
 
-    .form-title{
-      margin:0;
-      font-size:16px;
-      font-weight:bold;
-      text-align:center;
-      text-transform:uppercase;
-      border-top:1px solid #000;
-      margin-top:6px;
-      padding-top:6px;
-      color:var(--accent);
-    }
+  .pdf-shell{
+    border-radius:14px;
+    border:1px solid #000;
+    background:#fff;
+    overflow:hidden;
+    min-height:260px;
+    box-shadow:0 6px 16px rgba(0,0,0,.12);
+  }
+  .pdf-toolbar{
+    padding:6px 10px;
+    background:#f1ede6;
+    border-bottom:1px solid #d8d2c8;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:6px;
+    font-size:11px;
+  }
+  .pdf-toolbar-left{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .pdf-badge{
+    padding:2px 7px;
+    border-radius:999px;
+    background:#fff;
+    border:1px solid #d8d2c8;
+  }
+  .pdf-title{font-weight:600;}
+  .pdf-frame-wrap{
+    position:relative;
+    padding-top:130%;
+  }
+  .pdf-frame{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    border:none;
+    background:#fff;
+  }
 
-    /* META INFO GRID */
-    .meta-row{
-      display:grid;
-      grid-template-columns:repeat(4, minmax(0,1fr));
-      gap:10px;
-      margin-top:10px;
-      font-size:12px;
-    }
+  .empty-state{
+    padding:18px 10px;
+    text-align:center;
+    font-size:12px;
+    color:var(--muted);
+  }
 
-    .meta-item label{
-      display:block;
-      font-weight:bold;
-      margin-bottom:2px;
-    }
+  .alert{
+    font-size:11px;
+    padding:6px 8px;
+    border-radius:8px;
+    margin-top:6px;
+  }
+  .alert-info{
+    background:#f7fbff;
+    border:1px solid #c9def3;
+    color:#28527a;
+  }
+  .alert-danger{
+    background:#fff5f5;
+    border:1px solid #f5c2c0;
+    color:#8a1f1a;
+  }
+  .alert-success{
+    background:#f3fbf5;
+    border:1px solid #c2ebd0;
+    color:#255b33;
+  }
 
-    .meta-item input,
-    .meta-item select{
-      width:100%;
-      padding:6px;
-      border:1px solid #000;
-      border-radius:4px;
-      font-size:12px;
-    }
-
-    /* SECTION TITLE */
-    .section-title{
-      margin:16px 0 6px;
-      padding:6px 8px;
-      font-weight:bold;
-      font-size:13px;
-      background:var(--accent-soft);
-      border-left:4px solid var(--accent);
-      text-transform:uppercase;
-    }
-
-    /* TABLE STYLING */
-    .question-table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:12px;
-      margin-bottom:12px;
-    }
-
-    .question-table th,
-    .question-table td{
-      border:1px solid #000;
-      padding:6px;
-      vertical-align:top;
-    }
-
-    .question-table th{
-      background:#fff7ef;
-      font-weight:bold;
-      text-align:center;
-    }
-
-    .question-label{
-      font-weight:bold;
-      display:block;
-      margin-bottom:3px;
-    }
-
-    .option-group{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px 16px;
-      margin-top:4px;
-    }
-
-    .option-group label{
-      display:flex;
-      align-items:center;
-      gap:4px;
-    }
-
-    /* TEXTAREAS */
-    .text-row{
-      display:flex;
-      gap:8px;
-      font-size:12px;
-      margin-bottom:10px;
-    }
-
-    .text-row label{
-      flex:0 0 150px;
-      font-weight:bold;
-      padding-top:4px;
-    }
-
-    .text-row textarea{
-      flex:1;
-      min-height:60px;
-      border:1px solid #000;
-      border-radius:4px;
-      padding:6px;
-    }
-
-    /* FOOTER */
-    .footer-note{
-      border-top:1px solid #000;
-      margin-top:10px;
-      padding-top:6px;
-      font-size:11px;
-      display:flex;
-      justify-content:space-between;
-    }
-
-    /* BUTTONS */
-    .actions{
-      display:flex;
-      justify-content:center;
-      margin-top:14px;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-
-    .btn{
-      padding:8px 20px;
-      border-radius:999px;
-      cursor:pointer;
-      border:1px solid var(--accent);
-      font-weight:600;
-      font-size:13px;
-      background:#fff;
-      color:var(--accent);
-    }
-
-    .btn-primary{
-      background:var(--accent);
-      color:#fff;
-    }
-
-    /* RESPONSIVE */
-    @media (max-width:768px){
-      .meta-row{grid-template-columns:repeat(2,1fr);}
-      .text-row{flex-direction:column;}
-      .text-row label{flex:none;}
-      .footer-note{flex-direction:column;gap:4px;}
-    }
-    @media (max-width:480px){
-      .meta-row{grid-template-columns:1fr;}
-    }
-
-    /* EXTRA PADDING ONLY FOR PDF (does NOT change website) */
-    .pdf-padding input,
-    .pdf-padding textarea,
-    .pdf-padding select {
-      padding:10px !important;
-    }
-
-  </style>
+  @media (min-width:800px){
+    .pdf-frame-wrap{padding-top:72%;}
+  }
+</style>
 </head>
-
-<body>
-<div class="wrapper">
-
-  <div class="top-bar">
-    <div>Food Feedback Form</div>
-    <div>Date: <span id="today-span"></span></div>
-  </div>
-
-  <div id="pdf-area" class="sheet">
-
-    <!-- HEADER -->
-    <div class="header-box">
-      <div class="header-row">
-        <div class="logo-box">
-          <img src="logo1.png" alt="Logo">
-        </div>
-        <div class="title-block">
-          <h1 class="company-name">CTS CAFETERIA</h1>
-          <p class="sub-title">Operated by Konarak Food & Beverages</p>
-          <p class="form-title">FOOD FEEDBACK FORM</p>
-        </div>
-      </div>
-
-      <!-- META FIELDS -->
-      <div class="meta-row">
-
-        <div class="meta-item">
-          <label for="food-item">Food Item Name</label>
-          <input id="food-item" type="text" placeholder="Item name">
-        </div>
-
-        <div class="meta-item">
-          <label for="building">Building</label>
-          <input id="building" type="text" placeholder="Building">
-        </div>
-
-        <div class="meta-item">
-          <label for="floor">Floor</label>
-          <input id="floor" type="text" placeholder="Floor">
-        </div>
-
-        <div class="meta-item">
-          <label for="counter">Counter</label>
-          <input id="counter" type="text" placeholder="Counter">
-        </div>
-
-        <div class="meta-item">
-          <label for="emp-name">Employee Name</label>
-          <input id="emp-name" type="text" placeholder="Enter your name">
-        </div>
-
-        <div class="meta-item">
-          <label for="emp-id">Employee ID</label>
-          <input id="emp-id" type="text" placeholder="Badge / ID No">
-        </div>
-
-        <div class="meta-item">
-          <label for="dept">Department</label>
-          <input id="dept" type="text" placeholder="Department / Project">
-        </div>
-
-        <div class="meta-item">
-          <label for="meal-type">Meal Type</label>
-          <select id="meal-type">
-            <option value="">Select</option>
-            <option>Breakfast</option>
-            <option>Lunch</option>
-            <option>Dinner</option>
-            <option>Snacks</option>
-          </select>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- SECTION: FOOD QUALITY -->
-    <div class="section-title">Food Quality</div>
-
-    <table class="question-table">
-      <thead>
-        <tr><th>Parameter</th><th>Feedback</th></tr>
-      </thead>
-      <tbody>
-
-        <tr>
-          <td>
-            <span class="question-label">Taste</span>
-            <small>Overall taste of the food served.</small>
-          </td>
-          <td>
-            <div class="option-group">
-              <label><input type="radio" name="taste"> Excellent</label>
-              <label><input type="radio" name="taste"> Good</label>
-              <label><input type="radio" name="taste"> Average</label>
-              <label><input type="radio" name="taste"> Poor</label>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <span class="question-label">Freshness</span>
-            <small>Did the food feel fresh and properly cooked?</small>
-          </td>
-          <td>
-            <div class="option-group">
-              <label><input type="radio" name="fresh"> Yes</label>
-              <label><input type="radio" name="fresh"> Partially</label>
-              <label><input type="radio" name="fresh"> No</label>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <span class="question-label">Temperature</span>
-            <small>Food served at appropriate temperature.</small>
-          </td>
-          <td>
-            <div class="option-group">
-              <label><input type="radio" name="temp"> Hot</label>
-              <label><input type="radio" name="temp"> Warm</label>
-              <label><input type="radio" name="temp"> Cold</label>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <span class="question-label">Portion Size</span>
-            <small>Quantity served for each portion.</small>
-          </td>
-          <td>
-            <div class="option-group">
-              <label><input type="radio" name="portion"> Adequate</label>
-              <label><input type="radio" name="portion"> More</label>
-              <label><input type="radio" name="portion"> Less</label>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <span class="question-label">Variety</span>
-            <small>Menu variety and options.</small>
-          </td>
-          <td>
-            <div class="option-group">
-              <label><input type="radio" name="variety"> Very Good</label>
-              <label><input type="radio" name="variety"> Good</label>
-              <label><input type="radio" name="variety"> Needs Improvement</label>
-              <label><input type="radio" name="variety"> Poor</label>
-            </div>
-          </td>
-        </tr>
-
-      </tbody>
-    </table>
-
-    <!-- SECTION: HYGIENE & SERVICE -->
-    <div class="section-title">Hygiene &amp; Service</div>
-
-    <table class="question-table">
-      <tbody>
-
-        <tr>
-          <td>
-            <span class="question-label">Staff Behaviour</span>
-            <small>Politeness & support of cafeteria staff.</small>
-          </td>
-          <td>
-            <div class="option-group">
-              <label><input type="radio" name="staff"> Excellent</label>
-              <label><input type="radio" name="staff"> Good</label>
-              <label><input type="radio" name="staff"> Average</label>
-              <label><input type="radio" name="staff"> Poor</label>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <span class="question-label">Cafeteria Cleanliness</span>
-            <small>Dining area, counters, and surroundings.</small>
-          </td>
-          <td>
-            <div class="option-group">
-              <label><input type="radio" name="clean"> Very Clean</label>
-              <label><input type="radio" name="clean"> Clean</label>
-              <label><input type="radio" name="clean"> Needs Improvement</label>
-              <label><input type="radio" name="clean"> Poor</label>
-            </div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>
-            <span class="question-label">Food Handling Hygiene</span>
-            <small>Use of gloves, apron, cap, etc.</small>
-          </td>
-          <td>
-            <div class="option-group">
-              <label><input type="radio" name="hygiene"> Good</label>
-              <label><input type="radio" name="hygiene"> Satisfactory</label>
-              <label><input type="radio" name="hygiene"> Needs Improvement</label>
-            </div>
-          </td>
-        </tr>
-
-      </tbody>
-    </table>
-
-    <!-- COMMENTS -->
-    <div class="section-title">Additional Comments</div>
-
-    <div class="text-row">
-      <label for="likes">What did you like most?</label>
-      <textarea id="likes" placeholder="Share positive feedback, items you liked, etc."></textarea>
-    </div>
-
-    <div class="text-row">
-      <label for="improve">Suggestions for improvement</label>
-      <textarea id="improve" placeholder="Share any suggestions or concerns."></textarea>
-    </div>
-
-    <!-- OVERALL RATING -->
-    <div class="section-title">Overall Rating</div>
-
-    <div class="text-row">
-      <label>Overall Rating</label>
-      <div class="option-group">
-        <label><input type="radio" name="overall"> 1</label>
-        <label><input type="radio" name="overall"> 2</label>
-        <label><input type="radio" name="overall"> 3</label>
-        <label><input type="radio" name="overall"> 4</label>
-        <label><input type="radio" name="overall"> 5</label>
-      </div>
-    </div>
-
-    <div class="text-row">
-      <label>Signature (optional)</label>
-      <textarea id="signature" placeholder="You may type your name here for acknowledgment."></textarea>
-    </div>
-
-    <div class="footer-note">
-      <div>Thank you for your valuable feedback. It helps us improve food quality &amp; service.</div>
-      <div><b>Form Code: KFB-001</b></div>
-    </div>
-
-  </div>
-
-  <!-- BUTTONS -->
-  <div class="actions">
-    <button class="btn btn-primary" type="button" onclick="saveForm()">Save (Lock)</button>
-    <button class="btn" type="button" onclick="resetForm()">Reset</button>
-    <button class="btn" type="button" onclick="window.print()">Print</button>
-    <button class="btn btn-primary" type="button" onclick="downloadPDF()">Download PDF</button>
-  </div>
-
-</div>
+<body class="noselect">
 
 <script>
-  // Set today's date
-  document.getElementById("today-span").textContent =
-    new Date().toLocaleDateString("en-GB");
+  // Block right click + some shortcuts
+  document.addEventListener("contextmenu", e => e.preventDefault());
+  document.addEventListener("keydown", e => {
+    if (e.ctrlKey && ["s","S","p","P","u","U","c","C"].includes(e.key)) {
+      e.preventDefault();
+    }
+    if (e.key === "PrintScreen") {
+      e.preventDefault();
+    }
+  });
+</script>
 
-  // SAVE: lock all inputs
-  function saveForm(){
-    const controls = document.querySelectorAll(
-      "#pdf-area input, #pdf-area textarea, #pdf-area select"
-    );
-    controls.forEach(el => {
-      el.setAttribute("disabled","disabled");
-    });
-    alert("Form saved and locked. You can still print or download PDF.");
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <img src="logo.png" alt="Konarak Logo">
+      <div class="brand-text">
+        <h1>Konarak Reports</h1>
+        <span>Dry Store • Taste & Quality • Sales • Weekly • Monthly</span>
+      </div>
+    </div>
+    <div class="pill">
+      <span style="width:7px;height:7px;border-radius:999px;background:#52d66b;box-shadow:0 0 0 4px rgba(82,214,107,.35);"></span>
+      <span>Supabase • Internal Use Only</span>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <div class="hero-title">Company Reports Archive</div>
+    <div class="hero-sub">
+      Admin uploads daily/weekly/monthly PDFs. Staff filter by report name and date and read them clearly on mobile — without download.
+    </div>
+    <div class="tag-row">
+      <div class="tag">Konarak F&amp;B</div>
+      <div class="tag">Dry Store</div>
+      <div class="tag">Taste &amp; Quality</div>
+      <div class="tag">Food Sales</div>
+      <div class="tag">Weekly Inventory</div>
+      <div class="tag">Monthly Summary</div>
+    </div>
+  </section>
+
+  <!-- AUTH -->
+  <section class="card">
+    <div class="card-header">
+      <div class="card-title">Sign In</div>
+      <div id="authStatusPill" class="pill-status offline">
+        <span>●</span><span>Signed out</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="auth-grid">
+        <div class="auth-form">
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="emailInput" placeholder="you@konarakfb.com">
+          </div>
+          <div class="field">
+            <label>Password</label>
+            <input type="password" id="passwordInput" placeholder="••••••••">
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+            <button class="btn btn-primary" id="loginBtn">Login</button>
+            <button class="btn btn-ghost btn-sm" id="logoutBtn" style="display:none;">Logout</button>
+          </div>
+          <div id="authMessage" class="alert alert-info" style="margin-top:8px;display:none;"></div>
+        </div>
+        <div class="auth-status">
+          <div><strong>Role based access</strong></div>
+          <ul style="padding-left:18px;margin:6px 0 4px;font-size:12px;">
+            <li><strong>Admin:</strong> upload PDF reports with heading, date and type.</li>
+            <li><strong>Staff:</strong> pick report type, then date, then open PDF.</li>
+          </ul>
+          <div class="alert alert-info">
+            Admin is decided by email in the frontend (for example: <code>admin@konarakfb.com</code>) and also by policies in Supabase.
+          </div>
+          <div id="currentUserInfo" style="margin-top:6px;font-size:11px;color:var(--muted);"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLE AREA -->
+  <section class="card" id="roleArea" style="display:none;">
+    <div class="card-header">
+      <div class="card-title">Reports Workspace</div>
+      <span class="badge" id="roleBadge">Role: —</span>
+    </div>
+    <div class="card-body">
+      <div class="tabs">
+        <div class="tab active" id="tabAdmin">
+          <span>Admin</span>
+          <span style="font-size:9px;background:#fff;border-radius:999px;padding:1px 6px;border:1px solid #f0d0a7;">Upload</span>
+        </div>
+        <div class="tab" id="tabStaff">
+          <span>Staff</span>
+          <span style="font-size:9px;background:#fff;border-radius:999px;padding:1px 6px;border:1px solid #d4d7dd;">View only</span>
+        </div>
+      </div>
+
+      <!-- ADMIN PANEL -->
+      <div id="adminPanel">
+        <div class="two-col">
+          <div class="col">
+            <div class="section-label">Admin upload</div>
+
+            <div class="field">
+              <label>Report name</label>
+              <select id="adminReportType">
+                <option value="dry-store">Dry Store Report</option>
+                <option value="taste-quality">Food Taste &amp; Quality Report</option>
+                <option value="food-sales">Food Sales Report</option>
+                <option value="weekly-inventory">Weekly Inventory Report</option>
+                <option value="monthly-summary">Monthly Summary Report</option>
+                <option value="other">Other Reports</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Report date</label>
+              <input type="date" id="adminReportDate">
+            </div>
+
+            <div class="field">
+              <label>PDF heading (shown to staff)</label>
+              <input type="text" id="adminReportTitle" placeholder="Example: Dry Store Checklist – 02 Dec 2025">
+            </div>
+
+            <div class="field">
+              <label>Upload PDF file</label>
+              <input type="file" id="adminPdfFile" accept="application/pdf">
+            </div>
+
+            <button class="btn btn-primary" id="uploadBtn">Upload report PDF</button>
+            <div id="uploadMessage" class="alert" style="display:none;margin-top:8px;"></div>
+
+            <div class="alert alert-info" style="margin-top:8px;">
+              Note: PDF is stored in Supabase Storage bucket <code>reports</code> and is only visible to logged-in users.
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="section-label">Latest uploads</div>
+            <div id="adminRecentList" class="report-list">
+              <div class="empty-state">Recent uploads will appear here after you upload PDFs.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAFF PANEL -->
+      <div id="staffPanel" style="display:none;">
+        <div class="two-col">
+          <div class="col">
+            <div class="section-label">Select report to read</div>
+
+            <div class="field">
+              <label>Report name</label>
+              <select id="staffReportType">
+                <option value="">-- Select report --</option>
+                <option value="dry-store">Dry Store Report</option>
+                <option value="taste-quality">Food Taste &amp; Quality Report</option>
+                <option value="food-sales">Food Sales Report</option>
+                <option value="weekly-inventory">Weekly Inventory Report</option>
+                <option value="monthly-summary">Monthly Summary Report</option>
+                <option value="other">Other Reports</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Dates available (after selecting report)</label>
+              <div id="dateChips" class="chips">
+                <span class="chip muted">Select report name first</span>
+              </div>
+            </div>
+
+            <div class="section-label">Reports on selected date</div>
+            <div id="staffReportList" class="report-list">
+              <div class="empty-state">Select a report name and then tap a highlighted date.</div>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="section-label">PDF Viewer</div>
+            <div class="pdf-shell">
+              <div class="pdf-toolbar">
+                <div class="pdf-toolbar-left">
+                  <span class="pdf-badge">Read-only PDF</span>
+                  <span class="pdf-title" id="viewerTitle">No report selected</span>
+                </div>
+                <span style="font-size:10px;color:var(--muted);">No download • No right-click</span>
+              </div>
+              <div class="pdf-frame-wrap">
+                <iframe id="pdfFrame" class="pdf-frame" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
+              </div>
+            </div>
+            <div class="alert alert-danger" style="margin-top:8px;">
+              Internal use only. Downloading or sharing reports outside Konarak is not allowed.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // TODO: REPLACE with your real values
+  const SUPABASE_URL = 'https://mxddhtcxotlfsgcqcnve.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14ZGRodGN4b3RsZnNnY3FjbnZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ2OTMwMzIsImV4cCI6MjA4MDI2OTAzMn0.orAp95JuK9hWtK7ztu9DgumjgrcyRdF_gibmJxLh1_8';
+  const ADMIN_EMAILS = ['admin@konarakfb.com']; // add more admin emails if needed
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // DOM elements
+  const authStatusPill = document.getElementById('authStatusPill');
+  const emailInput = document.getElementById('emailInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const authMessage = document.getElementById('authMessage');
+  const currentUserInfo = document.getElementById('currentUserInfo');
+
+  const roleArea = document.getElementById('roleArea');
+  const roleBadge = document.getElementById('roleBadge');
+  const tabAdmin = document.getElementById('tabAdmin');
+  const tabStaff = document.getElementById('tabStaff');
+  const adminPanel = document.getElementById('adminPanel');
+  const staffPanel = document.getElementById('staffPanel');
+
+  const adminReportType = document.getElementById('adminReportType');
+  const adminReportDate = document.getElementById('adminReportDate');
+  const adminReportTitle = document.getElementById('adminReportTitle');
+  const adminPdfFile = document.getElementById('adminPdfFile');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const uploadMessage = document.getElementById('uploadMessage');
+  const adminRecentList = document.getElementById('adminRecentList');
+
+  const staffReportType = document.getElementById('staffReportType');
+  const dateChips = document.getElementById('dateChips');
+  const staffReportList = document.getElementById('staffReportList');
+  const pdfFrame = document.getElementById('pdfFrame');
+  const viewerTitle = document.getElementById('viewerTitle');
+
+  let currentUser = null;
+  let currentRole = null; // 'admin' or 'staff'
+
+  function showAuthMessage(text, type='info') {
+    authMessage.style.display = 'block';
+    authMessage.textContent = text;
+    authMessage.className = 'alert ' + (type === 'error' ? 'alert-danger' :
+      type === 'success' ? 'alert-success' : 'alert-info');
   }
 
-  // RESET: clear & unlock
-  function resetForm(){
-    const controls = document.querySelectorAll(
-      "#pdf-area input, #pdf-area textarea, #pdf-area select"
-    );
-    controls.forEach(el => {
-      el.removeAttribute("disabled");
-      if(el.tagName === "TEXTAREA"){
-        el.value = "";
-      }else if(el.tagName === "SELECT"){
-        el.selectedIndex = 0;
-      }else if(el.type === "radio" || el.type === "checkbox"){
-        el.checked = false;
-      }else{
-        el.value = "";
+  function setAuthUI(user, role) {
+    if (user) {
+      authStatusPill.className = 'pill-status online';
+      authStatusPill.innerHTML = '<span>●</span><span>Signed in</span>';
+      logoutBtn.style.display = 'inline-flex';
+      currentUserInfo.textContent = (user.email || '') + ' • User ID: ' + user.id + ' • Role: ' + role;
+      roleArea.style.display = 'block';
+      roleBadge.textContent = 'Role: ' + role;
+    } else {
+      authStatusPill.className = 'pill-status offline';
+      authStatusPill.innerHTML = '<span>●</span><span>Signed out</span>';
+      logoutBtn.style.display = 'none';
+      currentUserInfo.textContent = '';
+      roleArea.style.display = 'none';
+      currentRole = null;
+    }
+    authMessage.style.display = 'none';
+  }
+
+  function setTab(which) {
+    if (which === 'admin') {
+      tabAdmin.classList.add('active');
+      tabStaff.classList.remove('active');
+      adminPanel.style.display = 'block';
+      staffPanel.style.display = 'none';
+    } else {
+      tabStaff.classList.add('active');
+      tabAdmin.classList.remove('active');
+      staffPanel.style.display = 'block';
+      adminPanel.style.display = 'none';
+    }
+  }
+
+  tabAdmin.addEventListener('click', () => setTab('admin'));
+  tabStaff.addEventListener('click', () => setTab('staff'));
+
+  // LOGIN
+  loginBtn.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    if (!email || !password) {
+      showAuthMessage('Enter email and password.', 'error');
+      return;
+    }
+    loginBtn.textContent = 'Checking...';
+    loginBtn.disabled = true;
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email, password
+      });
+      if (error) throw error;
+      showAuthMessage('Login success.', 'success');
+    } catch (err) {
+      console.error(err);
+      showAuthMessage(err.message || 'Login failed', 'error');
+    } finally {
+      loginBtn.textContent = 'Login';
+      loginBtn.disabled = false;
+    }
+  });
+
+  // LOGOUT
+  logoutBtn.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+  });
+
+  // AUTH STATE HANDLER
+  async function handleAuthChange() {
+    const { data } = await supabase.auth.getUser();
+    currentUser = data.user || null;
+    if (currentUser) {
+      const email = currentUser.email || '';
+      currentRole = ADMIN_EMAILS.includes(email) ? 'admin' : 'staff';
+      setAuthUI(currentUser, currentRole);
+      if (currentRole === 'admin') {
+        setTab('admin');
+        loadRecentReports();
+      } else {
+        setTab('staff');
       }
-    });
-    alert("Form reset. All fields are editable again.");
+    } else {
+      setAuthUI(null, null);
+    }
   }
 
-  // -------------------------------
-  //   SINGLE-PAGE PDF WITH MARGIN
-  // -------------------------------
-  function downloadPDF(){
-    const { jsPDF } = window.jspdf;
-    const pdfArea = document.getElementById("pdf-area");
+  supabase.auth.onAuthStateChange(() => {
+    handleAuthChange();
+  });
 
-    // ADD EXTRA PADDING ONLY FOR PDF
-    pdfArea.classList.add("pdf-padding");
+  // INITIAL AUTH CHECK
+  handleAuthChange();
 
-    html2canvas(pdfArea, {
-      scale: 3,
-      useCORS: true,
-      scrollY: -window.scrollY,
-      backgroundColor:"#ffffff"
-    }).then(canvas => {
+  // ADMIN: Upload report
+  uploadBtn.addEventListener('click', async () => {
+    if (!currentUser) {
+      uploadMessage.style.display = 'block';
+      uploadMessage.className = 'alert alert-danger';
+      uploadMessage.textContent = 'Please login first.';
+      return;
+    }
+    if (currentRole !== 'admin') {
+      uploadMessage.style.display = 'block';
+      uploadMessage.className = 'alert alert-danger';
+      uploadMessage.textContent = 'Only admin can upload reports.';
+      return;
+    }
 
-      const pdf = new jsPDF("p","mm","a4");
+    const type = adminReportType.value;
+    const date = adminReportDate.value;
+    const title = adminReportTitle.value.trim();
+    const file = adminPdfFile.files[0];
 
-      const pageWidth  = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
+    if (!type || !date || !title || !file) {
+      uploadMessage.style.display = 'block';
+      uploadMessage.className = 'alert alert-danger';
+      uploadMessage.textContent = 'Please select report name, date, heading and PDF file.';
+      return;
+    }
+    if (file.type !== 'application/pdf') {
+      uploadMessage.style.display = 'block';
+      uploadMessage.className = 'alert alert-danger';
+      uploadMessage.textContent = 'Only PDF files are allowed.';
+      return;
+    }
 
-      const margin = 10;
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = 'Uploading...';
+    uploadMessage.style.display = 'none';
 
-      const maxWidth  = pageWidth  - margin * 2;
-      const maxHeight = pageHeight - margin * 2;
+    try {
+      // storage path: reports/{type}/{date}/{timestamp_name}.pdf
+      const fileNameSafe = Date.now() + '_' + file.name.replace(/[^\w\-.]+/g, '_');
+      const filePath = `${type}/${date}/${fileNameSafe}`;
 
-      const ratio = Math.min(
-        maxWidth  / canvas.width,
-        maxHeight / canvas.height
-      );
+      const { error: uploadError } = await supabase
+        .storage.from('reports')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      const imgWidth  = canvas.width  * ratio;
-      const imgHeight = canvas.height * ratio;
+      if (uploadError) throw uploadError;
 
-      const x = (pageWidth  - imgWidth)  / 2;
-      const y = (pageHeight - imgHeight) / 2;
+      const { error: insertError } = await supabase
+        .from('reports')
+        .insert({
+          title,
+          type,
+          date,
+          file_path: filePath,
+          created_by: currentUser.id
+        });
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      if (insertError) throw insertError;
 
-      pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight, undefined, "FAST");
+      uploadMessage.style.display = 'block';
+      uploadMessage.className = 'alert alert-success';
+      uploadMessage.textContent = 'Report uploaded successfully.';
+      adminPdfFile.value = '';
+      loadRecentReports();
+    } catch (err) {
+      console.error(err);
+      uploadMessage.style.display = 'block';
+      uploadMessage.className = 'alert alert-danger';
+      uploadMessage.textContent = 'Upload failed: ' + (err.message || '');
+    } finally {
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = 'Upload report PDF';
+    }
+  });
 
-      // REMOVE EXTRA PADDING AFTER PDF
-      pdfArea.classList.remove("pdf-padding");
+  function typeLabel(type) {
+    if (type === 'dry-store') return 'Dry Store Report';
+    if (type === 'taste-quality') return 'Food Taste & Quality Report';
+    if (type === 'food-sales') return 'Food Sales Report';
+    if (type === 'weekly-inventory') return 'Weekly Inventory Report';
+    if (type === 'monthly-summary') return 'Monthly Summary Report';
+    return 'Other Reports';
+  }
 
-      pdf.save("Food_Feedback_Form_KFB-001.pdf");
+  function escapeHtml(str) {
+    return String(str || '').replace(/[&<>"']/g, s => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[s]);
+  }
+
+  async function loadRecentReports() {
+    const { data, error } = await supabase
+      .from('reports')
+      .select('id,title,type,date,created_at')
+      .order('created_at', { ascending:false })
+      .limit(20);
+
+    if (error) {
+      console.error(error);
+      adminRecentList.innerHTML = '<div class="empty-state">Error loading uploads.</div>';
+      return;
+    }
+    if (!data || data.length === 0) {
+      adminRecentList.innerHTML = '<div class="empty-state">No reports uploaded yet.</div>';
+      return;
+    }
+    let html = '';
+    data.forEach(row => {
+      html += `
+        <div class="report-item">
+          <div class="report-title">${escapeHtml(row.title || 'Untitled')}</div>
+          <div class="report-meta">${typeLabel(row.type)} • ${row.date}</div>
+        </div>`;
     });
+    adminRecentList.innerHTML = html;
+  }
+
+  // STAFF: when report type changes, load dates
+  staffReportType.addEventListener('change', async () => {
+    const type = staffReportType.value;
+    staffReportList.innerHTML = '<div class="empty-state">Select a highlighted date.</div>';
+    pdfFrame.src = '';
+    viewerTitle.textContent = 'No report selected';
+
+    if (!type) {
+      dateChips.innerHTML = '<span class="chip muted">Select report name first</span>';
+      return;
+    }
+
+    dateChips.innerHTML = '<span class="chip muted">Loading dates...</span>';
+
+    const { data, error } = await supabase
+      .from('reports')
+      .select('date')
+      .eq('type', type)
+      .order('date', { ascending:false });
+
+    if (error) {
+      console.error(error);
+      dateChips.innerHTML = '<span class="chip muted">Error loading dates.</span>';
+      return;
+    }
+    if (!data || data.length === 0) {
+      dateChips.innerHTML = '<span class="chip muted">No reports uploaded for this type.</span>';
+      return;
+    }
+
+    const dateSet = new Set();
+    data.forEach(r => { if (r.date) dateSet.add(r.date); });
+    const dates = Array.from(dateSet).sort().reverse();
+    if (!dates.length) {
+      dateChips.innerHTML = '<span class="chip muted">No dates available.</span>';
+      return;
+    }
+
+    dateChips.innerHTML = '';
+    dates.forEach(dateStr => {
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = dateStr;
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('#dateChips .chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        loadReportsForTypeAndDate(type, dateStr);
+      });
+      dateChips.appendChild(chip);
+    });
+  });
+
+  async function loadReportsForTypeAndDate(type, dateStr) {
+    staffReportList.innerHTML = '<div class="empty-state">Loading reports...</div>';
+    pdfFrame.src = '';
+    viewerTitle.textContent = 'No report selected';
+
+    const { data, error } = await supabase
+      .from('reports')
+      .select('id,title,type,date,file_path,created_at')
+      .eq('type', type)
+      .eq('date', dateStr)
+      .order('created_at', { ascending:false });
+
+    if (error) {
+      console.error(error);
+      staffReportList.innerHTML = '<div class="empty-state">Error loading reports.</div>';
+      return;
+    }
+    if (!data || data.length === 0) {
+      staffReportList.innerHTML = '<div class="empty-state">No reports found for this date.</div>';
+      return;
+    }
+
+    staffReportList.innerHTML = '';
+    data.forEach(row => {
+      const div = document.createElement('div');
+      div.className = 'report-item';
+      div.innerHTML = `
+        <div class="report-title">${escapeHtml(row.title || 'Untitled')}</div>
+        <div class="report-meta">${typeLabel(row.type)} • ${row.date}</div>
+      `;
+      div.addEventListener('click', () => openPdf(row));
+      staffReportList.appendChild(div);
+    });
+  }
+
+  async function openPdf(row) {
+    viewerTitle.textContent = row.title || 'Report';
+    pdfFrame.src = '';
+    if (!row.file_path) return;
+
+    // signed URL valid for 30 minutes
+    const { data, error } = await supabase
+      .storage.from('reports')
+      .createSignedUrl(row.file_path, 60 * 30);
+
+    if (error || !data || !data.signedUrl) {
+      console.error(error);
+      viewerTitle.textContent = 'Error loading PDF';
+      return;
+    }
+
+    const safeUrl = data.signedUrl + '#toolbar=0&navpanes=0&scrollbar=0';
+    pdfFrame.src = safeUrl;
+    pdfFrame.scrollIntoView({ behavior:'smooth', block:'start' });
   }
 </script>
 
+<!-- NOTE for you:
+1. In Supabase Storage, create bucket named "reports" (private).
+2. In Database, create table "reports" with:
+   id (uuid, pk, default uuid_generate_v4()),
+   title text,
+   type text,
+   date date,
+   file_path text,
+   created_at timestamp default now(),
+   created_by uuid
+3. Add RLS policies for SELECT/INSERT as we discussed.
+-->
 </body>
 </html>
