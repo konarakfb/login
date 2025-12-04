@@ -9,7 +9,6 @@
   :root{
     --accent:#f28c2b;
     --bg:#f3f3f3;
-    --card-bg:#ffffff;
     --card-soft:#faf7f3;
   }
 
@@ -83,10 +82,6 @@
     font-weight:600;
   }
 
-  .buybtn:hover{
-    opacity:0.9;
-  }
-
   /* QR POPUP */
   #qrPopup{
     position:fixed;inset:0;background:rgba(0,0,0,.6);
@@ -110,6 +105,26 @@
   .btn-secondary{
     background:#666;color:#fff;border:0;padding:10px 16px;
     border-radius:8px;cursor:pointer;font-size:14px;
+  }
+
+  /* TOKEN POPUP */
+  #tokenPopup{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:99999;
+  }
+
+  #tokenBox{
+    background:#fff;
+    padding:22px;
+    width:300px;
+    border-radius:12px;
+    text-align:center;
+    box-shadow:0 4px 12px rgba(0,0,0,.25);
   }
 
   @media(max-width:420px){
@@ -138,37 +153,53 @@
   </div>
 </div>
 
+<!-- TOKEN POPUP -->
+<div id="tokenPopup">
+  <div id="tokenBox">
+    <h3>Payment Recorded</h3>
+    <p id="tokenNumber" style="font-size:22px;font-weight:bold;margin:10px 0;"></p>
+    <button class="buybtn" onclick="closeToken()">OK</button>
+  </div>
+</div>
+
 <script>
 /* CONFIG */
-const GOOGLE_FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSdPFEHgyH5qnzyuuXHeHMY_OPEQ9YzktjSkz5yM-eg_dKQY9Q/formResponse";
+const GOOGLE_FORM_BASE =
+ "https://docs.google.com/forms/d/e/1FAIpQLSdPFEHgyH5qnzyuuXHeHMY_OPEQ9YzktjSkz5yM-eg_dKQY9Q/formResponse";
+
 const ENTRY_ITEM  = "entry.257563989";
 const ENTRY_TOKEN = "entry.926383089";
 const ENTRY_AMT   = "entry.677818799";
+
 const QR_IMAGE = "phonepe_qr.png";
+
 const TOKEN_PREFIX = "KFB";
 const TOKEN_DIGITS = 6;
 
-/* PRODUCTS */
+/* PRODUCTS — K1 to K16 */
 const products = [
-  { code:"A1", name:"Tea", price:12 },
-  { code:"A2", name:"Dum Chai", price:12 },
-  { code:"A3", name:"Ginger Tea", price:15 },
-  { code:"A4", name:"Lemon Tea", price:12 },
-  { code:"A5", name:"Green Tea", price:18 },
-  { code:"B1", name:"Coffee", price:15 },
-  { code:"B2", name:"Boost", price:18 },
-  { code:"B3", name:"Horlicks", price:18 },
-  { code:"B4", name:"Bournvita", price:18 },
-  { code:"C1", name:"Biscuits (2Pc)", price:10 },
-  { code:"C2", name:"Onion Samosa (1Pc)", price:7 },
-  { code:"C3", name:"Corn Samosa (1Pc)", price:8 },
-  { code:"C4", name:"Paneer Samosa (1Pc)", price:8 },
-  { code:"D1", name:"Bellam Tea", price:20 },
-  { code:"D2", name:"Bellam Coffee", price:20 },
-  { code:"D3", name:"Ginger Coffee", price:20 }
+  { code:"K1", name:"Tea", price:12 },
+  { code:"K2", name:"Dum Chai", price:12 },
+  { code:"K3", name:"Ginger Tea", price:15 },
+  { code:"K4", name:"Lemon Tea", price:12 },
+  { code:"K5", name:"Green Tea", price:18 },
+
+  { code:"K6", name:"Coffee", price:15 },
+  { code:"K7", name:"Boost", price:18 },
+  { code:"K8", name:"Horlicks", price:18 },
+  { code:"K9", name:"Bournvita", price:18 },
+
+  { code:"K10", name:"Biscuits (2Pc)", price:10 },
+  { code:"K11", name:"Onion Samosa (1Pc)", price:7 },
+  { code:"K12", name:"Corn Samosa (1Pc)", price:8 },
+  { code:"K13", name:"Paneer Samosa (1Pc)", price:8 },
+
+  { code:"K14", name:"Bellam Tea", price:20 },
+  { code:"K15", name:"Bellam Coffee", price:20 },
+  { code:"K16", name:"Ginger Coffee", price:20 }
 ];
 
-/* Render menu */
+/* RENDER MENU */
 const menuContainer=document.getElementById('menuContainer');
 products.forEach((p,idx)=>{
   const card=document.createElement('div');
@@ -182,7 +213,7 @@ products.forEach((p,idx)=>{
   menuContainer.appendChild(card);
 });
 
-/* Token Counter */
+/* TOKEN COUNTER */
 const LS_KEY='kiosk_kfb_counter_v1';
 if(!localStorage.getItem(LS_KEY)){
   localStorage.setItem(LS_KEY,"1");
@@ -195,12 +226,14 @@ function getNextToken(){
   return token;
 }
 
-/* QR Popup */
+/* QR POPUP */
 let selectedProduct=null;
 
 function onBuy(idx){
   selectedProduct=products[idx];
-  document.getElementById('qrTitle').innerText=`${selectedProduct.name} — ₹${selectedProduct.price}`;
+  document.getElementById('qrTitle').innerText=
+    `${selectedProduct.name} — ₹${selectedProduct.price}`;
+
   document.getElementById('qrImage').src=QR_IMAGE;
   document.getElementById('qrPopup').style.display='flex';
 }
@@ -209,13 +242,17 @@ function closeQr(){
   document.getElementById('qrPopup').style.display='none';
 }
 
-/* Paid -> Token Popup */
+/* TOKEN POPUP */
+function closeToken(){
+  document.getElementById('tokenPopup').style.display='none';
+}
+
+/* PAYMENT BUTTON CLICK */
 document.getElementById('paidBtn').addEventListener('click',()=>{
   if(!selectedProduct) return;
 
   const token=getNextToken();
 
-  // submit to Google form
   const params=new URLSearchParams();
   params.append(ENTRY_ITEM,selectedProduct.name);
   params.append(ENTRY_TOKEN,token);
@@ -228,8 +265,9 @@ document.getElementById('paidBtn').addEventListener('click',()=>{
 
   closeQr();
 
-  // Show popup token
-  alert(`✔ Payment Recorded\nYour Token: ${token}`);
+  // SHOW POPUP WITH TOKEN
+  document.getElementById("tokenNumber").innerText = "Your Token: " + token;
+  document.getElementById("tokenPopup").style.display = "flex";
 
   setTimeout(()=>document.body.removeChild(iframe),4000);
 });
