@@ -20,124 +20,95 @@
   }
 
   h2{
-    margin:0 0 20px;
     text-align:center;
+    margin-bottom:8px;
   }
 
-  /* MENU GRID */
+  h3.subheading{
+    text-align:center;
+    margin-top:0;
+    margin-bottom:20px;
+    font-weight:600;
+    color:#444;
+  }
+
   .menu{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
     gap:18px;
   }
 
-  /* ITEM BOX / CARD */
   .card{
     background:var(--card-soft);
     border:1px solid #ddd;
     border-radius:12px;
-    padding:16px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:10px;
-    min-height:150px;
-    box-shadow:0 2px 6px rgba(0,0,0,0.08);
-    transition:0.2s ease;
+    padding:14px;
+    text-align:center;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
   }
 
-  .card:hover{
-    transform:translateY(-3px);
-    box-shadow:0 4px 12px rgba(0,0,0,0.15);
-  }
-
-  .rowlabel{
-    font-size:12px;
-    color:#fff;
-    background:#0077a3;
-    padding:4px 10px;
-    border-radius:4px;
+  .card img{
+    width:100%;
+    height:120px;
+    object-fit:cover;
+    border-radius:8px;
   }
 
   .name{
-    font-weight:700;
-    text-align:center;
     font-size:15px;
+    font-weight:bold;
+    margin-top:8px;
   }
 
   .price{
     font-size:16px;
     font-weight:700;
-    color:#333;
+    margin:4px 0;
   }
 
   .buybtn{
     background:var(--accent);
     color:#fff;
-    border:0;
-    padding:10px 16px;
+    padding:8px 12px;
     border-radius:8px;
     cursor:pointer;
+    border:0;
+    margin-top:6px;
     font-size:14px;
-    font-weight:600;
   }
 
   /* QR POPUP */
   #qrPopup{
-    position:fixed;inset:0;background:rgba(0,0,0,.6);
-    display:none;align-items:center;justify-content:center;
-    z-index:9999;
+    position:fixed; inset:0; background:rgba(0,0,0,0.6);
+    display:none; align-items:center; justify-content:center; z-index:9999;
   }
 
   #qrBox{
-    background:#fff;border-radius:12px;padding:20px;
-    width:330px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,.25);
+    background:#fff; padding:20px; width:330px;
+    border-radius:12px; text-align:center;
   }
 
-  #qrBox img{
-    width:250px;height:250px;object-fit:contain;
-  }
-
-  #qrBox .actions{
-    margin-top:15px;display:flex;gap:10px;justify-content:center;
-  }
-
-  .btn-secondary{
-    background:#666;color:#fff;border:0;padding:10px 16px;
-    border-radius:8px;cursor:pointer;font-size:14px;
-  }
+  #qrBox img{ width:250px; height:250px; }
 
   /* TOKEN POPUP */
   #tokenPopup{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.6);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    z-index:99999;
+    position:fixed; inset:0; background:rgba(0,0,0,0.6);
+    display:none; align-items:center; justify-content:center; z-index:99999;
   }
 
   #tokenBox{
-    background:#fff;
-    padding:22px;
-    width:300px;
-    border-radius:12px;
-    text-align:center;
+    background:#fff; padding:22px; width:300px;
+    border-radius:12px; text-align:center;
     box-shadow:0 4px 12px rgba(0,0,0,.25);
   }
 
-  @media(max-width:420px){
-    .card{padding:14px;min-height:135px}
-    #qrBox{width:92%}
-    #qrBox img{width:200px;height:200px}
-  }
 </style>
 </head>
 
 <body>
 
 <h2>CTS Cafeteria — Operated by Konarak</h2>
+<h3 class="subheading">Nilgiri Cafe</h3>
 
 <div class="menu" id="menuContainer"></div>
 
@@ -145,11 +116,9 @@
 <div id="qrPopup">
   <div id="qrBox">
     <h3 id="qrTitle">Scan & Pay</h3>
-    <img id="qrImage" src="phonepe_qr.png" alt="PhonePe QR">
-    <div class="actions">
-      <button id="paidBtn" class="buybtn">I Paid — Get Token</button>
-      <button class="btn-secondary" onclick="closeQr()">Cancel</button>
-    </div>
+    <img id="qrImage" src="phonepe_qr.png">
+    <button id="paidBtn" class="buybtn">I Paid — Get Token</button>
+    <button class="buybtn" onclick="closeQr()" style="background:#666;margin-top:6px;">Cancel</button>
   </div>
 </div>
 
@@ -163,7 +132,7 @@
 </div>
 
 <script>
-/* CONFIG */
+/* GOOGLE FORM CONFIG (UPDATED ID) */
 const GOOGLE_FORM_BASE =
  "https://docs.google.com/forms/d/e/1FAIpQLSdPFEHgyH5qnzyuuXHeHMY_OPEQ9YzktjSkz5yM-eg_dKQY9Q/formResponse";
 
@@ -171,41 +140,40 @@ const ENTRY_ITEM  = "entry.257563989";
 const ENTRY_TOKEN = "entry.926383089";
 const ENTRY_AMT   = "entry.677818799";
 
-const QR_IMAGE = "phonepe_qr.png";
-
 const TOKEN_PREFIX = "KFB";
 const TOKEN_DIGITS = 6;
 
-/* PRODUCTS — K1 to K16 */
+/* PRODUCT LIST WITH IMAGES */
 const products = [
-  { code:"K1", name:"Tea", price:12 },
-  { code:"K2", name:"Dum Chai", price:12 },
-  { code:"K3", name:"Ginger Tea", price:15 },
-  { code:"K4", name:"Lemon Tea", price:12 },
-  { code:"K5", name:"Green Tea", price:18 },
+  { name:"Tea", price:12, img:"tea.jpg" },
+  { name:"Dum Chai", price:12, img:"dum_chai.jpg" },
+  { name:"Ginger Tea", price:15, img:"ginger_tea.jpg" },
+  { name:"Lemon Tea", price:12, img:"lemon_tea.jpg" },
+  { name:"Green Tea", price:18, img:"green_tea.jpg" },
 
-  { code:"K6", name:"Coffee", price:15 },
-  { code:"K7", name:"Boost", price:18 },
-  { code:"K8", name:"Horlicks", price:18 },
-  { code:"K9", name:"Bournvita", price:18 },
+  { name:"Coffee", price:15, img:"coffee.jpg" },
+  { name:"Boost", price:18, img:"boost.jpg" },
+  { name:"Horlicks", price:18, img:"horlicks.jpg" },
+  { name:"Bournvita", price:18, img:"bournvita.jpg" },
 
-  { code:"K10", name:"Biscuits (2Pc)", price:10 },
-  { code:"K11", name:"Onion Samosa (1Pc)", price:7 },
-  { code:"K12", name:"Corn Samosa (1Pc)", price:8 },
-  { code:"K13", name:"Paneer Samosa (1Pc)", price:8 },
+  { name:"Biscuits (2Pc)", price:10, img:"biscuits.jpg" },
+  { name:"Onion Samosa (1Pc)", price:7, img:"onion_samosa.jpg" },
+  { name:"Corn Samosa (1Pc)", price:8, img:"corn_samosa.jpg" },
+  { name:"Paneer Samosa (1Pc)", price:8, img:"paneer_samosa.jpg" },
 
-  { code:"K14", name:"Bellam Tea", price:20 },
-  { code:"K15", name:"Bellam Coffee", price:20 },
-  { code:"K16", name:"Ginger Coffee", price:20 }
+  { name:"Bellam Tea", price:20, img:"bellam_tea.jpg" },
+  { name:"Bellam Coffee", price:20, img:"bellam_coffee.jpg" },
+  { name:"Ginger Coffee", price:20, img:"ginger_coffee.jpg" }
 ];
 
 /* RENDER MENU */
 const menuContainer=document.getElementById('menuContainer');
+
 products.forEach((p,idx)=>{
   const card=document.createElement('div');
-  card.className='card';
+  card.className="card";
   card.innerHTML=`
-    <div class="rowlabel">${p.code}</div>
+    <img src="${p.img}">
     <div class="name">${p.name}</div>
     <div class="price">₹${p.price}</div>
     <button class="buybtn" onclick="onBuy(${idx})">Add</button>
@@ -215,57 +183,45 @@ products.forEach((p,idx)=>{
 
 /* TOKEN COUNTER */
 const LS_KEY='kiosk_kfb_counter_v1';
-if(!localStorage.getItem(LS_KEY)){
-  localStorage.setItem(LS_KEY,"1");
-}
+if(!localStorage.getItem(LS_KEY)) localStorage.setItem(LS_KEY,"1");
 
 function getNextToken(){
-  let n=parseInt(localStorage.getItem(LS_KEY)||"1",10);
-  const token=TOKEN_PREFIX+String(n).padStart(TOKEN_DIGITS,'0');
-  localStorage.setItem(LS_KEY,String(n+1));
+  let n=parseInt(localStorage.getItem(LS_KEY),10);
+  const token = TOKEN_PREFIX + String(n).padStart(TOKEN_DIGITS,'0');
+  localStorage.setItem(LS_KEY, n+1);
   return token;
 }
 
-/* QR POPUP */
 let selectedProduct=null;
 
 function onBuy(idx){
   selectedProduct=products[idx];
-  document.getElementById('qrTitle').innerText=
+  document.getElementById('qrTitle').innerText =
     `${selectedProduct.name} — ₹${selectedProduct.price}`;
-
-  document.getElementById('qrImage').src=QR_IMAGE;
   document.getElementById('qrPopup').style.display='flex';
 }
 
-function closeQr(){
-  document.getElementById('qrPopup').style.display='none';
-}
+function closeQr(){ document.getElementById('qrPopup').style.display='none'; }
 
-/* TOKEN POPUP */
-function closeToken(){
-  document.getElementById('tokenPopup').style.display='none';
-}
+function closeToken(){ document.getElementById('tokenPopup').style.display='none'; }
 
-/* PAYMENT BUTTON CLICK */
+/* PAYMENT */
 document.getElementById('paidBtn').addEventListener('click',()=>{
-  if(!selectedProduct) return;
 
   const token=getNextToken();
 
   const params=new URLSearchParams();
-  params.append(ENTRY_ITEM,selectedProduct.name);
-  params.append(ENTRY_TOKEN,token);
-  params.append(ENTRY_AMT,selectedProduct.price);
+  params.append(ENTRY_ITEM, selectedProduct.name);
+  params.append(ENTRY_TOKEN, token);
+  params.append(ENTRY_AMT, selectedProduct.price);
 
   const iframe=document.createElement('iframe');
   iframe.style.display='none';
-  iframe.src=GOOGLE_FORM_BASE+"?"+params.toString();
+  iframe.src = GOOGLE_FORM_BASE + "?" + params.toString();
   document.body.appendChild(iframe);
 
   closeQr();
 
-  // SHOW POPUP WITH TOKEN
   document.getElementById("tokenNumber").innerText = "Your Token: " + token;
   document.getElementById("tokenPopup").style.display = "flex";
 
