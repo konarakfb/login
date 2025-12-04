@@ -3,30 +3,126 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>CTS - Kiosk Order</title>
+<title>CTS Cafeteria — Operated by Konarak</title>
+
 <style>
-  :root{--accent:#f28c2b;--bg:#f6f6f6}
-  body{font-family:Arial,Helvetica,sans-serif;margin:12px;background:var(--bg);color:#111}
-  h2{margin:6px 0 12px}
-  .menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
-  .card{background:#fff;border:1px solid #ddd;border-radius:6px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:8px;min-height:120px}
-  .name{font-weight:700;text-align:center}
-  .price{color:#333;font-weight:600}
-  .rowlabel{font-size:12px;color:#0077a3;background:#e9f7fb;padding:2px 6px;border-radius:4px}
-  .buybtn{background:var(--accent);color:#fff;border:0;padding:8px 12px;border-radius:6px;cursor:pointer}
-  /* QR popup */
-  #qrPopup{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:9999}
-  #qrBox{background:#fff;border-radius:8px;padding:18px;width:320px;text-align:center}
-  #qrBox img{width:260px;height:260px;object-fit:contain}
-  #qrBox .actions{margin-top:12px;display:flex;gap:8px;justify-content:center}
-  .btn-secondary{background:#777;color:#fff;border:0;padding:8px 12px;border-radius:6px;cursor:pointer}
-  #tokenDisplay{margin-top:14px;padding:12px;border-radius:6px;background:#e6ffe6;border:1px solid #b6e6b6;display:none}
-  @media(max-width:420px){ .card{min-height:110px;padding:8px} #qrBox{width:92%} #qrBox img{width:220px;height:220px}}
+  :root{
+    --accent:#f28c2b;
+    --bg:#f3f3f3;
+    --card-bg:#ffffff;
+    --card-soft:#faf7f3;
+  }
+
+  body{
+    font-family:Arial,Helvetica,sans-serif;
+    margin:20px;
+    background:var(--bg);
+    color:#111;
+  }
+
+  h2{
+    margin:0 0 20px;
+    text-align:center;
+  }
+
+  /* MENU GRID */
+  .menu{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:18px;
+  }
+
+  /* ITEM BOX / CARD */
+  .card{
+    background:var(--card-soft);
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    min-height:150px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    transition:0.2s ease;
+  }
+
+  .card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  .rowlabel{
+    font-size:12px;
+    color:#fff;
+    background:#0077a3;
+    padding:4px 10px;
+    border-radius:4px;
+  }
+
+  .name{
+    font-weight:700;
+    text-align:center;
+    font-size:15px;
+  }
+
+  .price{
+    font-size:16px;
+    font-weight:700;
+    color:#333;
+  }
+
+  .buybtn{
+    background:var(--accent);
+    color:#fff;
+    border:0;
+    padding:10px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:600;
+  }
+
+  .buybtn:hover{
+    opacity:0.9;
+  }
+
+  /* QR POPUP */
+  #qrPopup{
+    position:fixed;inset:0;background:rgba(0,0,0,.6);
+    display:none;align-items:center;justify-content:center;
+    z-index:9999;
+  }
+
+  #qrBox{
+    background:#fff;border-radius:12px;padding:20px;
+    width:330px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,.25);
+  }
+
+  #qrBox img{
+    width:250px;height:250px;object-fit:contain;
+  }
+
+  #qrBox .actions{
+    margin-top:15px;display:flex;gap:10px;justify-content:center;
+  }
+
+  .btn-secondary{
+    background:#666;color:#fff;border:0;padding:10px 16px;
+    border-radius:8px;cursor:pointer;font-size:14px;
+  }
+
+  @media(max-width:420px){
+    .card{padding:14px;min-height:135px}
+    #qrBox{width:92%}
+    #qrBox img{width:200px;height:200px}
+  }
 </style>
 </head>
+
 <body>
 
-<h2>CTS Cafeteria — Order (Tap item → Scan QR → Tap "I Paid")</h2>
+<h2>CTS Cafeteria — Operated by Konarak</h2>
 
 <div class="menu" id="menuContainer"></div>
 
@@ -42,51 +138,42 @@
   </div>
 </div>
 
-<div id="tokenDisplay"></div>
-
 <script>
-/* ====== CONFIG (edit only if needed) ======
-   Google Form "formResponse" endpoint and field entry IDs (you provided)
-*/
+/* CONFIG */
 const GOOGLE_FORM_BASE = "https://docs.google.com/forms/d/e/1FAIpQLSdPFEHgyH5qnzyuuXHeHMY_OPEQ9YzktjSkz5yM-eg_dKQY9Q/formResponse";
-const ENTRY_ITEM  = "entry.257563989"; // item name
-const ENTRY_TOKEN = "entry.926383089"; // token
-const ENTRY_AMT   = "entry.677818799"; // amount
-const QR_IMAGE = "phonepe_qr.png";     // filename of your PhonePe QR (place this file alongside)
-const TOKEN_PREFIX = "KFB";            // you asked tokens like KFB000001
-const TOKEN_DIGITS = 6;                // numeric length: 6 => 000001
-/* ======================================== */
+const ENTRY_ITEM  = "entry.257563989";
+const ENTRY_TOKEN = "entry.926383089";
+const ENTRY_AMT   = "entry.677818799";
+const QR_IMAGE = "phonepe_qr.png";
+const TOKEN_PREFIX = "KFB";
+const TOKEN_DIGITS = 6;
 
-/* PRODUCTS extracted from your photos (10–20 items) */
+/* PRODUCTS */
 const products = [
-  { code: "A1", name: "Tea", price: 12 },
-  { code: "A2", name: "Dum Chai", price: 12 },
-  { code: "A3", name: "Ginger Tea", price: 15 },
-  { code: "A4", name: "Lemon Tea", price: 12 },
-  { code: "A5", name: "Green Tea", price: 18 },
-
-  { code: "B1", name: "Coffee", price: 15 },
-  { code: "B2", name: "Boost", price: 18 },
-  { code: "B3", name: "Horlicks", price: 18 },
-  { code: "B4", name: "Bournvita", price: 18 },
-
-  { code: "C1", name: "Biscuits (2Pc)", price: 10 },
-  { code: "C2", name: "Onion Samosa (1Pc)", price: 7 },
-  { code: "C3", name: "Corn Samosa (1Pc)", price: 8 },
-  { code: "C4", name: "Paneer Samosa (1Pc)", price: 8 },
-
-  // extra items from table card (optional)
-  { code: "D1", name: "Bellam Tea", price: 20 },
-  { code: "D2", name: "Bellam Coffee", price: 20 },
-  { code: "D3", name: "Ginger Coffee", price: 20 }
+  { code:"A1", name:"Tea", price:12 },
+  { code:"A2", name:"Dum Chai", price:12 },
+  { code:"A3", name:"Ginger Tea", price:15 },
+  { code:"A4", name:"Lemon Tea", price:12 },
+  { code:"A5", name:"Green Tea", price:18 },
+  { code:"B1", name:"Coffee", price:15 },
+  { code:"B2", name:"Boost", price:18 },
+  { code:"B3", name:"Horlicks", price:18 },
+  { code:"B4", name:"Bournvita", price:18 },
+  { code:"C1", name:"Biscuits (2Pc)", price:10 },
+  { code:"C2", name:"Onion Samosa (1Pc)", price:7 },
+  { code:"C3", name:"Corn Samosa (1Pc)", price:8 },
+  { code:"C4", name:"Paneer Samosa (1Pc)", price:8 },
+  { code:"D1", name:"Bellam Tea", price:20 },
+  { code:"D2", name:"Bellam Coffee", price:20 },
+  { code:"D3", name:"Ginger Coffee", price:20 }
 ];
 
-/* ----- render menu ----- */
-const menuContainer = document.getElementById('menuContainer');
-products.forEach((p, idx) => {
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
+/* Render menu */
+const menuContainer=document.getElementById('menuContainer');
+products.forEach((p,idx)=>{
+  const card=document.createElement('div');
+  card.className='card';
+  card.innerHTML=`
     <div class="rowlabel">${p.code}</div>
     <div class="name">${p.name}</div>
     <div class="price">₹${p.price}</div>
@@ -95,83 +182,58 @@ products.forEach((p, idx) => {
   menuContainer.appendChild(card);
 });
 
-/* ----- token counter stored in localStorage ----- */
-/* Key used in localStorage */
-const LS_KEY = 'kiosk_kfb_counter_v1';
-
-/* initialize counter if missing — user told start KFB000001 */
-(function initCounter(){
-  if(!localStorage.getItem(LS_KEY)){
-    // store numeric part as integer (1 means next token will be 000001)
-    localStorage.setItem(LS_KEY, String(1));
-  }
-})();
+/* Token Counter */
+const LS_KEY='kiosk_kfb_counter_v1';
+if(!localStorage.getItem(LS_KEY)){
+  localStorage.setItem(LS_KEY,"1");
+}
 
 function getNextToken(){
-  let n = parseInt(localStorage.getItem(LS_KEY) || "1", 10);
-  // format: KFB + zero-padded number
-  const numStr = String(n).padStart(TOKEN_DIGITS, '0');
-  const token = `${TOKEN_PREFIX}${numStr}`;
-  // increment and save
-  localStorage.setItem(LS_KEY, String(n + 1));
+  let n=parseInt(localStorage.getItem(LS_KEY)||"1",10);
+  const token=TOKEN_PREFIX+String(n).padStart(TOKEN_DIGITS,'0');
+  localStorage.setItem(LS_KEY,String(n+1));
   return token;
 }
 
-/* ----- QR modal behavior ----- */
-let selectedProduct = null;
+/* QR Popup */
+let selectedProduct=null;
+
 function onBuy(idx){
-  selectedProduct = products[idx];
-  document.getElementById('qrTitle').innerText = `${selectedProduct.name} — ₹${selectedProduct.price}`;
-  document.getElementById('qrImage').src = QR_IMAGE;
-  document.getElementById('qrPopup').style.display = 'flex';
+  selectedProduct=products[idx];
+  document.getElementById('qrTitle').innerText=`${selectedProduct.name} — ₹${selectedProduct.price}`;
+  document.getElementById('qrImage').src=QR_IMAGE;
+  document.getElementById('qrPopup').style.display='flex';
 }
 
 function closeQr(){
-  document.getElementById('qrPopup').style.display = 'none';
+  document.getElementById('qrPopup').style.display='none';
 }
 
-/* ----- paid button: generate token, build prefilled form url and submit hidden ----- */
-document.getElementById('paidBtn').addEventListener('click', function(){
-  if(!selectedProduct) return alert('No item selected.');
+/* Paid -> Token Popup */
+document.getElementById('paidBtn').addEventListener('click',()=>{
+  if(!selectedProduct) return;
 
-  const token = getNextToken();
+  const token=getNextToken();
 
-  // Build prefill URL for formResponse (use GET parameters)
-  const params = new URLSearchParams();
-  params.append(ENTRY_ITEM, selectedProduct.name);
-  params.append(ENTRY_TOKEN, token);
-  params.append(ENTRY_AMT, String(selectedProduct.price));
-  const submitUrl = GOOGLE_FORM_BASE + "?" + params.toString();
+  // submit to Google form
+  const params=new URLSearchParams();
+  params.append(ENTRY_ITEM,selectedProduct.name);
+  params.append(ENTRY_TOKEN,token);
+  params.append(ENTRY_AMT,selectedProduct.price);
 
-  // submit using an invisible iframe (so user's flow is seamless)
-  const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  iframe.src = submitUrl;
+  const iframe=document.createElement('iframe');
+  iframe.style.display='none';
+  iframe.src=GOOGLE_FORM_BASE+"?"+params.toString();
   document.body.appendChild(iframe);
 
-  // show token to customer immediately
-  const td = document.getElementById('tokenDisplay');
-  td.innerHTML = `✅ Payment recorded. <br><strong>Your Token: ${token}</strong><br><small>Give it to the staff for pickup.</small>`;
-  td.style.display = 'block';
-
-  // close QR modal
   closeQr();
 
-  // cleanup iframe after a short delay
-  setTimeout(()=> {
-    try{ document.body.removeChild(iframe); }catch(e){}
-  }, 5000);
-});
+  // Show popup token
+  alert(`✔ Payment Recorded\nYour Token: ${token}`);
 
-/* OPTIONAL — function to reset counter from console: resetCounter(1) */
-function resetCounter(toNumber){
-  if(typeof toNumber === 'number' && toNumber>=1){
-    localStorage.setItem(LS_KEY, String(toNumber));
-    alert('Counter reset to ' + toNumber);
-  } else {
-    alert('resetCounter requires a numeric value >= 1. Example: resetCounter(1)');
-  }
-}
+  setTimeout(()=>document.body.removeChild(iframe),4000);
+});
 </script>
+
 </body>
 </html>
