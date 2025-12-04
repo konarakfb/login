@@ -183,7 +183,7 @@ products.forEach((p,idx)=>{
 
 /* TOKEN COUNTER */
 const LS_KEY='kiosk_kfb_counter_v1';
-if(!localStorage.getItem(LS_KEY)) localStorage.setItem(LS_KEY,"1");
+if(!localStorage.getItem(LS_KEY)) localStorage.setItem(LS_KEY,"0");
 
 function getNextToken(){
   let n=parseInt(localStorage.getItem(LS_KEY),10);
@@ -231,5 +231,6 @@ document.getElementById('paidBtn').addEventListener('click',()=>{
 
 </body>
 </html>
+
 
 
